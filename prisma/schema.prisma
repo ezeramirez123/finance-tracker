@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- Auth.js models (required names/shape for @auth/prisma-adapter) ---
+// Note: "Account" here is Auth.js's OAuth-link model, not a financial account —
+// the domain concept is named FinancialAccount below to avoid the name clash.
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  accounts Account[]
+  sessions Session[]
+
+  financialAccounts FinancialAccount[]
+  categories        Category[]
+  transactions      Transaction[]
+
+  createdAt DateTime @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- App domain models ---
+
+enum AccountType {
+  bank
+  cash
+  crypto
+  savings
+  credit
+  investment
+}
+
+enum TransactionKind {
+  income
+  expense
+}
+
+model FinancialAccount {
+  id                String      @id @default(cuid())
+  userId            String
+  name              String
+  type              AccountType
+  currency          String
+  currentBalance    Decimal     @default(0) @db.Decimal(18, 4)
+  includeInNetWorth Boolean     @default(true)
+  isConnected       Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([userId])
+}
+
+model Category {
+  id        String          @id @default(cuid())
+  userId    String?
+  name      String
+  kind      TransactionKind
+  color     String          @default("#6b7280")
+  createdAt DateTime        @default(now())
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@unique([name, userId, kind])
+  @@index([userId])
+}
+
+model Transaction {
+  id                String          @id @default(cuid())
+  userId            String
+  accountId         String
+  categoryId        String?
+  kind              TransactionKind
+  originalAmount    Decimal         @db.Decimal(18, 4)
+  originalCurrency  String
+  exchangeRateToUsd Decimal         @db.Decimal(18, 8)
+  usdEquivalent     Decimal         @db.Decimal(18, 4)
+  merchant          String?
+  date              DateTime
+  notes             String?
+  source            String          @default("manual")
+  receiptUrl        String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account  FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  category Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, date])
+  @@index([accountId])
+  @@index([categoryId])
+}
+
+model ExchangeRateCache {
+  id           String   @id @default(cuid())
+  date         DateTime @db.Date
+  baseCurrency String
+  ratesJson    Json
+  createdAt    DateTime @default(now())
+
+  @@unique([date, baseCurrency])
+}

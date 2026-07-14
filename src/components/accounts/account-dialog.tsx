@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Plus } from "lucide-react";
 
 import { createAccount, updateAccount } from "@/lib/actions/accounts";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
@@ -122,7 +123,12 @@ export function AccountDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger !== null && (
         <DialogTrigger asChild>
-          {trigger ?? <Button>Add account</Button>}
+          {trigger ?? (
+            <Button className="px-2 sm:px-4">
+              <Plus className="size-4" />
+              <span className="hidden sm:inline">Add account</span>
+            </Button>
+          )}
         </DialogTrigger>
       )}
       <DialogContent>

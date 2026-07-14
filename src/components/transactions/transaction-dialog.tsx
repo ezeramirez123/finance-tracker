@@ -143,9 +143,9 @@ export function TransactionDialog({
       {trigger !== null && (
         <DialogTrigger asChild>
           {trigger ?? (
-            <Button>
+            <Button className="px-2 sm:px-4">
               <Plus className="size-4" />
-              Add transaction
+              <span className="hidden sm:inline">Add transaction</span>
             </Button>
           )}
         </DialogTrigger>

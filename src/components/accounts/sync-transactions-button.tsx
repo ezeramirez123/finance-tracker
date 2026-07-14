@@ -27,9 +27,9 @@ export function SyncTransactionsButton() {
   }
 
   return (
-    <Button variant="outline" onClick={handleSync} disabled={syncing}>
+    <Button variant="outline" onClick={handleSync} disabled={syncing} className="px-2 sm:px-4">
       <RefreshCw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
-      {syncing ? "Syncing..." : "Sync transactions"}
+      <span className="hidden sm:inline">{syncing ? "Syncing..." : "Sync transactions"}</span>
     </Button>
   );
 }

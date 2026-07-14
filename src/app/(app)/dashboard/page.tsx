@@ -68,7 +68,7 @@ export default async function DashboardPage({
 
       <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatTile label="Income" value={summary.totalIncome} delta={incomeDelta} deltaGoodDirection="up" />
         <StatTile label="Expenses" value={summary.totalExpenses} delta={expenseDelta} deltaGoodDirection="down" />
         <StatTile label="Net" value={summary.net} delta={netDelta} deltaGoodDirection="up" />

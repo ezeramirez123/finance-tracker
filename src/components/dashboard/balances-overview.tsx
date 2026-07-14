@@ -7,24 +7,43 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/format";
 
-const STORAGE_KEY = "hideBalances";
+function useHiddenState(storageKey: string) {
+  const [hidden, setHidden] = React.useState(false);
+
+  React.useEffect(() => {
+    // Read after mount (not in a lazy initializer) so server and client render
+    // the same markup on first paint; localStorage isn't available during SSR.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (localStorage.getItem(storageKey) === "true") setHidden(true);
+  }, [storageKey]);
+
+  function toggle() {
+    setHidden((prev) => {
+      const next = !prev;
+      localStorage.setItem(storageKey, String(next));
+      return next;
+    });
+  }
+
+  return [hidden, toggle] as const;
+}
 
 function BalanceCard({
   label,
   value,
-  hidden,
-  onToggle,
+  storageKey,
 }: {
   label: string;
   value: number;
-  hidden: boolean;
-  onToggle: () => void;
+  storageKey: string;
 }) {
+  const [hidden, toggle] = useHiddenState(storageKey);
+
   return (
     <Card className="gap-1.5">
       <div className="flex items-center justify-between px-5">
         <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <Button variant="ghost" size="icon" className="size-6" onClick={onToggle}>
+        <Button variant="ghost" size="icon" className="size-6" onClick={toggle}>
           {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
         </Button>
       </div>
@@ -42,32 +61,10 @@ export function BalancesOverview({
   netWorth: number;
   totalBalance: number;
 }) {
-  const [hidden, setHidden] = React.useState(false);
-
-  React.useEffect(() => {
-    // Read after mount (not in a lazy initializer) so server and client render
-    // the same markup on first paint; localStorage isn't available during SSR.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (localStorage.getItem(STORAGE_KEY) === "true") setHidden(true);
-  }, []);
-
-  function toggle() {
-    setHidden((prev) => {
-      const next = !prev;
-      localStorage.setItem(STORAGE_KEY, String(next));
-      return next;
-    });
-  }
-
   return (
     <div className="grid grid-cols-2 gap-4">
-      <BalanceCard label="Net worth" value={netWorth} hidden={hidden} onToggle={toggle} />
-      <BalanceCard
-        label="Total across all accounts"
-        value={totalBalance}
-        hidden={hidden}
-        onToggle={toggle}
-      />
+      <BalanceCard label="Net worth" value={netWorth} storageKey="hideNetWorth" />
+      <BalanceCard label="Total" value={totalBalance} storageKey="hideTotal" />
     </div>
   );
 }

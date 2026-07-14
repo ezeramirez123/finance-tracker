@@ -147,9 +147,9 @@ export function CsvImportDialog({ accounts }: { accounts: Account[] }) {
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline">
+        <Button variant="outline" className="px-2 sm:px-4">
           <Upload className="size-4" />
-          Import CSV
+          <span className="hidden sm:inline">Import CSV</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">

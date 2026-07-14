@@ -47,9 +47,16 @@ export function ConnectBankButton() {
   });
 
   return (
-    <Button variant="outline" onClick={() => open()} disabled={!ready || connecting}>
+    <Button
+      variant="outline"
+      onClick={() => open()}
+      disabled={!ready || connecting}
+      className="px-2 sm:px-4"
+    >
       <Landmark className="size-4" />
-      {connecting ? "Connecting..." : "Connect bank"}
+      <span className="hidden sm:inline">
+        {connecting ? "Connecting..." : "Connect bank"}
+      </span>
     </Button>
   );
 }

@@ -19,6 +19,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -29,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type Account = { id: string; name: string; currency: string };
+type Account = { id: string; name: string; icon: string; currency: string };
 type Category = { id: string; name: string; kind: "income" | "expense" };
 
 const formSchema = z.object({
@@ -165,11 +166,11 @@ export function TransactionDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="amount">Amount</Label>
-              <Input
+              <CurrencyInput
                 id="amount"
-                type="number"
-                step="0.01"
-                {...form.register("amount")}
+                value={Number(form.watch("amount"))}
+                currency={form.watch("currency")}
+                onChange={(v) => form.setValue("amount", v)}
               />
               {form.formState.errors.amount && (
                 <p className="text-xs text-destructive">
@@ -212,7 +213,7 @@ export function TransactionDialog({
                 <SelectContent>
                   {accounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.name}
+                      {a.icon} {a.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

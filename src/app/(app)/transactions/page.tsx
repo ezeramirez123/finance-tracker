@@ -92,6 +92,7 @@ export default async function TransactionsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
+                    <span className="mr-1.5">{t.account.icon}</span>
                     {t.account.name}
                   </TableCell>
                   <TableCell

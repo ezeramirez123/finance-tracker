@@ -18,6 +18,7 @@ import { AccountDialog } from "@/components/accounts/account-dialog";
 type AccountForActions = {
   id: string;
   name: string;
+  icon: string;
   type: "bank" | "cash" | "crypto" | "savings" | "credit" | "investment";
   currency: string;
   currentBalance: number;

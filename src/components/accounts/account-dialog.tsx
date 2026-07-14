@@ -27,6 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { AccountIconPicker } from "@/components/accounts/account-icon-picker";
 
 const ACCOUNT_TYPES = [
   "bank",
@@ -39,6 +41,7 @@ const ACCOUNT_TYPES = [
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(80),
+  icon: z.string().min(1).max(8),
   type: z.enum(ACCOUNT_TYPES),
   currency: z.enum(SUPPORTED_CURRENCIES),
   currentBalance: z.coerce.number().finite(),
@@ -55,6 +58,7 @@ export function AccountDialog({
   account?: {
     id: string;
     name: string;
+    icon: string;
     type: (typeof ACCOUNT_TYPES)[number];
     currency: string;
     currentBalance: number;
@@ -70,6 +74,7 @@ export function AccountDialog({
     defaultValues: account
       ? {
           name: account.name,
+          icon: account.icon,
           type: account.type,
           currency: account.currency as FormValues["currency"],
           currentBalance: account.currentBalance,
@@ -77,6 +82,7 @@ export function AccountDialog({
         }
       : {
           name: "",
+          icon: "🏦",
           type: "bank",
           currency: "USD",
           currentBalance: 0,
@@ -123,6 +129,14 @@ export function AccountDialog({
             )}
           </div>
 
+          <div className="flex flex-col gap-1.5">
+            <Label>Icon</Label>
+            <AccountIconPicker
+              value={form.watch("icon")}
+              onChange={(icon) => form.setValue("icon", icon)}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label>Type</Label>
@@ -167,11 +181,11 @@ export function AccountDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="currentBalance">Current balance</Label>
-            <Input
+            <CurrencyInput
               id="currentBalance"
-              type="number"
-              step="0.01"
-              {...form.register("currentBalance")}
+              value={Number(form.watch("currentBalance"))}
+              currency={form.watch("currency")}
+              onChange={(v) => form.setValue("currentBalance", v)}
             />
           </div>
 

@@ -11,6 +11,7 @@ import {
 import { PeriodTabs } from "@/components/period-tabs";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
+import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
@@ -83,7 +84,10 @@ export default async function IncomePage({
         />
       )}
 
-      <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <CategoryDonutChart title="Income by category" categories={summary.incomeByCategory} />
+        <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
+      </div>
 
       <TransactionListCard
         title="All income"

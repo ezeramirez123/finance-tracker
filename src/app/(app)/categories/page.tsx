@@ -1,6 +1,9 @@
+import { Plus } from "lucide-react";
+
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CategoryDialog } from "@/components/categories/category-dialog";
 import { CategoryActions } from "@/components/categories/category-actions";
 import { CategoryRow } from "@/components/categories/category-row";
@@ -17,44 +20,38 @@ function CategoryList({
   title,
   kind,
   categories,
-  userId,
 }: {
   title: string;
   kind: "income" | "expense";
   categories: CategoryRecord[];
-  userId: string;
 }) {
   return (
     <Card>
       <div className="flex items-center justify-between px-5">
         <h2 className="text-sm font-medium">{title}</h2>
-        <CategoryDialog defaultKind={kind} trigger={<button className="text-xs text-muted-foreground hover:text-foreground">+ Add</button>} />
+        <CategoryDialog
+          defaultKind={kind}
+          trigger={
+            <Button variant="outline" size="sm">
+              <Plus className="size-3.5" />
+              Add
+            </Button>
+          }
+        />
       </div>
       <div className="flex flex-col divide-y px-5">
-        {categories.map((category) => {
-          const row = (
-            <>
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span
-                  className="size-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: category.color }}
-                />
-                <span className="truncate text-sm">{category.name}</span>
-              </div>
-              {category.userId === userId && <CategoryActions category={category} />}
-            </>
-          );
-
-          return category.userId === userId ? (
-            <CategoryRow key={category.id} category={category}>
-              {row}
-            </CategoryRow>
-          ) : (
-            <div key={category.id} className="flex items-center justify-between py-2.5">
-              {row}
+        {categories.map((category) => (
+          <CategoryRow key={category.id} category={category}>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                className="size-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: category.color }}
+              />
+              <span className="truncate text-sm">{category.name}</span>
             </div>
-          );
-        })}
+            <CategoryActions category={category} />
+          </CategoryRow>
+        ))}
       </div>
     </Card>
   );
@@ -82,18 +79,8 @@ export default async function CategoriesPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <CategoryList
-          title="Expense categories"
-          kind="expense"
-          categories={expenseCategories}
-          userId={userId}
-        />
-        <CategoryList
-          title="Income categories"
-          kind="income"
-          categories={incomeCategories}
-          userId={userId}
-        />
+        <CategoryList title="Expense categories" kind="expense" categories={expenseCategories} />
+        <CategoryList title="Income categories" kind="income" categories={incomeCategories} />
       </div>
     </div>
   );

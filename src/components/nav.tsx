@@ -24,7 +24,13 @@ const NAV_ITEMS = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ];
 
-export function Nav({ collapsed }: { collapsed?: boolean }) {
+export function Nav({
+  collapsed,
+  onNavigate,
+}: {
+  collapsed?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
@@ -37,6 +43,7 @@ export function Nav({ collapsed }: { collapsed?: boolean }) {
             key={item.href}
             href={item.href}
             title={collapsed ? item.label : undefined}
+            onClick={onNavigate}
             className={cn(
               "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
               collapsed && "justify-center px-2",

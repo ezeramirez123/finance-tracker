@@ -11,7 +11,7 @@ import { CategoryDialog } from "@/components/categories/category-dialog";
 export function CategoryActions({
   category,
 }: {
-  category: { id: string; name: string; kind: "income" | "expense"; color: string };
+  category: { id: string; name: string; kind: "income" | "expense"; color: string; icon: string };
 }) {
   const [confirming, setConfirming] = React.useState(false);
 
@@ -26,7 +26,7 @@ export function CategoryActions({
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
       <CategoryDialog
         category={category}
         trigger={

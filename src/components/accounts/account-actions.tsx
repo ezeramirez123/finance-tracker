@@ -19,6 +19,7 @@ type AccountForActions = {
   id: string;
   name: string;
   icon: string;
+  color: string;
   type: "bank" | "cash" | "crypto" | "savings" | "credit" | "investment";
   currency: string;
   currentBalance: number;
@@ -30,21 +31,23 @@ export function IncludeInNetWorthToggle({ account }: { account: AccountForAction
   const [pending, startTransition] = React.useTransition();
 
   return (
-    <Switch
-      checked={checked}
-      disabled={pending}
-      onCheckedChange={(value) => {
-        setChecked(value);
-        startTransition(async () => {
-          try {
-            await toggleIncludeInNetWorth(account.id, value);
-          } catch {
-            setChecked(!value);
-            toast.error("Couldn't update account");
-          }
-        });
-      }}
-    />
+    <div onClick={(e) => e.stopPropagation()}>
+      <Switch
+        checked={checked}
+        disabled={pending}
+        onCheckedChange={(value) => {
+          setChecked(value);
+          startTransition(async () => {
+            try {
+              await toggleIncludeInNetWorth(account.id, value);
+            } catch {
+              setChecked(!value);
+              toast.error("Couldn't update account");
+            }
+          });
+        }}
+      />
+    </div>
   );
 }
 
@@ -62,46 +65,48 @@ export function AccountRowActions({ account }: { account: AccountForActions }) {
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <AccountDialog
-          account={account}
-          trigger={
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              <Pencil className="size-4" />
-              Edit
+    <div onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <AccountDialog
+            account={account}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Pencil className="size-4" />
+                Edit
+              </DropdownMenuItem>
+            }
+          />
+          {confirmOpen ? (
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+            >
+              <Trash2 className="size-4" />
+              Confirm delete
             </DropdownMenuItem>
-          }
-        />
-        {confirmOpen ? (
-          <DropdownMenuItem
-            variant="destructive"
-            onSelect={(e) => {
-              e.preventDefault();
-              handleDelete();
-            }}
-          >
-            <Trash2 className="size-4" />
-            Confirm delete
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem
-            variant="destructive"
-            onSelect={(e) => {
-              e.preventDefault();
-              setConfirmOpen(true);
-            }}
-          >
-            <Trash2 className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          ) : (
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={(e) => {
+                e.preventDefault();
+                setConfirmOpen(true);
+              }}
+            >
+              <Trash2 className="size-4" />
+              Delete
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

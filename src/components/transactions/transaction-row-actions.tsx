@@ -49,48 +49,50 @@ export function TransactionRowActions({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <TransactionDialog
-          transaction={transaction}
-          accounts={accounts}
-          categories={categories}
-          trigger={
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              <Pencil className="size-4" />
-              Edit
+    <div onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <TransactionDialog
+            transaction={transaction}
+            accounts={accounts}
+            categories={categories}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Pencil className="size-4" />
+                Edit
+              </DropdownMenuItem>
+            }
+          />
+          {confirming ? (
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+            >
+              <Trash2 className="size-4" />
+              Confirm delete
             </DropdownMenuItem>
-          }
-        />
-        {confirming ? (
-          <DropdownMenuItem
-            variant="destructive"
-            onSelect={(e) => {
-              e.preventDefault();
-              handleDelete();
-            }}
-          >
-            <Trash2 className="size-4" />
-            Confirm delete
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem
-            variant="destructive"
-            onSelect={(e) => {
-              e.preventDefault();
-              setConfirming(true);
-            }}
-          >
-            <Trash2 className="size-4" />
-            Delete
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          ) : (
+            <DropdownMenuItem
+              variant="destructive"
+              onSelect={(e) => {
+                e.preventDefault();
+                setConfirming(true);
+              }}
+            >
+              <Trash2 className="size-4" />
+              Delete
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

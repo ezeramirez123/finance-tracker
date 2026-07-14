@@ -52,6 +52,8 @@ export function TransactionDialog({
   categories,
   transaction,
   trigger,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
 }: {
   accounts: Account[];
   categories: Category[];
@@ -66,9 +68,14 @@ export function TransactionDialog({
     date: Date;
     notes: string | null;
   };
-  trigger?: React.ReactNode;
+  /** Pass `null` to render no trigger at all — useful when open state is fully controlled externally. */
+  trigger?: React.ReactNode | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChangeProp ?? setInternalOpen;
   const isEdit = !!transaction;
 
   const form = useForm<FormInput, unknown, FormValues>({
@@ -132,9 +139,11 @@ export function TransactionDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? <Button>Add transaction</Button>}
-      </DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>
+          {trigger ?? <Button>Add transaction</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit transaction" : "Add transaction"}</DialogTitle>
@@ -207,13 +216,15 @@ export function TransactionDialog({
                 value={form.watch("accountId")}
                 onValueChange={(v) => form.setValue("accountId", v)}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select account" />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue placeholder="Select account" className="min-w-0 truncate" />
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.icon} {a.name}
+                      <span className="truncate">
+                        {a.icon} {a.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -225,8 +236,8 @@ export function TransactionDialog({
                 value={form.watch("categoryId") ?? undefined}
                 onValueChange={(v) => form.setValue("categoryId", v)}
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
+                <SelectTrigger className="w-full min-w-0">
+                  <SelectValue placeholder="Select category" className="min-w-0 truncate" />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCategories.map((c) => (

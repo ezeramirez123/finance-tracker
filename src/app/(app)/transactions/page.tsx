@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
+import { TransactionRow } from "@/components/transactions/transaction-row";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
 import { formatMoney, formatUsd } from "@/lib/format";
 
@@ -66,14 +67,29 @@ export default async function TransactionsPage() {
             </TableHeader>
             <TableBody>
               {transactions.map((t) => (
-                <TableRow key={t.id}>
+                <TransactionRow
+                  key={t.id}
+                  transaction={{
+                    id: t.id,
+                    accountId: t.accountId,
+                    categoryId: t.categoryId,
+                    kind: t.kind,
+                    originalAmount: Number(t.originalAmount),
+                    originalCurrency: t.originalCurrency,
+                    merchant: t.merchant,
+                    date: t.date,
+                    notes: t.notes,
+                  }}
+                  accounts={accounts}
+                  categories={categories}
+                >
                   <TableCell className="text-muted-foreground">
                     {t.date.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}
                   </TableCell>
-                  <TableCell className="font-medium">
+                  <TableCell className="max-w-[200px] truncate font-medium">
                     {t.merchant || <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell>
@@ -91,7 +107,7 @@ export default async function TransactionsPage() {
                       <span className="text-muted-foreground">Uncategorized</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="max-w-[180px] truncate text-muted-foreground">
                     <span className="mr-1.5">{t.account.icon}</span>
                     {t.account.name}
                   </TableCell>
@@ -123,7 +139,7 @@ export default async function TransactionsPage() {
                       categories={categories}
                     />
                   </TableCell>
-                </TableRow>
+                </TransactionRow>
               ))}
             </TableBody>
           </Table>

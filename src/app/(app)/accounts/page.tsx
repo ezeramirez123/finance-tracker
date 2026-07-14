@@ -15,6 +15,8 @@ import {
   AccountRowActions,
   IncludeInNetWorthToggle,
 } from "@/components/accounts/account-actions";
+import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
+import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
 import { formatMoney } from "@/lib/format";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -42,7 +44,11 @@ export default async function AccountsPage() {
             Every place your money lives.
           </p>
         </div>
-        <AccountDialog />
+        <div className="flex items-center gap-2">
+          {accounts.some((a) => a.isConnected) && <SyncTransactionsButton />}
+          <ConnectBankButton />
+          <AccountDialog />
+        </div>
       </div>
 
       {accounts.length === 0 ? (
@@ -67,7 +73,17 @@ export default async function AccountsPage() {
             <TableBody>
               {accounts.map((account) => (
                 <TableRow key={account.id}>
-                  <TableCell className="font-medium">{account.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{account.icon}</span>
+                      {account.name}
+                      {account.isConnected && (
+                        <Badge variant="outline" className="text-xs">
+                          Connected
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{TYPE_LABELS[account.type]}</Badge>
                   </TableCell>

@@ -24,8 +24,30 @@ model User {
   financialAccounts FinancialAccount[]
   categories        Category[]
   transactions      Transaction[]
+  plaidItems        PlaidItem[]
+
+  mfaSecret  String?
+  mfaEnabled Boolean   @default(false)
+  passkeys   Passkey[]
 
   createdAt DateTime @default(now())
+}
+
+model Passkey {
+  id           String   @id @default(cuid())
+  userId       String
+  credentialId String   @unique
+  publicKey    Bytes
+  counter      Int      @default(0)
+  transports   String?
+  deviceType   String?
+  backedUp     Boolean  @default(false)
+  name         String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Account {
@@ -83,16 +105,37 @@ model FinancialAccount {
   id                String      @id @default(cuid())
   userId            String
   name              String
+  icon              String      @default("🏦")
   type              AccountType
   currency          String
   currentBalance    Decimal     @default(0) @db.Decimal(18, 4)
   includeInNetWorth Boolean     @default(true)
   isConnected       Boolean     @default(false)
+  plaidItemId       String?
+  plaidAccountId    String?     @unique
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plaidItem    PlaidItem?    @relation(fields: [plaidItemId], references: [id], onDelete: SetNull)
   transactions Transaction[]
+
+  @@index([userId])
+}
+
+// --- Plaid bank-linking (Auth.js models above are unrelated to this) ---
+
+model PlaidItem {
+  id                 String   @id @default(cuid())
+  userId             String
+  itemId             String   @unique
+  accessToken        String
+  institutionName    String?
+  transactionsCursor String?
+  createdAt          DateTime @default(now())
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accounts FinancialAccount[]
 
   @@index([userId])
 }
@@ -113,22 +156,23 @@ model Category {
 }
 
 model Transaction {
-  id                String          @id @default(cuid())
-  userId            String
-  accountId         String
-  categoryId        String?
-  kind              TransactionKind
-  originalAmount    Decimal         @db.Decimal(18, 4)
-  originalCurrency  String
-  exchangeRateToUsd Decimal         @db.Decimal(18, 8)
-  usdEquivalent     Decimal         @db.Decimal(18, 4)
-  merchant          String?
-  date              DateTime
-  notes             String?
-  source            String          @default("manual")
-  receiptUrl        String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                 String          @id @default(cuid())
+  userId             String
+  accountId          String
+  categoryId         String?
+  kind               TransactionKind
+  originalAmount     Decimal         @db.Decimal(18, 4)
+  originalCurrency   String
+  exchangeRateToUsd  Decimal         @db.Decimal(18, 8)
+  usdEquivalent      Decimal         @db.Decimal(18, 4)
+  merchant           String?
+  date               DateTime
+  notes              String?
+  source             String          @default("manual")
+  plaidTransactionId String?         @unique
+  receiptUrl         String?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
 
   user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   account  FinancialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)

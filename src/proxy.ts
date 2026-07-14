@@ -28,6 +28,6 @@ export default auth(async (req) => {
 
 export const config = {
   matcher: [
-    "/((?!api/auth|signin|mfa|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/auth|api/passkeys|signin|mfa|_next/static|_next/image|favicon.ico).*)",
   ],
 };

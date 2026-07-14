@@ -13,6 +13,7 @@ import { TransactionDialog } from "@/components/transactions/transaction-dialog"
 import { TransactionRow } from "@/components/transactions/transaction-row";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
 import { CategoryCombobox } from "@/components/transactions/category-combobox";
+import { CsvImportDialog } from "@/components/transactions/csv-import-dialog";
 import { formatMoney, formatUsd } from "@/lib/format";
 
 export default async function TransactionsPage() {
@@ -42,7 +43,10 @@ export default async function TransactionsPage() {
             Every expense and income entry, in one place.
           </p>
         </div>
-        <TransactionDialog accounts={accounts} categories={categories} />
+        <div className="flex items-center gap-2">
+          <CsvImportDialog accounts={accounts} />
+          <TransactionDialog accounts={accounts} categories={categories} />
+        </div>
       </div>
 
       {transactions.length === 0 ? (

@@ -20,6 +20,13 @@ const transactionSchema = z.object({
   notes: z.string().max(1000).optional().default(""),
 });
 
+const csvRowSchema = z.object({
+  date: z.coerce.date(),
+  merchant: z.string().max(120).optional().default(""),
+  amount: z.coerce.number().finite().refine((n) => n !== 0, "Amount can't be zero"),
+  category: z.string().optional(),
+});
+
 async function requireUserId() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -29,6 +36,7 @@ async function requireUserId() {
 }
 
 async function guessCategoryId(
+  client: typeof db | Prisma.TransactionClient,
   userId: string,
   kind: "income" | "expense",
   merchant: string
@@ -37,7 +45,7 @@ async function guessCategoryId(
   const name = guessCategoryName(merchant);
   if (!name) return null;
 
-  const matches = await db.category.findMany({
+  const matches = await client.category.findMany({
     where: { name, kind, OR: [{ userId }, { userId: null }] },
   });
   // Prefer the user's own category over the global default of the same name.
@@ -74,7 +82,7 @@ export async function createTransaction(input: z.infer<typeof transactionSchema>
   );
 
   const categoryId =
-    data.categoryId ?? (await guessCategoryId(userId, data.kind, data.merchant));
+    data.categoryId ?? (await guessCategoryId(db, userId, data.kind, data.merchant));
 
   await db.$transaction(async (tx) => {
     await tx.transaction.create({
@@ -188,4 +196,79 @@ export async function deleteTransaction(id: string) {
   revalidatePath("/dashboard");
   revalidatePath("/reports");
   revalidatePath("/accounts");
+}
+
+/**
+ * Bulk-imports CSV rows into one account. Amount sign determines kind
+ * (negative = expense, positive = income), matching common bank/Excel exports.
+ * A `category` name is matched if given; otherwise expenses are auto-categorized
+ * the same way Plaid imports are, and anything unmatched is left uncategorized.
+ */
+export async function importTransactions(
+  accountId: string,
+  rows: z.infer<typeof csvRowSchema>[]
+) {
+  const userId = await requireUserId();
+  const parsedRows = rows.map((row) => csvRowSchema.parse(row));
+
+  let imported = 0;
+  let categorized = 0;
+
+  await db.$transaction(async (tx) => {
+    const account = await tx.financialAccount.findUniqueOrThrow({
+      where: { id: accountId, userId },
+    });
+
+    for (const row of parsedRows) {
+      const kind: "income" | "expense" = row.amount < 0 ? "expense" : "income";
+      const amount = Math.abs(row.amount);
+      const { usdEquivalent, exchangeRateToUsd } = await convertToUsd(
+        amount,
+        account.currency,
+        row.date
+      );
+
+      let categoryId: string | null = null;
+      if (row.category) {
+        const match = await tx.category.findFirst({
+          where: {
+            name: { equals: row.category, mode: "insensitive" },
+            kind,
+            OR: [{ userId }, { userId: null }],
+          },
+        });
+        categoryId = match?.id ?? null;
+      }
+      if (!categoryId) {
+        categoryId = await guessCategoryId(tx, userId, kind, row.merchant);
+      }
+      if (categoryId) categorized++;
+
+      await tx.transaction.create({
+        data: {
+          userId,
+          accountId,
+          categoryId,
+          kind,
+          originalAmount: amount,
+          originalCurrency: account.currency,
+          exchangeRateToUsd,
+          usdEquivalent,
+          merchant: row.merchant || null,
+          date: row.date,
+          source: "csv",
+        },
+      });
+
+      await adjustAccountBalance(tx, accountId, kind, usdEquivalent, row.date, 1);
+      imported++;
+    }
+  });
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+  revalidatePath("/accounts");
+
+  return { imported, categorized };
 }

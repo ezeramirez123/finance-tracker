@@ -71,7 +71,13 @@ export default async function DashboardPage({
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatTile label="Income" value={summary.totalIncome} delta={incomeDelta} deltaGoodDirection="up" />
         <StatTile label="Expenses" value={summary.totalExpenses} delta={expenseDelta} deltaGoodDirection="down" />
-        <StatTile label="Net" value={summary.net} delta={netDelta} deltaGoodDirection="up" />
+        <StatTile
+          label="Net"
+          value={summary.net}
+          delta={netDelta}
+          deltaGoodDirection="up"
+          className="col-span-2 lg:col-span-1"
+        />
       </div>
 
       <WeekCalendarStrip days={currentWeekDays} weekOffset={weekOffset} />

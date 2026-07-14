@@ -9,22 +9,24 @@ export function StatTile({
   value,
   delta,
   deltaGoodDirection = "up",
+  className,
 }: {
   label: string;
   value: number;
   delta?: number | null;
   /** which direction of change should read as "good" (green) for this metric */
   deltaGoodDirection?: "up" | "down";
+  className?: string;
 }) {
   const hasDelta = delta !== undefined && delta !== null && Number.isFinite(delta);
   const isUp = hasDelta && delta! > 0;
   const isGood = hasDelta && (deltaGoodDirection === "up" ? isUp : !isUp);
 
   return (
-    <Card className="gap-3">
+    <Card className={cn("gap-1.5", className)}>
       <p className="px-5 text-sm font-medium text-muted-foreground">{label}</p>
-      <div className="flex items-baseline justify-between px-5">
-        <p className="text-3xl font-semibold tracking-tight">{formatUsd(value)}</p>
+      <div className="flex flex-col gap-1 px-5">
+        <p className="text-2xl font-semibold tracking-tight">{formatUsd(value)}</p>
         {hasDelta && delta !== 0 && (
           <span
             className={cn(

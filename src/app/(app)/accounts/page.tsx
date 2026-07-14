@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getAccountBalanceHistorySeries } from "@/lib/dashboard-data";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/components/accounts/account-actions";
 import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
+import { AccountBalanceHistoryChart } from "@/components/accounts/account-balance-history-chart";
 import { formatMoney } from "@/lib/format";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -31,10 +33,15 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default async function AccountsPage() {
   const session = await auth();
-  const accounts = await db.financialAccount.findMany({
-    where: { userId: session!.user.id },
-    orderBy: { createdAt: "asc" },
-  });
+  const userId = session!.user.id;
+
+  const [accounts, balanceHistory] = await Promise.all([
+    db.financialAccount.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+    }),
+    getAccountBalanceHistorySeries(userId),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,6 +58,11 @@ export default async function AccountsPage() {
           <AccountDialog />
         </div>
       </div>
+
+      <AccountBalanceHistoryChart
+        accounts={balanceHistory.accounts}
+        series={balanceHistory.series}
+      />
 
       {accounts.length === 0 ? (
         <Card className="items-center justify-center py-16 text-center">

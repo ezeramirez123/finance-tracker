@@ -12,13 +12,11 @@ const STORAGE_KEY = "hideBalances";
 function BalanceCard({
   label,
   value,
-  hint,
   hidden,
   onToggle,
 }: {
   label: string;
   value: number;
-  hint: string;
   hidden: boolean;
   onToggle: () => void;
 }) {
@@ -33,7 +31,6 @@ function BalanceCard({
       <p className="px-5 text-2xl font-semibold tracking-tight">
         {hidden ? "••••••" : formatUsd(value)}
       </p>
-      <p className="px-5 text-xs text-muted-foreground">{hint}</p>
     </Card>
   );
 }
@@ -64,17 +61,10 @@ export function BalancesOverview({
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <BalanceCard
-        label="Net worth"
-        value={netWorth}
-        hint='Accounts marked "include in net worth"'
-        hidden={hidden}
-        onToggle={toggle}
-      />
+      <BalanceCard label="Net worth" value={netWorth} hidden={hidden} onToggle={toggle} />
       <BalanceCard
         label="Total across all accounts"
         value={totalBalance}
-        hint="Every account, regardless of net worth setting"
         hidden={hidden}
         onToggle={toggle}
       />

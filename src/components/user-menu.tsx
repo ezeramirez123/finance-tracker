@@ -1,6 +1,7 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { LogOut, ShieldCheck } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -36,6 +37,12 @@ export function UserMenu({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
+        <DropdownMenuItem asChild>
+          <Link href="/mfa/manage">
+            <ShieldCheck className="size-4" />
+            Two-factor authentication
+          </Link>
+        </DropdownMenuItem>
         <form action={signOutAction}>
           <DropdownMenuItem asChild variant="destructive">
             <button type="submit" className="w-full">

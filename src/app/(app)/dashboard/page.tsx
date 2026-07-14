@@ -5,6 +5,7 @@ import {
   getPeriodSummary,
   getTotalBalance,
   getWeeklySpending,
+  getWeekDailyTotals,
 } from "@/lib/dashboard-data";
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
@@ -12,8 +13,8 @@ import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeeklySpendingCollapsible } from "@/components/dashboard/weekly-spending-collapsible";
-import { Card } from "@/components/ui/card";
-import { formatUsd } from "@/lib/format";
+import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
+import { BalancesOverview } from "@/components/dashboard/balances-overview";
 
 function percentDelta(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null;
@@ -23,7 +24,7 @@ function percentDelta(current: number, previous: number): number | null {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ period?: string; from?: string; to?: string; weekOffset?: string }>;
 }) {
   const params = await searchParams;
   const session = await auth();
@@ -37,14 +38,17 @@ export default async function DashboardPage({
       : undefined
   );
   const previousRange = getPreviousRange(range);
+  const weekOffset = Math.min(0, parseInt(params.weekOffset ?? "0", 10) || 0);
 
-  const [summary, previousSummary, netWorth, totalBalance, weeklySpending] = await Promise.all([
-    getPeriodSummary(userId, range),
-    getPeriodSummary(userId, previousRange),
-    getNetWorth(userId),
-    getTotalBalance(userId),
-    getWeeklySpending(userId),
-  ]);
+  const [summary, previousSummary, netWorth, totalBalance, weeklySpending, currentWeekDays] =
+    await Promise.all([
+      getPeriodSummary(userId, range),
+      getPeriodSummary(userId, previousRange),
+      getNetWorth(userId),
+      getTotalBalance(userId),
+      getWeeklySpending(userId),
+      getWeekDailyTotals(userId, weekOffset),
+    ]);
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
   const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
@@ -68,28 +72,9 @@ export default async function DashboardPage({
         <StatTile label="Net" value={summary.net} delta={netDelta} deltaGoodDirection="up" />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Card className="gap-1.5">
-          <p className="px-5 text-sm font-medium text-muted-foreground">Net worth</p>
-          <p className="px-5 text-2xl font-semibold tracking-tight">
-            {formatUsd(netWorth)}
-          </p>
-          <p className="px-5 text-xs text-muted-foreground">
-            Accounts marked &quot;include in net worth&quot;
-          </p>
-        </Card>
-        <Card className="gap-1.5">
-          <p className="px-5 text-sm font-medium text-muted-foreground">
-            Total across all accounts
-          </p>
-          <p className="px-5 text-2xl font-semibold tracking-tight">
-            {formatUsd(totalBalance)}
-          </p>
-          <p className="px-5 text-xs text-muted-foreground">
-            Every account, regardless of net worth setting
-          </p>
-        </Card>
-      </div>
+      <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
+
+      <WeekCalendarStrip days={currentWeekDays} weekOffset={weekOffset} />
 
       <DailyTrendChart data={summary.dailyTrend} />
 

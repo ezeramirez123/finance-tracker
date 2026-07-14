@@ -281,3 +281,33 @@ export async function getAccountBalanceHistorySeries(userId: string, days = 90) 
     series,
   };
 }
+
+/** Income/expense totals for each of the 7 days (Mon-Sun) in the week `weekOffset` weeks from now. */
+export async function getWeekDailyTotals(userId: string, weekOffset = 0) {
+  const base = weekOffset === 0 ? new Date() : addWeeks(new Date(), weekOffset);
+  const range = {
+    from: startOfWeek(base, { weekStartsOn: 1 }),
+    to: endOfWeek(base, { weekStartsOn: 1 }),
+  };
+  const days = eachDayOfInterval({ start: range.from, end: range.to });
+
+  const transactions = await db.transaction.findMany({
+    where: { userId, date: { gte: range.from, lte: range.to } },
+    select: { date: true, kind: true, usdEquivalent: true },
+  });
+
+  return days.map((day) => {
+    const dayStart = startOfDay(day);
+    const dayEnd = endOfDay(day);
+    const dayTxns = transactions.filter((t) => t.date >= dayStart && t.date <= dayEnd);
+    return {
+      date: dayStart.toISOString(),
+      income: dayTxns
+        .filter((t) => t.kind === "income")
+        .reduce((sum, t) => sum + Number(t.usdEquivalent), 0),
+      expense: dayTxns
+        .filter((t) => t.kind === "expense")
+        .reduce((sum, t) => sum + Number(t.usdEquivalent), 0),
+    };
+  });
+}

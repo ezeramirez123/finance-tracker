@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -16,8 +17,19 @@ type WeekSpending = { from: string; to: string; total: number };
 
 export function WeeklySpendingCollapsible({ weeks }: { weeks: WeekSpending[] }) {
   const [open, setOpen] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
   const mostRecentFirst = [...weeks].reverse();
   const max = Math.max(...weeks.map((w) => w.total), 0.01);
+  const total = weeks.reduce((sum, w) => sum + w.total, 0);
+
+  function goToWeek(week: WeekSpending) {
+    const params = new URLSearchParams();
+    params.set("period", "custom");
+    params.set("from", week.from.slice(0, 10));
+    params.set("to", week.to.slice(0, 10));
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   return (
     <Card className="gap-0 py-0">
@@ -26,16 +38,24 @@ export function WeeklySpendingCollapsible({ weeks }: { weeks: WeekSpending[] }) 
           <span className="text-sm font-medium text-muted-foreground">
             Weekly spending (past month)
           </span>
-          <ChevronDown
-            className={`size-4 shrink-0 text-muted-foreground transition-transform ${
-              open ? "rotate-180" : ""
-            }`}
-          />
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold tabular-nums">{formatUsd(total)}</span>
+            <ChevronDown
+              className={`size-4 shrink-0 text-muted-foreground transition-transform ${
+                open ? "rotate-180" : ""
+              }`}
+            />
+          </div>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="flex flex-col gap-3 pb-5">
             {mostRecentFirst.map((week) => (
-              <div key={week.from} className="flex flex-col gap-1">
+              <button
+                key={week.from}
+                type="button"
+                onClick={() => goToWeek(week)}
+                className="flex flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-accent/50"
+              >
                 <div className="flex items-center justify-between text-sm">
                   <span>
                     {format(parseISO(week.from), "MMM d")} –{" "}
@@ -51,7 +71,7 @@ export function WeeklySpendingCollapsible({ weeks }: { weeks: WeekSpending[] }) 
                     style={{ width: `${Math.max((week.total / max) * 100, 3)}%` }}
                   />
                 </div>
-              </div>
+              </button>
             ))}
           </CardContent>
         </CollapsibleContent>

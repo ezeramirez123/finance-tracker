@@ -24,7 +24,7 @@ const NAV_ITEMS = [
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ];
 
-export function Nav() {
+export function Nav({ collapsed }: { collapsed?: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -36,15 +36,17 @@ export function Nav() {
           <Link
             key={item.href}
             href={item.href}
+            title={collapsed ? item.label : undefined}
             className={cn(
               "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              collapsed && "justify-center px-2",
               active
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
             )}
           >
-            <Icon className="size-4" />
-            {item.label}
+            <Icon className="size-4 shrink-0" />
+            {!collapsed && item.label}
           </Link>
         );
       })}

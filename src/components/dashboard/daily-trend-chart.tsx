@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useRouter, usePathname } from "next/navigation";
 import { format, parseISO } from "date-fns";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -52,6 +53,17 @@ function CustomTooltip({
 }
 
 export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  function goToDay(date: string) {
+    const params = new URLSearchParams();
+    params.set("period", "custom");
+    params.set("from", date);
+    params.set("to", date);
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -64,7 +76,15 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} barGap={2} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+            <BarChart
+              data={data}
+              barGap={2}
+              margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
+              onClick={(state) => {
+                if (state?.activeLabel != null) goToDay(String(state.activeLabel));
+              }}
+              className="cursor-pointer"
+            >
               <CartesianGrid
                 vertical={false}
                 stroke="var(--chart-grid)"

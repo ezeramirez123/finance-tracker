@@ -99,6 +99,7 @@ enum AccountType {
 enum TransactionKind {
   income
   expense
+  transfer
 }
 
 model FinancialAccount {
@@ -162,6 +163,8 @@ model Transaction {
   accountId          String
   categoryId         String?
   kind               TransactionKind
+  // "in" | "out" — only set when kind is "transfer"; income/expense sign is implied by kind alone.
+  transferDirection  String?
   originalAmount     Decimal         @db.Decimal(18, 4)
   originalCurrency   String
   exchangeRateToUsd  Decimal         @db.Decimal(18, 8)

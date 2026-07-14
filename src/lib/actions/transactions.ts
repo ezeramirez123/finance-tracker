@@ -27,6 +27,14 @@ const csvRowSchema = z.object({
   category: z.string().optional(),
 });
 
+const transferSchema = z.object({
+  fromAccountId: z.string().min(1),
+  toAccountId: z.string().min(1),
+  amount: z.coerce.number().positive("Amount must be greater than 0"),
+  date: z.coerce.date(),
+  notes: z.string().max(1000).optional().default(""),
+});
+
 async function requireUserId() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -50,6 +58,18 @@ async function guessCategoryId(
   });
   // Prefer the user's own category over the global default of the same name.
   return matches.find((c) => c.userId === userId)?.id ?? matches[0]?.id ?? null;
+}
+
+/** Maps a stored transaction to the "income"/"expense"-equivalent sign of its balance
+ * effect. Income/expense map straight through; a transfer's sign depends on which leg
+ * it is (transferDirection), since "transfer" alone doesn't say which way money moved. */
+function balanceKindFor(t: {
+  kind: string;
+  transferDirection: string | null;
+}): "income" | "expense" {
+  if (t.kind === "income") return "income";
+  if (t.kind === "expense") return "expense";
+  return t.transferDirection === "in" ? "income" : "expense";
 }
 
 /** Nudges a account's stored balance by a transaction's effect (or its reverse, when undoing one). */
@@ -126,12 +146,15 @@ export async function updateTransaction(
 
   await db.$transaction(async (tx) => {
     const existing = await tx.transaction.findUniqueOrThrow({ where: { id, userId } });
+    if (existing.kind === "transfer") {
+      throw new Error("Transfers can't be edited — delete it and create a new one instead");
+    }
 
     // Undo the old transaction's effect on its (possibly different) account, then apply the new one.
     await adjustAccountBalance(
       tx,
       existing.accountId,
-      existing.kind,
+      balanceKindFor(existing),
       Number(existing.usdEquivalent),
       existing.date,
       -1
@@ -183,7 +206,7 @@ export async function deleteTransaction(id: string) {
     await adjustAccountBalance(
       tx,
       existing.accountId,
-      existing.kind,
+      balanceKindFor(existing),
       Number(existing.usdEquivalent),
       existing.date,
       -1
@@ -271,4 +294,86 @@ export async function importTransactions(
   revalidatePath("/accounts");
 
   return { imported, categorized };
+}
+
+/**
+ * Moves money between two of the user's own accounts as a linked pair of "transfer"
+ * transactions — one leaving the source account, one arriving in the destination
+ * account. Neither counts as income or an expense anywhere in reports/dashboards.
+ */
+export async function createTransfer(input: z.infer<typeof transferSchema>) {
+  const userId = await requireUserId();
+  const data = transferSchema.parse(input);
+
+  if (data.fromAccountId === data.toAccountId) {
+    throw new Error("Choose two different accounts");
+  }
+
+  const transferCategory = await db.category.findFirst({
+    where: { name: "Transfer", kind: "transfer", OR: [{ userId }, { userId: null }] },
+  });
+
+  await db.$transaction(async (tx) => {
+    const fromAccount = await tx.financialAccount.findUniqueOrThrow({
+      where: { id: data.fromAccountId, userId },
+    });
+    const toAccount = await tx.financialAccount.findUniqueOrThrow({
+      where: { id: data.toAccountId, userId },
+    });
+
+    const { usdEquivalent, exchangeRateToUsd: fromRate } = await convertToUsd(
+      data.amount,
+      fromAccount.currency,
+      data.date
+    );
+    const toAmount = await convertFromUsd(usdEquivalent, toAccount.currency, data.date);
+    const { exchangeRateToUsd: toRate } = await convertToUsd(
+      toAmount,
+      toAccount.currency,
+      data.date
+    );
+
+    await tx.transaction.create({
+      data: {
+        userId,
+        accountId: data.fromAccountId,
+        categoryId: transferCategory?.id ?? null,
+        kind: "transfer",
+        transferDirection: "out",
+        originalAmount: data.amount,
+        originalCurrency: fromAccount.currency,
+        exchangeRateToUsd: fromRate,
+        usdEquivalent,
+        merchant: `Transfer to ${toAccount.icon} ${toAccount.name}`,
+        date: data.date,
+        notes: data.notes || null,
+        source: "manual",
+      },
+    });
+    await adjustAccountBalance(tx, data.fromAccountId, "expense", usdEquivalent, data.date, 1);
+
+    await tx.transaction.create({
+      data: {
+        userId,
+        accountId: data.toAccountId,
+        categoryId: transferCategory?.id ?? null,
+        kind: "transfer",
+        transferDirection: "in",
+        originalAmount: toAmount,
+        originalCurrency: toAccount.currency,
+        exchangeRateToUsd: toRate,
+        usdEquivalent,
+        merchant: `Transfer from ${fromAccount.icon} ${fromAccount.name}`,
+        date: data.date,
+        notes: data.notes || null,
+        source: "manual",
+      },
+    });
+    await adjustAccountBalance(tx, data.toAccountId, "income", usdEquivalent, data.date, 1);
+  });
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+  revalidatePath("/accounts");
 }

@@ -62,12 +62,16 @@ export default async function CategoriesPage() {
   const userId = session!.user.id;
 
   const categories = await db.category.findMany({
-    where: { OR: [{ userId }, { userId: null }] },
+    where: { OR: [{ userId }, { userId: null }], kind: { not: "transfer" } },
     orderBy: { name: "asc" },
   });
 
-  const expenseCategories = categories.filter((c) => c.kind === "expense");
-  const incomeCategories = categories.filter((c) => c.kind === "income");
+  const expenseCategories = categories.filter(
+    (c): c is typeof c & { kind: "expense" } => c.kind === "expense"
+  );
+  const incomeCategories = categories.filter(
+    (c): c is typeof c & { kind: "income" } => c.kind === "income"
+  );
 
   return (
     <div className="flex flex-col gap-6">

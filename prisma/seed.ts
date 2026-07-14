@@ -26,9 +26,11 @@ const INCOME_CATEGORIES = [
   { name: "Other", color: "#6b7280" },
 ];
 
+const TRANSFER_CATEGORIES = [{ name: "Transfer", color: "#64748b" }];
+
 async function seedDefault(
   category: { name: string; color: string },
-  kind: "expense" | "income"
+  kind: "expense" | "income" | "transfer"
 ) {
   const existing = await db.category.findFirst({
     where: { name: category.name, userId: null, kind },
@@ -45,6 +47,10 @@ async function main() {
 
   for (const category of INCOME_CATEGORIES) {
     await seedDefault(category, "income");
+  }
+
+  for (const category of TRANSFER_CATEGORIES) {
+    await seedDefault(category, "transfer");
   }
 
   console.log("Seeded default categories.");

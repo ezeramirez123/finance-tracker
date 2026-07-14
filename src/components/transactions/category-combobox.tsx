@@ -18,7 +18,12 @@ import {
   CommandList,
 } from "@/components/ui/command";
 
-type Category = { id: string; name: string; color: string; kind: "income" | "expense" };
+type Category = {
+  id: string;
+  name: string;
+  color: string;
+  kind: "income" | "expense" | "transfer";
+};
 
 export function CategoryCombobox({
   transactionId,
@@ -29,7 +34,7 @@ export function CategoryCombobox({
   transactionId: string;
   categoryId: string | null;
   categories: Category[];
-  kind: "income" | "expense";
+  kind: "income" | "expense" | "transfer";
 }) {
   const [open, setOpen] = React.useState(false);
   const [selected, setSelected] = React.useState(categoryId);

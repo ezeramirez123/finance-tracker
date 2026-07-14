@@ -14,6 +14,7 @@ import { TransactionRow } from "@/components/transactions/transaction-row";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
 import { CategoryCombobox } from "@/components/transactions/category-combobox";
 import { CsvImportDialog } from "@/components/transactions/csv-import-dialog";
+import { TransferDialog } from "@/components/transactions/transfer-dialog";
 import { formatMoney, formatUsd } from "@/lib/format";
 
 export default async function TransactionsPage() {
@@ -45,6 +46,7 @@ export default async function TransactionsPage() {
         </div>
         <div className="flex items-center gap-2">
           <CsvImportDialog accounts={accounts} />
+          <TransferDialog accounts={accounts} />
           <TransactionDialog accounts={accounts} categories={categories} />
         </div>
       </div>
@@ -110,10 +112,14 @@ export default async function TransactionsPage() {
                   </TableCell>
                   <TableCell
                     className={`text-right tabular-nums ${
-                      t.kind === "income" ? "text-emerald-500" : ""
+                      t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
+                        ? "text-emerald-500"
+                        : ""
                     }`}
                   >
-                    {t.kind === "income" ? "+" : "-"}
+                    {t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
+                      ? "+"
+                      : "-"}
                     {formatMoney(Number(t.originalAmount), t.originalCurrency)}
                   </TableCell>
                   <TableCell className="text-right tabular-nums text-muted-foreground">

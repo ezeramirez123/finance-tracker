@@ -5,11 +5,18 @@ type TransactionLike = {
   id: string;
   merchant: string | null;
   date: Date;
-  kind: "income" | "expense";
+  kind: "income" | "expense" | "transfer";
+  transferDirection?: string | null;
   originalAmount: number | { toString(): string };
   originalCurrency: string;
   category: { name: string; color: string } | null;
 };
+
+function isCredit(t: Pick<TransactionLike, "kind" | "transferDirection">): boolean {
+  if (t.kind === "income") return true;
+  if (t.kind === "expense") return false;
+  return t.transferDirection === "in";
+}
 
 export function TransactionListCard({
   title,
@@ -48,10 +55,10 @@ export function TransactionListCard({
                 </div>
                 <span
                   className={`text-sm font-medium tabular-nums ${
-                    t.kind === "income" ? "text-chart-good" : ""
+                    isCredit(t) ? "text-chart-good" : ""
                   }`}
                 >
-                  {t.kind === "income" ? "+" : "-"}
+                  {isCredit(t) ? "+" : "-"}
                   {formatMoney(Number(t.originalAmount), t.originalCurrency)}
                 </span>
               </div>

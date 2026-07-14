@@ -32,7 +32,10 @@ import {
 } from "@/components/ui/select";
 
 type Account = { id: string; name: string; icon: string; currency: string };
-type Category = { id: string; name: string; kind: "income" | "expense"; color: string };
+// Accepts the full app-wide category list (which can include the "transfer" kind)
+// for type compatibility with callers — the form itself only ever filters to
+// "income"/"expense", so a transfer category is never actually selectable here.
+type Category = { id: string; name: string; kind: "income" | "expense" | "transfer"; color: string };
 
 const formSchema = z.object({
   accountId: z.string().min(1, "Choose an account"),

@@ -13,6 +13,23 @@ import {
   eachDayOfInterval,
 } from "date-fns";
 
+/**
+ * Signed effect (in USD) a transaction has on its own account's balance.
+ * Income and expense are unambiguous; a transfer's sign depends on which
+ * leg it is (transferDirection), since the same "transfer" kind covers both
+ * money leaving the source account and arriving in the destination account.
+ */
+function signedBalanceImpact(t: {
+  kind: string;
+  transferDirection: string | null;
+  usdEquivalent: unknown;
+}): number {
+  const usd = Number(t.usdEquivalent);
+  if (t.kind === "income") return usd;
+  if (t.kind === "expense") return -usd;
+  return t.transferDirection === "in" ? usd : -usd;
+}
+
 export async function getNetWorth(userId: string) {
   const accounts = await db.financialAccount.findMany({
     where: { userId, includeInNetWorth: true },
@@ -75,7 +92,7 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
         entry.total += usd;
         incomeByCategory.set(t.category.id, entry);
       }
-    } else {
+    } else if (t.kind === "expense") {
       totalExpenses += usd;
       dayEntry.expense += usd;
       if (t.category) {
@@ -88,6 +105,8 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
         spendingByCategory.set(t.category.id, entry);
       }
     }
+    // transfers move money between the user's own accounts — they're neither
+    // income nor an expense, so they're excluded from every total/breakdown above.
 
     dailyTotals.set(day, dayEntry);
   }
@@ -246,16 +265,12 @@ export async function getAccountBalanceHistorySeries(userId: string, days = 90) 
         account.currency
       );
 
-      const totalImpact = transactions.reduce(
-        (sum, t) =>
-          sum + (t.kind === "income" ? Number(t.usdEquivalent) : -Number(t.usdEquivalent)),
-        0
-      );
+      const totalImpact = transactions.reduce((sum, t) => sum + signedBalanceImpact(t), 0);
 
       let running = currentBalanceUsd - totalImpact;
       const points: { date: Date; balance: number }[] = [{ date: since, balance: running }];
       for (const t of transactions) {
-        running += t.kind === "income" ? Number(t.usdEquivalent) : -Number(t.usdEquivalent);
+        running += signedBalanceImpact(t);
         points.push({ date: t.date, balance: running });
       }
       points.push({ date: now, balance: currentBalanceUsd });

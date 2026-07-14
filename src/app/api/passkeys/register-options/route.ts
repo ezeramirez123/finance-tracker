@@ -32,8 +32,10 @@ export async function POST(request: Request) {
         : undefined,
     })),
     authenticatorSelection: {
-      residentKey: "preferred",
-      userVerification: "preferred",
+      // Required (not "preferred") so the credential is discoverable — needed for
+      // passwordless sign-in, where the passkey itself must identify the user.
+      residentKey: "required",
+      userVerification: "required",
     },
   });
 

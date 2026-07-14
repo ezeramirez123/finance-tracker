@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { auth, signIn } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
+import { PasskeySigninButton } from "@/components/passkey-signin-button";
 
 export default async function SignInPage() {
   const session = await auth();
@@ -17,16 +18,24 @@ export default async function SignInPage() {
           Know where your money goes.
         </p>
       </div>
-      <form
-        action={async () => {
-          "use server";
-          await signIn("google", { redirectTo: "/dashboard" });
-        }}
-      >
-        <Button type="submit" size="lg">
-          Sign in with Google
-        </Button>
-      </form>
+      <div className="flex w-full max-w-xs flex-col gap-3">
+        <PasskeySigninButton />
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="h-px flex-1 bg-border" />
+          or
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <form
+          action={async () => {
+            "use server";
+            await signIn("google", { redirectTo: "/dashboard" });
+          }}
+        >
+          <Button type="submit" size="lg" className="w-full">
+            Sign in with Google
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/select";
 
 type Account = { id: string; name: string; icon: string; currency: string };
-type Category = { id: string; name: string; kind: "income" | "expense" };
+type Category = { id: string; name: string; kind: "income" | "expense"; color: string };
 
 const formSchema = z.object({
   accountId: z.string().min(1, "Choose an account"),
@@ -223,7 +223,10 @@ export function TransactionDialog({
                 onValueChange={(v) => form.setValue("accountId", v)}
               >
                 <SelectTrigger className="w-full min-w-0">
-                  <SelectValue placeholder="Select account" className="min-w-0 truncate" />
+                  <SelectValue
+                    placeholder="Select account"
+                    className="block min-w-0 flex-1 truncate text-left"
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map((a) => (
@@ -243,12 +246,21 @@ export function TransactionDialog({
                 onValueChange={(v) => form.setValue("categoryId", v)}
               >
                 <SelectTrigger className="w-full min-w-0">
-                  <SelectValue placeholder="Select category" className="min-w-0 truncate" />
+                  <SelectValue
+                    placeholder="Select category"
+                    className="block min-w-0 flex-1 truncate text-left"
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCategories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
-                      {c.name}
+                      <span className="flex min-w-0 items-center gap-2 truncate">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: c.color }}
+                        />
+                        {c.name}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

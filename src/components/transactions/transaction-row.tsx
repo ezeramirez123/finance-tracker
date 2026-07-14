@@ -6,7 +6,7 @@ import { TableRow } from "@/components/ui/table";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 
 type Account = { id: string; name: string; icon: string; currency: string };
-type Category = { id: string; name: string; kind: "income" | "expense" };
+type Category = { id: string; name: string; kind: "income" | "expense"; color: string };
 
 export function TransactionRow({
   transaction,

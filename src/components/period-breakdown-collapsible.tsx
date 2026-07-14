@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/collapsible";
 import { formatUsd } from "@/lib/format";
 
-type Bucket = { label: string; total: number };
+type Bucket = { label: string; total: number; from: string; to: string };
 
 export function PeriodBreakdownCollapsible({
   title,
@@ -23,7 +24,17 @@ export function PeriodBreakdownCollapsible({
   barColorVar: "--chart-good" | "--chart-critical";
 }) {
   const [open, setOpen] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
   const max = Math.max(...buckets.map((b) => b.total), 0.01);
+
+  function goToBucket(bucket: Bucket) {
+    const params = new URLSearchParams();
+    params.set("period", "custom");
+    params.set("from", bucket.from.slice(0, 10));
+    params.set("to", bucket.to.slice(0, 10));
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   return (
     <Card className="gap-0 py-0">
@@ -39,7 +50,12 @@ export function PeriodBreakdownCollapsible({
         <CollapsibleContent>
           <CardContent className="flex flex-col gap-3 pb-5">
             {buckets.map((b) => (
-              <div key={b.label} className="flex flex-col gap-1">
+              <button
+                key={b.label}
+                type="button"
+                onClick={() => goToBucket(b)}
+                className="flex flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-accent/50"
+              >
                 <div className="flex items-center justify-between text-sm">
                   <span>{b.label}</span>
                   <span className="font-medium tabular-nums">{formatUsd(b.total)}</span>
@@ -53,7 +69,7 @@ export function PeriodBreakdownCollapsible({
                     }}
                   />
                 </div>
-              </div>
+              </button>
             ))}
           </CardContent>
         </CollapsibleContent>

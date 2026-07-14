@@ -62,17 +62,18 @@ export function CategoryCombobox({
             role="combobox"
             aria-expanded={open}
             disabled={pending}
-            className="h-auto justify-start gap-1.5 px-2 py-1 font-normal"
+            className="h-auto w-40 justify-between gap-1.5 px-2 py-1 font-normal"
           >
             {current ? (
               <Badge
                 variant="secondary"
+                className="min-w-0 max-w-full"
                 style={{ backgroundColor: `${current.color}20`, color: current.color }}
               >
-                {current.name}
+                <span className="truncate">{current.name}</span>
               </Badge>
             ) : (
-              <span className="text-muted-foreground">Uncategorized</span>
+              <span className="min-w-0 truncate text-muted-foreground">Uncategorized</span>
             )}
             <ChevronsUpDown className="size-3 shrink-0 text-muted-foreground" />
           </Button>

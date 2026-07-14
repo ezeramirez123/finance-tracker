@@ -16,29 +16,41 @@ import { TransactionListCard } from "@/components/dashboard/transaction-list-car
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
 
-const TAB_TO_PERIOD = { day: "today", week: "week", month: "month" } as const;
+const TAB_TO_PERIOD = { day: "today", week: "week", month: "month", year: "year" } as const;
+
+const TAB_OPTIONS = [
+  { value: "day", label: "Day" },
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+  { value: "year", label: "Year" },
+] as const;
 
 export default async function IncomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string }>;
+  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
 }) {
   const params = await searchParams;
   const session = await auth();
   const userId = session!.user.id;
 
-  const tab = (params.period as keyof typeof TAB_TO_PERIOD) in TAB_TO_PERIOD
+  const isCustom = params.period === "custom" && !!params.from && !!params.to;
+  const tab = !isCustom && (params.period as keyof typeof TAB_TO_PERIOD) in TAB_TO_PERIOD
     ? (params.period as keyof typeof TAB_TO_PERIOD)
     : "week";
-  const range = getDateRange(TAB_TO_PERIOD[tab]);
+  const range = isCustom
+    ? getDateRange("custom", { from: new Date(params.from!), to: new Date(params.to!) })
+    : getDateRange(TAB_TO_PERIOD[tab]);
 
   const [summary, incomeTransactions] = await Promise.all([
     getPeriodSummary(userId, range),
     getIncomeTransactions(userId, range),
   ]);
 
-  const dailyBreakdown = tab === "week" ? await getDailyBreakdown(userId, range, "income") : null;
-  const weeklyBreakdown = tab === "month" ? await getWeeklyBreakdown(userId, range, "income") : null;
+  const dailyBreakdown =
+    !isCustom && tab === "week" ? await getDailyBreakdown(userId, range, "income") : null;
+  const weeklyBreakdown =
+    !isCustom && tab === "month" ? await getWeeklyBreakdown(userId, range, "income") : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,7 +61,7 @@ export default async function IncomePage({
             Just the money coming in.
           </p>
         </div>
-        <PeriodTabs period={tab} />
+        <PeriodTabs period={isCustom ? "" : tab} options={TAB_OPTIONS} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -69,6 +81,8 @@ export default async function IncomePage({
           buckets={dailyBreakdown.map((d) => ({
             label: format(parseISO(d.date), "EEE, MMM d"),
             total: d.total,
+            from: d.date,
+            to: d.date,
           }))}
         />
       )}
@@ -80,6 +94,8 @@ export default async function IncomePage({
           buckets={weeklyBreakdown.map((w) => ({
             label: `${format(parseISO(w.from), "MMM d")} – ${format(parseISO(w.to), "MMM d")}`,
             total: w.total,
+            from: w.from,
+            to: w.to,
           }))}
         />
       )}

@@ -18,7 +18,7 @@ export default async function AppLayout({
     <div className="flex min-h-full flex-1">
       <aside className="flex w-60 shrink-0 flex-col border-r px-3 py-4">
         <div className="px-2 pb-4 text-sm font-semibold tracking-tight">
-          Finance Tracker
+          Semanal
         </div>
         <div className="flex-1">
           <Nav />

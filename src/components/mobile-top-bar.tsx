@@ -24,8 +24,7 @@ export function MobileTopBar({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between border-b bg-background px-4 py-3 md:hidden">
-      <span className="text-lg font-bold tracking-tight">Semanal</span>
+    <header className="sticky top-0 z-40 flex items-center gap-3 border-b bg-background px-4 py-3 md:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="Open menu">
@@ -44,6 +43,7 @@ export function MobileTopBar({
           <UserMenu name={name} email={email} />
         </SheetContent>
       </Sheet>
+      <span className="text-lg font-bold tracking-tight">Semanal</span>
     </header>
   );
 }

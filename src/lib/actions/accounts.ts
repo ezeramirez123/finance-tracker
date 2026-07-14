@@ -10,6 +10,7 @@ import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 const accountSchema = z.object({
   name: z.string().min(1, "Name is required").max(80),
   icon: z.string().min(1).max(8).default("🏦"),
+  color: z.string().min(1).default("#3b82f6"),
   type: z.enum(["bank", "cash", "crypto", "savings", "credit", "investment"]),
   currency: z.enum(SUPPORTED_CURRENCIES),
   currentBalance: z.coerce.number().finite(),

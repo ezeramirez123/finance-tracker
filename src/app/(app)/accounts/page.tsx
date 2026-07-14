@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { AccountDialog } from "@/components/accounts/account-dialog";
+import { AccountRow } from "@/components/accounts/account-row";
 import {
   AccountRowActions,
   IncludeInNetWorthToggle,
@@ -72,13 +73,20 @@ export default async function AccountsPage() {
             </TableHeader>
             <TableBody>
               {accounts.map((account) => (
-                <TableRow key={account.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">{account.icon}</span>
-                      {account.name}
+                <AccountRow
+                  key={account.id}
+                  account={{ ...account, currentBalance: Number(account.currentBalance) }}
+                >
+                  <TableCell className="max-w-[280px] font-medium">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: account.color }}
+                      />
+                      <span className="shrink-0 text-base">{account.icon}</span>
+                      <span className="truncate">{account.name}</span>
                       {account.isConnected && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="shrink-0 text-xs">
                           Connected
                         </Badge>
                       )}
@@ -109,7 +117,7 @@ export default async function AccountsPage() {
                       }}
                     />
                   </TableCell>
-                </TableRow>
+                </AccountRow>
               ))}
             </TableBody>
           </Table>

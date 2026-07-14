@@ -25,26 +25,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { IconPicker } from "@/components/icon-picker";
+import { ColorPicker } from "@/components/color-picker";
 
-const PRESET_COLORS = [
-  "#f59e0b",
-  "#84cc16",
-  "#ef4444",
-  "#3b82f6",
-  "#ec4899",
-  "#a855f7",
-  "#06b6d4",
-  "#6366f1",
-  "#14b8a6",
-  "#22c55e",
-  "#eab308",
-  "#6b7280",
-];
+const DEFAULT_COLOR = "#f59e0b";
+const DEFAULT_ICON = "🏷️";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(40),
   kind: z.enum(["income", "expense"]),
   color: z.string().min(1),
+  icon: z.string().min(1).max(8),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -53,12 +44,25 @@ export function CategoryDialog({
   category,
   defaultKind,
   trigger,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
 }: {
-  category?: { id: string; name: string; kind: "income" | "expense"; color: string };
+  category?: {
+    id: string;
+    name: string;
+    kind: "income" | "expense";
+    color: string;
+    icon: string;
+  };
   defaultKind?: "income" | "expense";
-  trigger?: React.ReactNode;
+  /** Pass `null` to render no trigger at all — useful when open state is fully controlled externally. */
+  trigger?: React.ReactNode | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChangeProp ?? setInternalOpen;
   const isEdit = !!category;
 
   const form = useForm<FormValues>({
@@ -66,7 +70,8 @@ export function CategoryDialog({
     defaultValues: category ?? {
       name: "",
       kind: defaultKind ?? "expense",
-      color: PRESET_COLORS[0],
+      color: DEFAULT_COLOR,
+      icon: DEFAULT_ICON,
     },
   });
 
@@ -88,9 +93,11 @@ export function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? <Button>Add category</Button>}
-      </DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>
+          {trigger ?? <Button>Add category</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit category" : "Add category"}</DialogTitle>
@@ -118,22 +125,19 @@ export function CategoryDialog({
           </div>
 
           <div className="flex flex-col gap-1.5">
+            <Label>Icon</Label>
+            <IconPicker
+              value={form.watch("icon")}
+              onChange={(icon) => form.setValue("icon", icon)}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
             <Label>Color</Label>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  className="size-6 rounded-full ring-offset-2 ring-offset-background transition-shadow"
-                  style={{
-                    backgroundColor: color,
-                    boxShadow:
-                      form.watch("color") === color ? `0 0 0 2px ${color}` : "none",
-                  }}
-                  onClick={() => form.setValue("color", color)}
-                />
-              ))}
-            </div>
+            <ColorPicker
+              value={form.watch("color")}
+              onChange={(color) => form.setValue("color", color)}
+            />
           </div>
 
           <DialogFooter>

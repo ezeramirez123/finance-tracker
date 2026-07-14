@@ -2,22 +2,25 @@
 
 import { cn } from "@/lib/utils";
 
-const ACCOUNT_ICONS = [
+const DEFAULT_ICONS = [
   "🏦", "💳", "💰", "💵", "🪙", "📈",
   "📉", "💎", "🏧", "🐷", "🧾", "💸",
   "🌐", "🚗", "🏠", "✈️", "🛒", "☕",
+  "🍔", "🎓", "⚕️", "🎮", "📱", "🏷️",
 ];
 
-export function AccountIconPicker({
+export function IconPicker({
   value,
   onChange,
+  icons = DEFAULT_ICONS,
 }: {
   value: string;
   onChange: (icon: string) => void;
+  icons?: string[];
 }) {
   return (
     <div className="grid grid-cols-6 gap-1.5">
-      {ACCOUNT_ICONS.map((icon) => (
+      {icons.map((icon) => (
         <button
           key={icon}
           type="button"

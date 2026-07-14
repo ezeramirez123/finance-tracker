@@ -1,10 +1,18 @@
+import { format, parseISO } from "date-fns";
+
 import { auth } from "@/lib/auth";
 import { getDateRange } from "@/lib/period";
-import { getPeriodSummary, getExpenseTransactions } from "@/lib/dashboard-data";
+import {
+  getPeriodSummary,
+  getExpenseTransactions,
+  getDailyBreakdown,
+  getWeeklyBreakdown,
+} from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
+import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
 
 const TAB_TO_PERIOD = { day: "today", week: "week", month: "month" } as const;
@@ -28,6 +36,9 @@ export default async function ExpensesPage({
     getExpenseTransactions(userId, range),
   ]);
 
+  const dailyBreakdown = tab === "week" ? await getDailyBreakdown(userId, range, "expense") : null;
+  const weeklyBreakdown = tab === "month" ? await getWeeklyBreakdown(userId, range, "expense") : null;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -49,6 +60,28 @@ export default async function ExpensesPage({
           </p>
         </Card>
       </div>
+
+      {dailyBreakdown && (
+        <PeriodBreakdownCollapsible
+          title="Expenses by day"
+          barColorVar="--chart-critical"
+          buckets={dailyBreakdown.map((d) => ({
+            label: format(parseISO(d.date), "EEE, MMM d"),
+            total: d.total,
+          }))}
+        />
+      )}
+
+      {weeklyBreakdown && (
+        <PeriodBreakdownCollapsible
+          title="Expenses by week"
+          barColorVar="--chart-critical"
+          buckets={weeklyBreakdown.map((w) => ({
+            label: `${format(parseISO(w.from), "MMM d")} – ${format(parseISO(w.to), "MMM d")}`,
+            total: w.total,
+          }))}
+        />
+      )}
 
       <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />
 

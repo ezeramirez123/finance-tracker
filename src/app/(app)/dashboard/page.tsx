@@ -1,12 +1,19 @@
 import { auth } from "@/lib/auth";
 import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
-import { getNetWorth, getPeriodSummary, getTotalBalance, getWeeklySpending } from "@/lib/dashboard-data";
+import {
+  getNetWorth,
+  getPeriodSummary,
+  getTotalBalance,
+  getWeeklySpending,
+  getAccountBalanceHistorySeries,
+} from "@/lib/dashboard-data";
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeeklySpendingCollapsible } from "@/components/dashboard/weekly-spending-collapsible";
+import { AccountBalanceHistoryChart } from "@/components/dashboard/account-balance-history-chart";
 import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
@@ -33,13 +40,15 @@ export default async function DashboardPage({
   );
   const previousRange = getPreviousRange(range);
 
-  const [summary, previousSummary, netWorth, totalBalance, weeklySpending] = await Promise.all([
-    getPeriodSummary(userId, range),
-    getPeriodSummary(userId, previousRange),
-    getNetWorth(userId),
-    getTotalBalance(userId),
-    getWeeklySpending(userId),
-  ]);
+  const [summary, previousSummary, netWorth, totalBalance, weeklySpending, balanceHistory] =
+    await Promise.all([
+      getPeriodSummary(userId, range),
+      getPeriodSummary(userId, previousRange),
+      getNetWorth(userId),
+      getTotalBalance(userId),
+      getWeeklySpending(userId),
+      getAccountBalanceHistorySeries(userId),
+    ]);
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
   const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
@@ -87,6 +96,11 @@ export default async function DashboardPage({
       </div>
 
       <DailyTrendChart data={summary.dailyTrend} />
+
+      <AccountBalanceHistoryChart
+        accounts={balanceHistory.accounts}
+        series={balanceHistory.series}
+      />
 
       <WeeklySpendingCollapsible weeks={weeklySpending} />
 

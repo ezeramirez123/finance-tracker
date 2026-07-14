@@ -106,6 +106,7 @@ model FinancialAccount {
   userId            String
   name              String
   icon              String      @default("🏦")
+  color             String      @default("#3b82f6")
   type              AccountType
   currency          String
   currentBalance    Decimal     @default(0) @db.Decimal(18, 4)
@@ -146,6 +147,7 @@ model Category {
   name      String
   kind      TransactionKind
   color     String          @default("#6b7280")
+  icon      String          @default("🏷️")
   createdAt DateTime        @default(now())
 
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)

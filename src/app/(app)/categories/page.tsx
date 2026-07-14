@@ -3,6 +3,16 @@ import { db } from "@/lib/db";
 import { Card } from "@/components/ui/card";
 import { CategoryDialog } from "@/components/categories/category-dialog";
 import { CategoryActions } from "@/components/categories/category-actions";
+import { CategoryRow } from "@/components/categories/category-row";
+
+type CategoryRecord = {
+  id: string;
+  name: string;
+  kind: "income" | "expense";
+  color: string;
+  icon: string;
+  userId: string | null;
+};
 
 function CategoryList({
   title,
@@ -12,7 +22,7 @@ function CategoryList({
 }: {
   title: string;
   kind: "income" | "expense";
-  categories: { id: string; name: string; kind: "income" | "expense"; color: string; userId: string | null }[];
+  categories: CategoryRecord[];
   userId: string;
 }) {
   return (
@@ -22,22 +32,35 @@ function CategoryList({
         <CategoryDialog defaultKind={kind} trigger={<button className="text-xs text-muted-foreground hover:text-foreground">+ Add</button>} />
       </div>
       <div className="flex flex-col divide-y px-5">
-        {categories.map((category) => (
-          <div key={category.id} className="flex items-center justify-between py-2.5">
-            <div className="flex items-center gap-2.5">
-              <span
-                className="size-2.5 rounded-full"
-                style={{ backgroundColor: category.color }}
-              />
-              <span className="text-sm">{category.name}</span>
+        {categories.map((category) => {
+          const row = (
+            <>
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span
+                  className="size-2.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: category.color }}
+                />
+                <span className="shrink-0">{category.icon}</span>
+                <span className="truncate text-sm">{category.name}</span>
+              </div>
+              {category.userId === userId ? (
+                <CategoryActions category={category} />
+              ) : (
+                <span className="text-xs text-muted-foreground">Default</span>
+              )}
+            </>
+          );
+
+          return category.userId === userId ? (
+            <CategoryRow key={category.id} category={category}>
+              {row}
+            </CategoryRow>
+          ) : (
+            <div key={category.id} className="flex items-center justify-between py-2.5">
+              {row}
             </div>
-            {category.userId === userId ? (
-              <CategoryActions category={category} />
-            ) : (
-              <span className="text-xs text-muted-foreground">Default</span>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </Card>
   );

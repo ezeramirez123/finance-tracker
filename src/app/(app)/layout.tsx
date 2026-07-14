@@ -16,18 +16,14 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-full flex-1">
-      <aside className="flex w-60 shrink-0 flex-col border-r px-3 py-4">
+      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r px-3 py-4">
         <div className="px-2 pb-4 text-sm font-semibold tracking-tight">
           Semanal
         </div>
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <Nav />
         </div>
-        <UserMenu
-          name={session.user.name}
-          email={session.user.email}
-          image={session.user.image}
-        />
+        <UserMenu name={session.user.name} email={session.user.email} />
       </aside>
       <main className="flex-1 overflow-x-hidden">
         <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>

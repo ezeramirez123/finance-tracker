@@ -10,6 +10,7 @@ const categorySchema = z.object({
   name: z.string().min(1, "Name is required").max(40),
   kind: z.enum(["income", "expense"]),
   color: z.string().min(1),
+  icon: z.string().min(1).max(8).default("🏷️"),
 });
 
 async function requireUserId() {

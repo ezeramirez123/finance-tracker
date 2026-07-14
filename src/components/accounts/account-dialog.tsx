@@ -28,7 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { CurrencyInput } from "@/components/ui/currency-input";
-import { AccountIconPicker } from "@/components/accounts/account-icon-picker";
+import { IconPicker } from "@/components/icon-picker";
+import { ColorPicker } from "@/components/color-picker";
 
 const ACCOUNT_TYPES = [
   "bank",
@@ -42,6 +43,7 @@ const ACCOUNT_TYPES = [
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(80),
   icon: z.string().min(1).max(8),
+  color: z.string().min(1),
   type: z.enum(ACCOUNT_TYPES),
   currency: z.enum(SUPPORTED_CURRENCIES),
   currentBalance: z.coerce.number().finite(),
@@ -54,19 +56,27 @@ type FormValues = z.output<typeof formSchema>;
 export function AccountDialog({
   account,
   trigger,
+  open: openProp,
+  onOpenChange: onOpenChangeProp,
 }: {
   account?: {
     id: string;
     name: string;
     icon: string;
+    color: string;
     type: (typeof ACCOUNT_TYPES)[number];
     currency: string;
     currentBalance: number;
     includeInNetWorth: boolean;
   };
-  trigger?: React.ReactNode;
+  /** Pass `null` to render no trigger at all — useful when open state is fully controlled externally. */
+  trigger?: React.ReactNode | null;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChangeProp ?? setInternalOpen;
   const isEdit = !!account;
 
   const form = useForm<FormInput, unknown, FormValues>({
@@ -75,6 +85,7 @@ export function AccountDialog({
       ? {
           name: account.name,
           icon: account.icon,
+          color: account.color,
           type: account.type,
           currency: account.currency as FormValues["currency"],
           currentBalance: account.currentBalance,
@@ -83,6 +94,7 @@ export function AccountDialog({
       : {
           name: "",
           icon: "🏦",
+          color: "#3b82f6",
           type: "bank",
           currency: "USD",
           currentBalance: 0,
@@ -108,9 +120,11 @@ export function AccountDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger ?? <Button>Add account</Button>}
-      </DialogTrigger>
+      {trigger !== null && (
+        <DialogTrigger asChild>
+          {trigger ?? <Button>Add account</Button>}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit account" : "Add account"}</DialogTitle>
@@ -129,12 +143,21 @@ export function AccountDialog({
             )}
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Icon</Label>
-            <AccountIconPicker
-              value={form.watch("icon")}
-              onChange={(icon) => form.setValue("icon", icon)}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label>Icon</Label>
+              <IconPicker
+                value={form.watch("icon")}
+                onChange={(icon) => form.setValue("icon", icon)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label>Color</Label>
+              <ColorPicker
+                value={form.watch("color")}
+                onChange={(color) => form.setValue("color", color)}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

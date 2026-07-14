@@ -12,7 +12,7 @@ const EXPENSE_CATEGORIES = [
   { name: "Travel", color: "#06b6d4" },
   { name: "Education", color: "#6366f1" },
   { name: "Healthcare", color: "#14b8a6" },
-  { name: "Bills", color: "#f97316" },
+  { name: "Utilities", color: "#f97316" },
   { name: "Other", color: "#6b7280" },
 ];
 

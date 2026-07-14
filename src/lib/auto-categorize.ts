@@ -57,7 +57,7 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
     "labcorp", "quest diagnostics", "planned parenthood", "vision center",
     "optometry",
   ],
-  Bills: [
+  Utilities: [
     "comcast", "xfinity", "at&t", "verizon", "t-mobile", "sprint pcs",
     "spectrum", "con edison", "pg&e", "duke energy", "geico", "state farm",
     "progressive ins", "allstate", "mortgage payment", "liberty mutual",

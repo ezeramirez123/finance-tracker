@@ -9,7 +9,6 @@ type CategoryForDialog = {
   name: string;
   kind: "income" | "expense";
   color: string;
-  icon: string;
 };
 
 export function CategoryRow({

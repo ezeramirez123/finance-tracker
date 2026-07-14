@@ -13,7 +13,14 @@ import {
 import { format, parseISO } from "date-fns";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { PeriodTabs } from "@/components/period-tabs";
 import { formatUsd } from "@/lib/format";
+
+const HISTORY_OPTIONS = [
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+  { value: "year", label: "Year" },
+] as const;
 
 type AccountMeta = { id: string; name: string; icon: string; color: string };
 type SeriesPoint = Record<string, number | string>;
@@ -55,14 +62,19 @@ function CustomTooltip({
 export function AccountBalanceHistoryChart({
   accounts,
   series,
+  period,
 }: {
   accounts: AccountMeta[];
   series: SeriesPoint[];
+  period: string;
 }) {
+  const tickFormat = period === "year" ? "MMM yy" : "MMM d";
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Account balances over time</CardTitle>
+        <PeriodTabs period={period} paramName="historyPeriod" options={HISTORY_OPTIONS} />
       </CardHeader>
       <CardContent className="h-72">
         {accounts.length === 0 ? (
@@ -75,7 +87,7 @@ export function AccountBalanceHistoryChart({
               <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="0" />
               <XAxis
                 dataKey="date"
-                tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                tickFormatter={(v) => format(parseISO(v), tickFormat)}
                 tickLine={false}
                 axisLine={false}
                 minTickGap={32}

@@ -11,7 +11,7 @@ import { CategoryDialog } from "@/components/categories/category-dialog";
 export function CategoryActions({
   category,
 }: {
-  category: { id: string; name: string; kind: "income" | "expense"; color: string; icon: string };
+  category: { id: string; name: string; kind: "income" | "expense"; color: string };
 }) {
   const [confirming, setConfirming] = React.useState(false);
 

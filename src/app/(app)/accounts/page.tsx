@@ -31,16 +31,32 @@ const TYPE_LABELS: Record<string, string> = {
   investment: "Investment",
 };
 
-export default async function AccountsPage() {
+const HISTORY_PERIOD_DAYS: Record<string, number> = {
+  week: 7,
+  month: 30,
+  year: 365,
+};
+
+export default async function AccountsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ historyPeriod?: string }>;
+}) {
+  const params = await searchParams;
   const session = await auth();
   const userId = session!.user.id;
+
+  const historyPeriod =
+    params.historyPeriod && params.historyPeriod in HISTORY_PERIOD_DAYS
+      ? params.historyPeriod
+      : "month";
 
   const [accounts, balanceHistory] = await Promise.all([
     db.financialAccount.findMany({
       where: { userId },
       orderBy: { createdAt: "asc" },
     }),
-    getAccountBalanceHistorySeries(userId),
+    getAccountBalanceHistorySeries(userId, HISTORY_PERIOD_DAYS[historyPeriod]),
   ]);
 
   return (
@@ -62,6 +78,7 @@ export default async function AccountsPage() {
       <AccountBalanceHistoryChart
         accounts={balanceHistory.accounts}
         series={balanceHistory.series}
+        period={historyPeriod}
       />
 
       {accounts.length === 0 ? (

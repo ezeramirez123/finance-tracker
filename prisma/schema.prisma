@@ -147,7 +147,6 @@ model Category {
   name      String
   kind      TransactionKind
   color     String          @default("#6b7280")
-  icon      String          @default("🏷️")
   createdAt DateTime        @default(now())
 
   user         User?         @relation(fields: [userId], references: [id], onDelete: Cascade)

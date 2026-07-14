@@ -10,7 +10,6 @@ type CategoryRecord = {
   name: string;
   kind: "income" | "expense";
   color: string;
-  icon: string;
   userId: string | null;
 };
 
@@ -40,14 +39,9 @@ function CategoryList({
                   className="size-2.5 shrink-0 rounded-full"
                   style={{ backgroundColor: category.color }}
                 />
-                <span className="shrink-0">{category.icon}</span>
                 <span className="truncate text-sm">{category.name}</span>
               </div>
-              {category.userId === userId ? (
-                <CategoryActions category={category} />
-              ) : (
-                <span className="text-xs text-muted-foreground">Default</span>
-              )}
+              {category.userId === userId && <CategoryActions category={category} />}
             </>
           );
 

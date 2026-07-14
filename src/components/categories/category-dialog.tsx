@@ -25,17 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { IconPicker } from "@/components/icon-picker";
 import { ColorPicker } from "@/components/color-picker";
 
 const DEFAULT_COLOR = "#f59e0b";
-const DEFAULT_ICON = "🏷️";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required").max(40),
   kind: z.enum(["income", "expense"]),
   color: z.string().min(1),
-  icon: z.string().min(1).max(8),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -52,7 +49,6 @@ export function CategoryDialog({
     name: string;
     kind: "income" | "expense";
     color: string;
-    icon: string;
   };
   defaultKind?: "income" | "expense";
   /** Pass `null` to render no trigger at all — useful when open state is fully controlled externally. */
@@ -71,7 +67,6 @@ export function CategoryDialog({
       name: "",
       kind: defaultKind ?? "expense",
       color: DEFAULT_COLOR,
-      icon: DEFAULT_ICON,
     },
   });
 
@@ -122,14 +117,6 @@ export function CategoryDialog({
                 <SelectItem value="income">Income</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Icon</Label>
-            <IconPicker
-              value={form.watch("icon")}
-              onChange={(icon) => form.setValue("icon", icon)}
-            />
           </div>
 
           <div className="flex flex-col gap-1.5">

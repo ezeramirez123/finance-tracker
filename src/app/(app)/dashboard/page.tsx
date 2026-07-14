@@ -1,11 +1,12 @@
 import { auth } from "@/lib/auth";
 import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
-import { getNetWorth, getPeriodSummary, getTotalBalance } from "@/lib/dashboard-data";
+import { getNetWorth, getPeriodSummary, getTotalBalance, getWeeklySpending } from "@/lib/dashboard-data";
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
+import { WeeklySpendingCollapsible } from "@/components/dashboard/weekly-spending-collapsible";
 import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
@@ -32,11 +33,12 @@ export default async function DashboardPage({
   );
   const previousRange = getPreviousRange(range);
 
-  const [summary, previousSummary, netWorth, totalBalance] = await Promise.all([
+  const [summary, previousSummary, netWorth, totalBalance, weeklySpending] = await Promise.all([
     getPeriodSummary(userId, range),
     getPeriodSummary(userId, previousRange),
     getNetWorth(userId),
     getTotalBalance(userId),
+    getWeeklySpending(userId),
   ]);
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
@@ -85,6 +87,8 @@ export default async function DashboardPage({
       </div>
 
       <DailyTrendChart data={summary.dailyTrend} />
+
+      <WeeklySpendingCollapsible weeks={weeklySpending} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />

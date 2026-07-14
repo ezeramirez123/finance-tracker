@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { convertToUsd } from "@/lib/currency";
 import type { DateRange } from "@/lib/period";
-import { format } from "date-fns";
+import { format, startOfWeek, endOfWeek, subWeeks } from "date-fns";
 
 export async function getNetWorth(userId: string) {
   const accounts = await db.financialAccount.findMany({
@@ -106,4 +106,49 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
     recentTransactions: transactions.slice(0, 8),
     transactionCount: transactions.length,
   };
+}
+
+export async function getExpenseTransactions(userId: string, range: DateRange) {
+  return db.transaction.findMany({
+    where: { userId, kind: "expense", date: { gte: range.from, lte: range.to } },
+    include: { category: true },
+    orderBy: { date: "desc" },
+  });
+}
+
+export async function getIncomeTransactions(userId: string, range: DateRange) {
+  return db.transaction.findMany({
+    where: { userId, kind: "income", date: { gte: range.from, lte: range.to } },
+    include: { category: true },
+    orderBy: { date: "desc" },
+  });
+}
+
+/** Expense totals for the past `weeksCount` weeks (most recent week last), Mon-Sun buckets. */
+export async function getWeeklySpending(userId: string, weeksCount = 4) {
+  const now = new Date();
+  const weeks = Array.from({ length: weeksCount }, (_, i) => {
+    const weekDate = subWeeks(now, weeksCount - 1 - i);
+    return {
+      from: startOfWeek(weekDate, { weekStartsOn: 1 }),
+      to: endOfWeek(weekDate, { weekStartsOn: 1 }),
+    };
+  });
+
+  const transactions = await db.transaction.findMany({
+    where: {
+      userId,
+      kind: "expense",
+      date: { gte: weeks[0].from, lte: weeks[weeks.length - 1].to },
+    },
+    select: { date: true, usdEquivalent: true },
+  });
+
+  return weeks.map((week) => ({
+    from: week.from.toISOString(),
+    to: week.to.toISOString(),
+    total: transactions
+      .filter((t) => t.date >= week.from && t.date <= week.to)
+      .reduce((sum, t) => sum + Number(t.usdEquivalent), 0),
+  }));
 }

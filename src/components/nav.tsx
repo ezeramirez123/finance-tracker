@@ -8,6 +8,8 @@ import {
   Wallet,
   Tags,
   BarChart3,
+  Receipt,
+  TrendingUp,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -15,6 +17,8 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
+  { href: "/income", label: "Income", icon: TrendingUp },
+  { href: "/expenses", label: "Expenses", icon: Receipt },
   { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/categories", label: "Categories", icon: Tags },
   { href: "/reports", label: "Reports", icon: BarChart3 },

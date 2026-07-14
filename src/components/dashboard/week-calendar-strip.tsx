@@ -91,10 +91,10 @@ export function WeekCalendarStrip({
                 </span>
                 <span className="text-sm font-semibold">{format(parsed, "d")}</span>
                 <span className="text-[11px] tabular-nums text-chart-good">
-                  {day.income > 0 ? `+${formatUsd(day.income)}` : "—"}
+                  {day.income > 0 ? `+${formatUsd(day.income)}` : formatUsd(0)}
                 </span>
                 <span className="text-[11px] tabular-nums text-chart-critical">
-                  {day.expense > 0 ? `-${formatUsd(day.expense)}` : "—"}
+                  {day.expense > 0 ? `-${formatUsd(day.expense)}` : formatUsd(0)}
                 </span>
               </button>
             );

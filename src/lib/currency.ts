@@ -76,3 +76,20 @@ export async function convertToUsd(
 export async function getLatestUsdRates(): Promise<RatesMap> {
   return getUsdRatesForDate(new Date());
 }
+
+/** Converts a USD amount into `currency`, using rates for the given date. */
+export async function convertFromUsd(
+  usdAmount: number,
+  currency: string,
+  date: Date = new Date()
+): Promise<number> {
+  if (currency === "USD") return usdAmount;
+
+  const rates = await getUsdRatesForDate(date);
+  const rate = rates[currency];
+  if (!rate) {
+    throw new Error(`Unsupported currency: ${currency}`);
+  }
+
+  return usdAmount * rate;
+}

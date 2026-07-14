@@ -120,5 +120,18 @@ export async function syncPlaidTransactions(plaidItemId: string) {
     data: { transactionsCursor: cursor },
   });
 
+  // Refresh balances directly from Plaid — the source of truth for connected accounts.
+  const { data: accountsData } = await plaidClient.accountsGet({
+    access_token: item.accessToken,
+  });
+  for (const plaidAccount of accountsData.accounts) {
+    const accountId = accountIdByPlaidId.get(plaidAccount.account_id);
+    if (!accountId || plaidAccount.balances.current == null) continue;
+    await db.financialAccount.update({
+      where: { id: accountId },
+      data: { currentBalance: plaidAccount.balances.current },
+    });
+  }
+
   return { syncedCount };
 }

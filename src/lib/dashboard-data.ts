@@ -1,7 +1,17 @@
 import { db } from "@/lib/db";
 import { convertToUsd } from "@/lib/currency";
 import type { DateRange } from "@/lib/period";
-import { format, startOfWeek, endOfWeek, subWeeks } from "date-fns";
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfDay,
+  endOfDay,
+  subWeeks,
+  addWeeks,
+  subDays,
+  eachDayOfInterval,
+} from "date-fns";
 
 export async function getNetWorth(userId: string) {
   const accounts = await db.financialAccount.findMany({
@@ -151,4 +161,123 @@ export async function getWeeklySpending(userId: string, weeksCount = 4) {
       .filter((t) => t.date >= week.from && t.date <= week.to)
       .reduce((sum, t) => sum + Number(t.usdEquivalent), 0),
   }));
+}
+
+/** Per-day totals for every day in `range` (zero-filled), for a single transaction kind. */
+export async function getDailyBreakdown(
+  userId: string,
+  range: DateRange,
+  kind: "income" | "expense"
+) {
+  const days = eachDayOfInterval({ start: range.from, end: range.to });
+
+  const transactions = await db.transaction.findMany({
+    where: { userId, kind, date: { gte: range.from, lte: range.to } },
+    select: { date: true, usdEquivalent: true },
+  });
+
+  return days.map((day) => {
+    const dayStart = startOfDay(day);
+    const dayEnd = endOfDay(day);
+    return {
+      date: dayStart.toISOString(),
+      total: transactions
+        .filter((t) => t.date >= dayStart && t.date <= dayEnd)
+        .reduce((sum, t) => sum + Number(t.usdEquivalent), 0),
+    };
+  });
+}
+
+/** Per-week totals covering every Mon-Sun week that overlaps `range` (zero-filled), for a single kind. */
+export async function getWeeklyBreakdown(
+  userId: string,
+  range: DateRange,
+  kind: "income" | "expense"
+) {
+  const weeks: DateRange[] = [];
+  let cursor = startOfWeek(range.from, { weekStartsOn: 1 });
+  while (cursor <= range.to) {
+    weeks.push({ from: cursor, to: endOfWeek(cursor, { weekStartsOn: 1 }) });
+    cursor = addWeeks(cursor, 1);
+  }
+
+  const transactions = await db.transaction.findMany({
+    where: {
+      userId,
+      kind,
+      date: { gte: weeks[0].from, lte: weeks[weeks.length - 1].to },
+    },
+    select: { date: true, usdEquivalent: true },
+  });
+
+  return weeks.map((week) => ({
+    from: week.from.toISOString(),
+    to: week.to.toISOString(),
+    total: transactions
+      .filter((t) => t.date >= week.from && t.date <= week.to)
+      .reduce((sum, t) => sum + Number(t.usdEquivalent), 0),
+  }));
+}
+
+/**
+ * Reconstructs each account's daily USD balance for the past `days`, by walking
+ * backward from its current balance through its transaction history. Relies on
+ * `currentBalance` being kept in sync with the ledger (see lib/actions/transactions.ts
+ * and lib/plaid-sync.ts) — accounts edited before that invariant existed may show
+ * a discontinuity at the point balance maintenance began.
+ */
+export async function getAccountBalanceHistorySeries(userId: string, days = 90) {
+  const accounts = await db.financialAccount.findMany({
+    where: { userId },
+    orderBy: { createdAt: "asc" },
+  });
+  const since = startOfDay(subDays(new Date(), days));
+  const now = new Date();
+
+  const perAccountPoints = await Promise.all(
+    accounts.map(async (account) => {
+      const transactions = await db.transaction.findMany({
+        where: { userId, accountId: account.id, date: { gte: since } },
+        orderBy: { date: "asc" },
+      });
+
+      const { usdEquivalent: currentBalanceUsd } = await convertToUsd(
+        Number(account.currentBalance),
+        account.currency
+      );
+
+      const totalImpact = transactions.reduce(
+        (sum, t) =>
+          sum + (t.kind === "income" ? Number(t.usdEquivalent) : -Number(t.usdEquivalent)),
+        0
+      );
+
+      let running = currentBalanceUsd - totalImpact;
+      const points: { date: Date; balance: number }[] = [{ date: since, balance: running }];
+      for (const t of transactions) {
+        running += t.kind === "income" ? Number(t.usdEquivalent) : -Number(t.usdEquivalent);
+        points.push({ date: t.date, balance: running });
+      }
+      points.push({ date: now, balance: currentBalanceUsd });
+
+      return { accountId: account.id, points };
+    })
+  );
+
+  const dayList = eachDayOfInterval({ start: since, end: now });
+  const series = dayList.map((day) => {
+    const dayEnd = endOfDay(day);
+    const entry: Record<string, number | string> = { date: format(day, "yyyy-MM-dd") };
+    for (const { accountId, points } of perAccountPoints) {
+      const applicable = points.filter((p) => p.date <= dayEnd);
+      entry[accountId] =
+        applicable.length > 0 ? applicable[applicable.length - 1].balance : points[0].balance;
+    }
+    return entry;
+  });
+
+  return {
+    accounts: accounts.map((a) => ({ id: a.id, name: a.name, icon: a.icon, color: a.color })),
+    series,
+  };
 }

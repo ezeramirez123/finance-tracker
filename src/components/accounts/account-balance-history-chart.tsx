@@ -2,7 +2,6 @@
 
 import {
   CartesianGrid,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -29,32 +28,21 @@ function CustomTooltip({
   active,
   payload,
   label,
-  accounts,
 }: {
   active?: boolean;
-  payload?: { value: number; dataKey: string; color: string }[];
+  payload?: { value: number }[];
   label?: string;
-  accounts: AccountMeta[];
 }) {
   if (!active || !payload?.length) return null;
-  const nameById = new Map(accounts.map((a) => [a.id, `${a.icon} ${a.name}`]));
 
   return (
     <div className="rounded-md border bg-popover px-3 py-2 text-xs shadow-md">
-      <p className="mb-1.5 font-medium text-popover-foreground">
+      <p className="mb-1 font-medium text-popover-foreground">
         {label ? format(parseISO(label), "MMM d") : ""}
       </p>
-      {payload.map((entry) => (
-        <div key={entry.dataKey} className="flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 text-muted-foreground">
-            <span className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            {nameById.get(entry.dataKey) ?? entry.dataKey}
-          </span>
-          <span className="font-medium tabular-nums text-popover-foreground">
-            {formatUsd(entry.value)}
-          </span>
-        </div>
-      ))}
+      <span className="font-medium tabular-nums text-popover-foreground">
+        {formatUsd(payload[0].value)}
+      </span>
     </div>
   );
 }
@@ -70,6 +58,11 @@ export function AccountBalanceHistoryChart({
 }) {
   const tickFormat = period === "year" ? "MMM yy" : "MMM d";
 
+  const totalSeries = series.map((point) => {
+    const total = accounts.reduce((sum, a) => sum + (Number(point[a.id]) || 0), 0);
+    return { date: point.date, total };
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -83,7 +76,7 @@ export function AccountBalanceHistoryChart({
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={series} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+            <LineChart data={totalSeries} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="0" />
               <XAxis
                 dataKey="date"
@@ -100,28 +93,15 @@ export function AccountBalanceHistoryChart({
                 width={64}
                 tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               />
-              <Tooltip content={<CustomTooltip accounts={accounts} />} />
-              <Legend
-                wrapperStyle={{ fontSize: 12 }}
-                iconType="circle"
-                iconSize={8}
-                formatter={(_value, entry) => {
-                  const account = accounts.find((a) => a.id === (entry as { dataKey?: string }).dataKey);
-                  return account ? `${account.icon} ${account.name}` : String(_value);
-                }}
+              <Tooltip content={<CustomTooltip />} />
+              <Line
+                type="monotone"
+                dataKey="total"
+                stroke="var(--chart-good)"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4 }}
               />
-              {accounts.map((account) => (
-                <Line
-                  key={account.id}
-                  type="monotone"
-                  dataKey={account.id}
-                  name={account.id}
-                  stroke={account.color}
-                  strokeWidth={2}
-                  dot={false}
-                  activeDot={{ r: 4 }}
-                />
-              ))}
             </LineChart>
           </ResponsiveContainer>
         )}

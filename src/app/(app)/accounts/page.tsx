@@ -24,7 +24,8 @@ import {
 import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
 import { AccountBalanceHistoryChart } from "@/components/accounts/account-balance-history-chart";
-import { formatMoney, formatUsd } from "@/lib/format";
+import { BalancesOverview } from "@/components/dashboard/balances-overview";
+import { formatMoney } from "@/lib/format";
 
 const TYPE_LABELS: Record<string, string> = {
   bank: "Bank",
@@ -67,7 +68,7 @@ export default async function AccountsPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">Accounts</h1>
           <p className="text-sm text-muted-foreground">
@@ -81,20 +82,7 @@ export default async function AccountsPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="gap-1.5">
-          <p className="px-5 text-sm font-medium text-muted-foreground">Net worth</p>
-          <p className="px-5 text-2xl font-semibold tracking-tight">
-            {formatUsd(netWorth)}
-          </p>
-        </Card>
-        <Card className="gap-1.5">
-          <p className="px-5 text-sm font-medium text-muted-foreground">Total</p>
-          <p className="px-5 text-2xl font-semibold tracking-tight">
-            {formatUsd(totalBalance)}
-          </p>
-        </Card>
-      </div>
+      <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
 
       <AccountBalanceHistoryChart
         accounts={balanceHistory.accounts}

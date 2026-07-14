@@ -66,13 +66,13 @@ export default async function DashboardPage({
         <PeriodSwitcher period={period} from={params.from} to={params.to} />
       </div>
 
+      <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatTile label="Income" value={summary.totalIncome} delta={incomeDelta} deltaGoodDirection="up" />
         <StatTile label="Expenses" value={summary.totalExpenses} delta={expenseDelta} deltaGoodDirection="down" />
         <StatTile label="Net" value={summary.net} delta={netDelta} deltaGoodDirection="up" />
       </div>
-
-      <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
 
       <WeekCalendarStrip days={currentWeekDays} weekOffset={weekOffset} />
 

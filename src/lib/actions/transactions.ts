@@ -153,6 +153,19 @@ export async function updateTransaction(
   revalidatePath("/accounts");
 }
 
+export async function updateTransactionCategory(id: string, categoryId: string | null) {
+  const userId = await requireUserId();
+
+  await db.transaction.update({
+    where: { id, userId },
+    data: { categoryId },
+  });
+
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
+  revalidatePath("/reports");
+}
+
 export async function deleteTransaction(id: string) {
   const userId = await requireUserId();
 

@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -13,6 +12,7 @@ import {
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 import { TransactionRow } from "@/components/transactions/transaction-row";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
+import { CategoryCombobox } from "@/components/transactions/category-combobox";
 import { formatMoney, formatUsd } from "@/lib/format";
 
 export default async function TransactionsPage() {
@@ -93,19 +93,12 @@ export default async function TransactionsPage() {
                     {t.merchant || <span className="text-muted-foreground">—</span>}
                   </TableCell>
                   <TableCell>
-                    {t.category ? (
-                      <Badge
-                        variant="secondary"
-                        style={{
-                          backgroundColor: `${t.category.color}20`,
-                          color: t.category.color,
-                        }}
-                      >
-                        {t.category.name}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">Uncategorized</span>
-                    )}
+                    <CategoryCombobox
+                      transactionId={t.id}
+                      categoryId={t.categoryId}
+                      categories={categories}
+                      kind={t.kind}
+                    />
                   </TableCell>
                   <TableCell className="max-w-[180px] truncate text-muted-foreground">
                     <span className="mr-1.5">{t.account.icon}</span>

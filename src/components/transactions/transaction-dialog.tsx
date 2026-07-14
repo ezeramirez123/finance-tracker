@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { Plus } from "lucide-react";
 
 import { createTransaction, updateTransaction } from "@/lib/actions/transactions";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
@@ -141,7 +142,12 @@ export function TransactionDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       {trigger !== null && (
         <DialogTrigger asChild>
-          {trigger ?? <Button>Add transaction</Button>}
+          {trigger ?? (
+            <Button>
+              <Plus className="size-4" />
+              Add transaction
+            </Button>
+          )}
         </DialogTrigger>
       )}
       <DialogContent>

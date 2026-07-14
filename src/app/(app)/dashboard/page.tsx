@@ -15,6 +15,7 @@ import { TransactionListCard } from "@/components/dashboard/transaction-list-car
 import { WeeklySpendingCollapsible } from "@/components/dashboard/weekly-spending-collapsible";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
 import { BalancesOverview } from "@/components/dashboard/balances-overview";
+import { MobileSummaryCard } from "@/components/dashboard/mobile-summary-card";
 
 function percentDelta(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null;
@@ -66,9 +67,21 @@ export default async function DashboardPage({
         <PeriodSwitcher period={period} from={params.from} to={params.to} />
       </div>
 
-      <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
+      <MobileSummaryCard
+        netWorth={netWorth}
+        totalIncome={summary.totalIncome}
+        totalExpenses={summary.totalExpenses}
+        net={summary.net}
+        incomeDelta={incomeDelta}
+        expenseDelta={expenseDelta}
+        netDelta={netDelta}
+      />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      <div className="hidden md:block">
+        <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
+      </div>
+
+      <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
         <StatTile label="Income" value={summary.totalIncome} delta={incomeDelta} deltaGoodDirection="up" />
         <StatTile label="Expenses" value={summary.totalExpenses} delta={expenseDelta} deltaGoodDirection="down" />
         <StatTile
@@ -76,7 +89,7 @@ export default async function DashboardPage({
           value={summary.net}
           delta={netDelta}
           deltaGoodDirection="up"
-          className="col-span-2 lg:col-span-1"
+          className="md:col-span-2 lg:col-span-1"
         />
       </div>
 

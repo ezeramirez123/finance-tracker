@@ -219,7 +219,7 @@ export function TransactionDialog({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex min-w-0 flex-col gap-1.5">
               <Label>Account</Label>
               <Select
                 value={form.watch("accountId")}
@@ -242,7 +242,7 @@ export function TransactionDialog({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex min-w-0 flex-col gap-1.5">
               <Label>Category</Label>
               <Select
                 value={form.watch("categoryId") ?? undefined}

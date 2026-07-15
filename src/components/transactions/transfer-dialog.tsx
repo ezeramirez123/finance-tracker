@@ -100,7 +100,7 @@ export function TransferDialog({ accounts }: { accounts: Account[] }) {
         </DialogHeader>
         <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>
           <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
+            <div className="flex min-w-0 flex-col gap-1.5">
               <Label>From</Label>
               <Select
                 value={form.watch("fromAccountId")}
@@ -120,7 +120,7 @@ export function TransferDialog({ accounts }: { accounts: Account[] }) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex min-w-0 flex-col gap-1.5">
               <Label>To</Label>
               <Select
                 value={form.watch("toAccountId")}

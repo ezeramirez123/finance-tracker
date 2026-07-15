@@ -32,7 +32,7 @@ export function CategoryFilterSelect({
 
   return (
     <Select value={category ?? "all"} onValueChange={setCategory}>
-      <SelectTrigger className="w-full min-w-0 sm:w-48">
+      <SelectTrigger className="w-[150px] min-w-0 shrink-0">
         <SelectValue placeholder="All categories" className="min-w-0 truncate" />
       </SelectTrigger>
       <SelectContent>

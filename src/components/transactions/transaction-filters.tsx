@@ -75,7 +75,7 @@ export function TransactionFilters({
         value={category ?? "all"}
         onValueChange={(v) => updateParam("category", v === "all" ? null : v)}
       >
-        <SelectTrigger className="w-full min-w-0 sm:w-44">
+        <SelectTrigger className="w-[130px] min-w-0 shrink-0">
           <SelectValue placeholder="Category" className="min-w-0 truncate" />
         </SelectTrigger>
         <SelectContent>
@@ -92,7 +92,7 @@ export function TransactionFilters({
         value={account ?? "all"}
         onValueChange={(v) => updateParam("account", v === "all" ? null : v)}
       >
-        <SelectTrigger className="w-full min-w-0 sm:w-44">
+        <SelectTrigger className="w-[130px] min-w-0 shrink-0">
           <SelectValue placeholder="Account" className="min-w-0 truncate" />
         </SelectTrigger>
         <SelectContent>
@@ -109,7 +109,7 @@ export function TransactionFilters({
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" className="h-9">
+          <Button variant="outline" size="sm" className="h-9 max-w-[150px] shrink-0 truncate">
             {from && to ? `${from} – ${to}` : "Date range"}
           </Button>
         </PopoverTrigger>

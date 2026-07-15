@@ -55,7 +55,7 @@ export function PeriodSwitcher({
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-lg border p-1">
+    <div className="flex flex-wrap items-center gap-1 rounded-lg border p-1">
       {OPTIONS.map((opt) => (
         <Button
           key={opt.value}
@@ -72,7 +72,7 @@ export function PeriodSwitcher({
           <Button
             size="sm"
             variant={period === "custom" ? "default" : "ghost"}
-            className={cn("h-7 px-2.5 text-xs")}
+            className={cn("h-7 max-w-[130px] shrink-0 truncate px-2.5 text-xs")}
           >
             {period === "custom" && from && to
               ? `${format(new Date(from), "MMM d")} – ${format(new Date(to), "MMM d")}`

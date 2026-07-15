@@ -45,7 +45,7 @@ export default async function TransactionsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <CsvImportDialog accounts={accounts} />
+          <CsvImportDialog />
           <TransferDialog accounts={accounts} />
           <TransactionDialog accounts={accounts} categories={categories} />
         </div>

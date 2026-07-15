@@ -72,7 +72,7 @@ export function WeekCalendarStrip({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
           {days.map((day) => {
             const parsed = parseISO(day.date);
             const today = isToday(parsed);

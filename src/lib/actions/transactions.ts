@@ -22,6 +22,7 @@ const transactionSchema = z.object({
 
 const csvRowSchema = z.object({
   date: z.coerce.date(),
+  account: z.string().min(1, "Account is required"),
   merchant: z.string().max(120).optional().default(""),
   amount: z.coerce.number().finite().refine((n) => n !== 0, "Amount can't be zero"),
   category: z.string().optional(),
@@ -222,29 +223,63 @@ export async function deleteTransaction(id: string) {
 }
 
 /**
- * Bulk-imports CSV rows into one account. Amount sign determines kind
+ * Bulk-imports CSV rows. Each row names its own account by `account` — matched by
+ * name (case-insensitive) against the user's existing accounts, or created fresh
+ * (as a "bank" account in USD) if no match exists. Amount sign determines kind
  * (negative = expense, positive = income), matching common bank/Excel exports.
- * A `category` name is matched if given; otherwise expenses are auto-categorized
- * the same way Plaid imports are, and anything unmatched is left uncategorized.
+ *
+ * Rows whose `category` is "Transfer" are paired up with another transfer row on
+ * the same date with the opposite sign and matching magnitude, and imported as a
+ * single linked transfer between those two rows' accounts (see createTransfer) —
+ * this is what lets a CSV that lists both legs of an internal transfer avoid
+ * double-counting it as two unrelated transactions. A transfer-tagged row with no
+ * matching partner falls back to a plain expense/income entry, since we don't know
+ * which account the other side belongs to.
  */
-export async function importTransactions(
-  accountId: string,
-  rows: z.infer<typeof csvRowSchema>[]
-) {
+export async function importTransactions(rows: z.infer<typeof csvRowSchema>[]) {
   const userId = await requireUserId();
   const parsedRows = rows.map((row) => csvRowSchema.parse(row));
 
+  // Resolve (or create) every distinct account name up front.
+  const nameByKey = new Map<string, string>();
+  for (const row of parsedRows) {
+    const key = row.account.trim().toLowerCase();
+    if (!nameByKey.has(key)) nameByKey.set(key, row.account.trim());
+  }
+
+  const accountIdByKey = new Map<string, string>();
+  const accountCurrencyById = new Map<string, string>();
+  let accountsCreated = 0;
+
+  for (const [key, name] of nameByKey) {
+    let account = await db.financialAccount.findFirst({
+      where: { userId, name: { equals: name, mode: "insensitive" } },
+    });
+    if (!account) {
+      account = await db.financialAccount.create({
+        data: { userId, name, type: "bank", currency: "USD" },
+      });
+      accountsCreated++;
+    }
+    accountIdByKey.set(key, account.id);
+    accountCurrencyById.set(account.id, account.currency);
+  }
+
+  function resolveAccount(name: string) {
+    const id = accountIdByKey.get(name.trim().toLowerCase())!;
+    return { id, currency: accountCurrencyById.get(id)! };
+  }
+
   let imported = 0;
   let categorized = 0;
+  let transfersCreated = 0;
 
-  await db.$transaction(async (tx) => {
-    const account = await tx.financialAccount.findUniqueOrThrow({
-      where: { id: accountId, userId },
-    });
+  async function createPlainTransaction(row: (typeof parsedRows)[number]) {
+    const account = resolveAccount(row.account);
+    const kind: "income" | "expense" = row.amount < 0 ? "expense" : "income";
+    const amount = Math.abs(row.amount);
 
-    for (const row of parsedRows) {
-      const kind: "income" | "expense" = row.amount < 0 ? "expense" : "income";
-      const amount = Math.abs(row.amount);
+    await db.$transaction(async (tx) => {
       const { usdEquivalent, exchangeRateToUsd } = await convertToUsd(
         amount,
         account.currency,
@@ -270,7 +305,7 @@ export async function importTransactions(
       await tx.transaction.create({
         data: {
           userId,
-          accountId,
+          accountId: account.id,
           categoryId,
           kind,
           originalAmount: amount,
@@ -283,17 +318,70 @@ export async function importTransactions(
         },
       });
 
-      await adjustAccountBalance(tx, accountId, kind, usdEquivalent, row.date, 1);
-      imported++;
+      await adjustAccountBalance(tx, account.id, kind, usdEquivalent, row.date, 1);
+    });
+    imported++;
+  }
+
+  const isTransferRow = (row: (typeof parsedRows)[number]) =>
+    row.category?.trim().toLowerCase() === "transfer";
+  const normalRows = parsedRows.filter((r) => !isTransferRow(r));
+  const transferRows = parsedRows.filter(isTransferRow);
+
+  for (const row of normalRows) {
+    await createPlainTransaction(row);
+  }
+
+  // Pair same-day, opposite-sign, equal-magnitude transfer rows.
+  const byDate = new Map<string, (typeof parsedRows)[number][]>();
+  for (const row of transferRows) {
+    const key = row.date.toISOString().slice(0, 10);
+    const list = byDate.get(key) ?? [];
+    list.push(row);
+    byDate.set(key, list);
+  }
+
+  for (const dayRows of byDate.values()) {
+    const used = new Array(dayRows.length).fill(false);
+    for (let i = 0; i < dayRows.length; i++) {
+      if (used[i]) continue;
+      used[i] = true;
+      const row = dayRows[i];
+      const partnerIdx = dayRows.findIndex(
+        (r, j) =>
+          j !== i &&
+          !used[j] &&
+          Math.sign(r.amount) === -Math.sign(row.amount) &&
+          Math.abs(r.amount) === Math.abs(row.amount)
+      );
+
+      if (partnerIdx === -1) {
+        await createPlainTransaction(row);
+        continue;
+      }
+
+      used[partnerIdx] = true;
+      const partner = dayRows[partnerIdx];
+      const outgoing = row.amount < 0 ? row : partner;
+      const incoming = row.amount < 0 ? partner : row;
+
+      await createTransfer({
+        fromAccountId: resolveAccount(outgoing.account).id,
+        toAccountId: resolveAccount(incoming.account).id,
+        amount: Math.abs(row.amount),
+        date: row.date,
+        notes: "",
+      });
+      transfersCreated++;
     }
-  });
+  }
 
   revalidatePath("/transactions");
   revalidatePath("/dashboard");
   revalidatePath("/reports");
   revalidatePath("/accounts");
 
-  return { imported, categorized };
+  return { imported, categorized, transfersCreated, accountsCreated };
 }
 
 /**

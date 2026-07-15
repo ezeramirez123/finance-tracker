@@ -1,7 +1,12 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
-type CategoryTotal = { name: string; color: string; total: number };
+type CategoryTotal = { id: string; name: string; color: string; total: number };
 
 export function CategoryBreakdown({
   title,
@@ -10,7 +15,15 @@ export function CategoryBreakdown({
   title: string;
   categories: CategoryTotal[];
 }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const max = Math.max(...categories.map((c) => c.total), 0.01);
+
+  function hrefFor(categoryId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", categoryId);
+    return `${pathname}?${params.toString()}`;
+  }
 
   return (
     <Card>
@@ -25,7 +38,12 @@ export function CategoryBreakdown({
         ) : (
           <div className="flex flex-col gap-3">
             {categories.slice(0, 8).map((cat) => (
-              <div key={cat.name} className="flex flex-col gap-1">
+              <Link
+                key={cat.id}
+                href={hrefFor(cat.id)}
+                scroll={false}
+                className="flex flex-col gap-1 rounded-md p-1 transition-colors hover:bg-accent/50"
+              >
                 <div className="flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2">
                     <span
@@ -47,7 +65,7 @@ export function CategoryBreakdown({
                     }}
                   />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

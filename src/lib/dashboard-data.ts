@@ -71,8 +71,14 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
 
   let totalIncome = 0;
   let totalExpenses = 0;
-  const spendingByCategory = new Map<string, { name: string; color: string; total: number }>();
-  const incomeByCategory = new Map<string, { name: string; color: string; total: number }>();
+  const spendingByCategory = new Map<
+    string,
+    { id: string; name: string; color: string; total: number }
+  >();
+  const incomeByCategory = new Map<
+    string,
+    { id: string; name: string; color: string; total: number }
+  >();
   const dailyTotals = new Map<string, { income: number; expense: number }>();
 
   for (const t of transactions) {
@@ -85,6 +91,7 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
       dayEntry.income += usd;
       if (t.category) {
         const entry = incomeByCategory.get(t.category.id) ?? {
+          id: t.category.id,
           name: t.category.name,
           color: t.category.color,
           total: 0,
@@ -97,6 +104,7 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
       dayEntry.expense += usd;
       if (t.category) {
         const entry = spendingByCategory.get(t.category.id) ?? {
+          id: t.category.id,
           name: t.category.name,
           color: t.category.color,
           total: 0,
@@ -137,18 +145,50 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
   };
 }
 
-export async function getExpenseTransactions(userId: string, range: DateRange) {
+export async function getExpenseTransactions(
+  userId: string,
+  range: DateRange,
+  categoryId?: string
+) {
   return db.transaction.findMany({
-    where: { userId, kind: "expense", date: { gte: range.from, lte: range.to } },
+    where: {
+      userId,
+      kind: "expense",
+      date: { gte: range.from, lte: range.to },
+      ...(categoryId ? { categoryId } : {}),
+    },
     include: { category: true },
     orderBy: { date: "desc" },
   });
 }
 
-export async function getIncomeTransactions(userId: string, range: DateRange) {
+export async function getIncomeTransactions(
+  userId: string,
+  range: DateRange,
+  categoryId?: string
+) {
   return db.transaction.findMany({
-    where: { userId, kind: "income", date: { gte: range.from, lte: range.to } },
+    where: {
+      userId,
+      kind: "income",
+      date: { gte: range.from, lte: range.to },
+      ...(categoryId ? { categoryId } : {}),
+    },
     include: { category: true },
+    orderBy: { date: "desc" },
+  });
+}
+
+/** Kind-agnostic — a category belongs to exactly one kind, so this naturally
+ * returns only income or only expense transactions depending which was clicked. */
+export async function getTransactionsByCategory(
+  userId: string,
+  range: DateRange,
+  categoryId: string
+) {
+  return db.transaction.findMany({
+    where: { userId, categoryId, date: { gte: range.from, lte: range.to } },
+    include: { category: true, account: true },
     orderBy: { date: "desc" },
   });
 }

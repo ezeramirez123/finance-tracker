@@ -1,4 +1,6 @@
 import { format, parseISO } from "date-fns";
+import Link from "next/link";
+import { X } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { getDateRange } from "@/lib/period";
@@ -28,7 +30,7 @@ const TAB_OPTIONS = [
 export default async function IncomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ period?: string; from?: string; to?: string; category?: string }>;
 }) {
   const params = await searchParams;
   const session = await auth();
@@ -44,8 +46,21 @@ export default async function IncomePage({
 
   const [summary, incomeTransactions] = await Promise.all([
     getPeriodSummary(userId, range),
-    getIncomeTransactions(userId, range),
+    getIncomeTransactions(userId, range, params.category),
   ]);
+
+  const filteredCategory = params.category
+    ? summary.incomeByCategory.find((c) => c.id === params.category)
+    : undefined;
+
+  const clearFilterHref = (() => {
+    const clearParams = new URLSearchParams();
+    if (params.period) clearParams.set("period", params.period);
+    if (params.from) clearParams.set("from", params.from);
+    if (params.to) clearParams.set("to", params.to);
+    const qs = clearParams.toString();
+    return qs ? `/income?${qs}` : "/income";
+  })();
 
   const dailyBreakdown =
     !isCustom && tab === "week" ? await getDailyBreakdown(userId, range, "income") : null;
@@ -105,8 +120,26 @@ export default async function IncomePage({
         <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
       </div>
 
+      {filteredCategory && (
+        <div className="flex items-center gap-2">
+          <span
+            className="size-2.5 rounded-full"
+            style={{ backgroundColor: filteredCategory.color }}
+          />
+          <span className="text-sm font-medium">Filtered by {filteredCategory.name}</span>
+          <Link
+            href={clearFilterHref}
+            scroll={false}
+            className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-3.5" />
+            Clear
+          </Link>
+        </div>
+      )}
+
       <TransactionListCard
-        title="All income"
+        title={filteredCategory ? `Income · ${filteredCategory.name}` : "All income"}
         transactions={incomeTransactions.map((t) => ({
           ...t,
           originalAmount: Number(t.originalAmount),

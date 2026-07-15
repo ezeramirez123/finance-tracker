@@ -1,9 +1,20 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { formatMoney } from "@/lib/format";
+import { TransactionListRow } from "@/components/dashboard/transaction-list-row";
+
+type Account = { id: string; name: string; icon: string; currency: string };
+type Category = {
+  id: string;
+  name: string;
+  kind: "income" | "expense" | "transfer";
+  color: string;
+};
 
 type TransactionLike = {
   id: string;
+  accountId: string;
+  categoryId: string | null;
   merchant: string | null;
+  notes: string | null;
   date: Date;
   kind: "income" | "expense" | "transfer";
   transferDirection?: string | null;
@@ -12,20 +23,19 @@ type TransactionLike = {
   category: { name: string; color: string } | null;
 };
 
-function isCredit(t: Pick<TransactionLike, "kind" | "transferDirection">): boolean {
-  if (t.kind === "income") return true;
-  if (t.kind === "expense") return false;
-  return t.transferDirection === "in";
-}
-
 export function TransactionListCard({
   title,
   transactions,
   emptyLabel,
+  accounts,
+  categories,
 }: {
   title: string;
   transactions: TransactionLike[];
   emptyLabel: string;
+  /** When given (alongside `categories`), rows become clickable to open the edit dialog. */
+  accounts?: Account[];
+  categories?: Category[];
 }) {
   return (
     <Card>
@@ -40,28 +50,12 @@ export function TransactionListCard({
         ) : (
           <div className="flex flex-col divide-y">
             {transactions.map((t) => (
-              <div key={t.id} className="flex items-center justify-between py-2.5">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">
-                    {t.merchant || t.category?.name || "Uncategorized"}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {t.date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                    })}
-                    {t.category ? ` · ${t.category.name}` : ""}
-                  </span>
-                </div>
-                <span
-                  className={`text-sm font-medium tabular-nums ${
-                    isCredit(t) ? "text-chart-good" : ""
-                  }`}
-                >
-                  {isCredit(t) ? "+" : "-"}
-                  {formatMoney(Number(t.originalAmount), t.originalCurrency)}
-                </span>
-              </div>
+              <TransactionListRow
+                key={t.id}
+                transaction={{ ...t, originalAmount: Number(t.originalAmount) }}
+                accounts={accounts}
+                categories={categories}
+              />
             ))}
           </div>
         )}

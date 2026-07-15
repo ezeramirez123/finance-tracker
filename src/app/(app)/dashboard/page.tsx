@@ -1,4 +1,8 @@
+import Link from "next/link";
+import { X } from "lucide-react";
+
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
 import {
   getNetWorth,
@@ -6,6 +10,7 @@ import {
   getTotalBalance,
   getWeeklySpending,
   getWeekDailyTotals,
+  getTransactionsByCategory,
 } from "@/lib/dashboard-data";
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
@@ -25,7 +30,13 @@ function percentDelta(current: number, previous: number): number | null {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; from?: string; to?: string; weekOffset?: string }>;
+  searchParams: Promise<{
+    period?: string;
+    from?: string;
+    to?: string;
+    weekOffset?: string;
+    category?: string;
+  }>;
 }) {
   const params = await searchParams;
   const session = await auth();
@@ -41,7 +52,7 @@ export default async function DashboardPage({
   const previousRange = getPreviousRange(range);
   const weekOffset = Math.min(0, parseInt(params.weekOffset ?? "0", 10) || 0);
 
-  const [summary, previousSummary, netWorth, totalBalance, weeklySpending, currentWeekDays] =
+  const [summary, previousSummary, netWorth, totalBalance, weeklySpending, currentWeekDays, accounts, categories] =
     await Promise.all([
       getPeriodSummary(userId, range),
       getPeriodSummary(userId, previousRange),
@@ -49,7 +60,30 @@ export default async function DashboardPage({
       getTotalBalance(userId),
       getWeeklySpending(userId),
       getWeekDailyTotals(userId, weekOffset),
+      db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+      db.category.findMany({
+        where: { OR: [{ userId }, { userId: null }] },
+        orderBy: { name: "asc" },
+      }),
     ]);
+
+  const filteredCategory = params.category
+    ? [...summary.spendingByCategory, ...summary.incomeByCategory].find(
+        (c) => c.id === params.category
+      )
+    : undefined;
+  const categoryTransactions = filteredCategory
+    ? await getTransactionsByCategory(userId, range, filteredCategory.id)
+    : null;
+
+  const clearFilterHref = (() => {
+    const clearParams = new URLSearchParams();
+    if (params.period) clearParams.set("period", params.period);
+    if (params.from) clearParams.set("from", params.from);
+    if (params.to) clearParams.set("to", params.to);
+    const qs = clearParams.toString();
+    return qs ? `/dashboard?${qs}` : "/dashboard";
+  })();
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
   const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
@@ -104,24 +138,60 @@ export default async function DashboardPage({
         <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <TransactionListCard
-          title="Largest expenses"
-          transactions={summary.largestExpenses.map((t) => ({
-            ...t,
-            originalAmount: Number(t.originalAmount),
-          }))}
-          emptyLabel="No expenses in this period"
-        />
-        <TransactionListCard
-          title="Recent transactions"
-          transactions={summary.recentTransactions.map((t) => ({
-            ...t,
-            originalAmount: Number(t.originalAmount),
-          }))}
-          emptyLabel="No transactions in this period"
-        />
-      </div>
+      {filteredCategory && categoryTransactions ? (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className="size-2.5 rounded-full"
+              style={{ backgroundColor: filteredCategory.color }}
+            />
+            <span className="text-sm font-medium">
+              Filtered by {filteredCategory.name}
+            </span>
+            <Link
+              href={clearFilterHref}
+              scroll={false}
+              className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-3.5" />
+              Clear
+            </Link>
+          </div>
+          <TransactionListCard
+            title={`Transactions · ${filteredCategory.name}`}
+            transactions={categoryTransactions.map((t) => ({
+              ...t,
+              originalAmount: Number(t.originalAmount),
+            }))}
+            emptyLabel="No transactions in this category for this period"
+            accounts={accounts}
+            categories={categories}
+          />
+        </div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-2">
+          <TransactionListCard
+            title="Largest expenses"
+            transactions={summary.largestExpenses.map((t) => ({
+              ...t,
+              originalAmount: Number(t.originalAmount),
+            }))}
+            emptyLabel="No expenses in this period"
+            accounts={accounts}
+            categories={categories}
+          />
+          <TransactionListCard
+            title="Recent transactions"
+            transactions={summary.recentTransactions.map((t) => ({
+              ...t,
+              originalAmount: Number(t.originalAmount),
+            }))}
+            emptyLabel="No transactions in this period"
+            accounts={accounts}
+            categories={categories}
+          />
+        </div>
+      )}
     </div>
   );
 }

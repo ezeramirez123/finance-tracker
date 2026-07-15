@@ -1,4 +1,6 @@
 import { format, parseISO } from "date-fns";
+import Link from "next/link";
+import { X } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { getDateRange } from "@/lib/period";
@@ -28,7 +30,7 @@ const TAB_OPTIONS = [
 export default async function ExpensesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
+  searchParams: Promise<{ period?: string; from?: string; to?: string; category?: string }>;
 }) {
   const params = await searchParams;
   const session = await auth();
@@ -44,8 +46,21 @@ export default async function ExpensesPage({
 
   const [summary, expenseTransactions] = await Promise.all([
     getPeriodSummary(userId, range),
-    getExpenseTransactions(userId, range),
+    getExpenseTransactions(userId, range, params.category),
   ]);
+
+  const filteredCategory = params.category
+    ? summary.spendingByCategory.find((c) => c.id === params.category)
+    : undefined;
+
+  const clearFilterHref = (() => {
+    const clearParams = new URLSearchParams();
+    if (params.period) clearParams.set("period", params.period);
+    if (params.from) clearParams.set("from", params.from);
+    if (params.to) clearParams.set("to", params.to);
+    const qs = clearParams.toString();
+    return qs ? `/expenses?${qs}` : "/expenses";
+  })();
 
   const dailyBreakdown =
     !isCustom && tab === "week" ? await getDailyBreakdown(userId, range, "expense") : null;
@@ -105,8 +120,26 @@ export default async function ExpensesPage({
         <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />
       </div>
 
+      {filteredCategory && (
+        <div className="flex items-center gap-2">
+          <span
+            className="size-2.5 rounded-full"
+            style={{ backgroundColor: filteredCategory.color }}
+          />
+          <span className="text-sm font-medium">Filtered by {filteredCategory.name}</span>
+          <Link
+            href={clearFilterHref}
+            scroll={false}
+            className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <X className="size-3.5" />
+            Clear
+          </Link>
+        </div>
+      )}
+
       <TransactionListCard
-        title="All expenses"
+        title={filteredCategory ? `Expenses · ${filteredCategory.name}` : "All expenses"}
         transactions={expenseTransactions.map((t) => ({
           ...t,
           originalAmount: Number(t.originalAmount),

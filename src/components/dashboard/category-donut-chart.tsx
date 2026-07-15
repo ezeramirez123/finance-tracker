@@ -1,11 +1,12 @@
 "use client";
 
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
-type CategoryTotal = { name: string; color: string; total: number };
+type CategoryTotal = { id: string; name: string; color: string; total: number };
 
 function CustomTooltip({
   active,
@@ -40,6 +41,16 @@ export function CategoryDonutChart({
   title: string;
   categories: CategoryTotal[];
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  function goToCategory(categoryId: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("category", categoryId);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -61,9 +72,11 @@ export function CategoryDonutChart({
                 outerRadius="85%"
                 paddingAngle={2}
                 strokeWidth={0}
+                cursor="pointer"
+                onClick={(entry) => goToCategory((entry as unknown as CategoryTotal).id)}
               >
                 {categories.map((c) => (
-                  <Cell key={c.name} fill={c.color} />
+                  <Cell key={c.id} fill={c.color} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />

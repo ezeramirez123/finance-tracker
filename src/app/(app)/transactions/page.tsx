@@ -1,3 +1,8 @@
+import Link from "next/link";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { endOfDay } from "date-fns";
+import type { Prisma } from "@prisma/client";
+
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/card";
@@ -15,16 +20,54 @@ import { TransactionRowActions } from "@/components/transactions/transaction-row
 import { CategoryCombobox } from "@/components/transactions/category-combobox";
 import { CsvImportDialog } from "@/components/transactions/csv-import-dialog";
 import { TransferDialog } from "@/components/transactions/transfer-dialog";
+import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { formatMoney, formatUsd } from "@/lib/format";
 
-export default async function TransactionsPage() {
+const SORT_OPTIONS = ["date-desc", "date-asc", "amount-desc", "amount-asc"] as const;
+type Sort = (typeof SORT_OPTIONS)[number];
+
+export default async function TransactionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    category?: string;
+    account?: string;
+    from?: string;
+    to?: string;
+    sort?: string;
+  }>;
+}) {
+  const params = await searchParams;
   const session = await auth();
   const userId = session!.user.id;
 
+  const sort: Sort = SORT_OPTIONS.includes(params.sort as Sort)
+    ? (params.sort as Sort)
+    : "date-desc";
+
+  const where: Prisma.TransactionWhereInput = { userId };
+  if (params.category) where.categoryId = params.category;
+  if (params.account) where.accountId = params.account;
+  if (params.from || params.to) {
+    where.date = {
+      ...(params.from ? { gte: new Date(params.from) } : {}),
+      ...(params.to ? { lte: endOfDay(new Date(params.to)) } : {}),
+    };
+  }
+
+  const orderBy: Prisma.TransactionOrderByWithRelationInput =
+    sort === "date-asc"
+      ? { date: "asc" }
+      : sort === "amount-desc"
+        ? { usdEquivalent: "desc" }
+        : sort === "amount-asc"
+          ? { usdEquivalent: "asc" }
+          : { date: "desc" };
+
   const [transactions, accounts, categories] = await Promise.all([
     db.transaction.findMany({
-      where: { userId },
-      orderBy: { date: "desc" },
+      where,
+      orderBy,
       include: { account: true, category: true },
       take: 200,
     }),
@@ -34,6 +77,35 @@ export default async function TransactionsPage() {
       orderBy: { name: "asc" },
     }),
   ]);
+
+  function sortHref(column: "date" | "amount") {
+    const params2 = new URLSearchParams();
+    if (params.category) params2.set("category", params.category);
+    if (params.account) params2.set("account", params.account);
+    if (params.from) params2.set("from", params.from);
+    if (params.to) params2.set("to", params.to);
+
+    const nextSort: Sort =
+      column === "date"
+        ? sort === "date-desc"
+          ? "date-asc"
+          : "date-desc"
+        : sort === "amount-desc"
+          ? "amount-asc"
+          : "amount-desc";
+    params2.set("sort", nextSort);
+    return `/transactions?${params2.toString()}`;
+  }
+
+  function sortIcon(column: "date" | "amount") {
+    const active = sort.startsWith(column);
+    if (!active) return <ArrowUpDown className="size-3 text-muted-foreground/50" />;
+    return sort.endsWith("asc") ? (
+      <ArrowUp className="size-3" />
+    ) : (
+      <ArrowDown className="size-3" />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -51,10 +123,21 @@ export default async function TransactionsPage() {
         </div>
       </div>
 
+      <TransactionFilters
+        accounts={accounts}
+        categories={categories}
+        category={params.category}
+        account={params.account}
+        from={params.from}
+        to={params.to}
+      />
+
       {transactions.length === 0 ? (
         <Card className="items-center justify-center py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            No transactions yet. Add your first one to see it here.
+            {params.category || params.account || params.from || params.to
+              ? "No transactions match these filters."
+              : "No transactions yet. Add your first one to see it here."}
           </p>
         </Card>
       ) : (
@@ -62,12 +145,28 @@ export default async function TransactionsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Date</TableHead>
+                <TableHead>
+                  <Link
+                    href={sortHref("date")}
+                    className="flex items-center gap-1 hover:text-foreground"
+                  >
+                    Date
+                    {sortIcon("date")}
+                  </Link>
+                </TableHead>
                 <TableHead>Merchant</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Account</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">USD</TableHead>
+                <TableHead className="text-right">
+                  <Link
+                    href={sortHref("amount")}
+                    className="flex items-center justify-end gap-1 hover:text-foreground"
+                  >
+                    USD
+                    {sortIcon("amount")}
+                  </Link>
+                </TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>

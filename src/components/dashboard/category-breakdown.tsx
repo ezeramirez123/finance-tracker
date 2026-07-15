@@ -11,18 +11,23 @@ type CategoryTotal = { id: string; name: string; color: string; total: number };
 export function CategoryBreakdown({
   title,
   categories,
+  targetPath,
 }: {
   title: string;
   categories: CategoryTotal[];
+  /** Where clicking a category should go. Defaults to the current page (in-place
+   * filtering); pass e.g. "/expenses" to navigate elsewhere instead. */
+  targetPath?: string;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const destination = targetPath ?? pathname;
   const max = Math.max(...categories.map((c) => c.total), 0.01);
 
   function hrefFor(categoryId: string) {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = destination === pathname ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
     params.set("category", categoryId);
-    return `${pathname}?${params.toString()}`;
+    return `${destination}?${params.toString()}`;
   }
 
   return (

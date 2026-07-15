@@ -159,6 +159,7 @@ export async function getExpenseTransactions(
     },
     include: { category: true },
     orderBy: { date: "desc" },
+    take: 200,
   });
 }
 
@@ -176,20 +177,7 @@ export async function getIncomeTransactions(
     },
     include: { category: true },
     orderBy: { date: "desc" },
-  });
-}
-
-/** Kind-agnostic — a category belongs to exactly one kind, so this naturally
- * returns only income or only expense transactions depending which was clicked. */
-export async function getTransactionsByCategory(
-  userId: string,
-  range: DateRange,
-  categoryId: string
-) {
-  return db.transaction.findMany({
-    where: { userId, categoryId, date: { gte: range.from, lte: range.to } },
-    include: { category: true, account: true },
-    orderBy: { date: "desc" },
+    take: 200,
   });
 }
 

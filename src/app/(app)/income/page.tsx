@@ -1,6 +1,4 @@
 import { format, parseISO } from "date-fns";
-import Link from "next/link";
-import { X } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { getDateRange } from "@/lib/period";
@@ -14,6 +12,7 @@ import { PeriodTabs } from "@/components/period-tabs";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
+import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
@@ -53,15 +52,6 @@ export default async function IncomePage({
     ? summary.incomeByCategory.find((c) => c.id === params.category)
     : undefined;
 
-  const clearFilterHref = (() => {
-    const clearParams = new URLSearchParams();
-    if (params.period) clearParams.set("period", params.period);
-    if (params.from) clearParams.set("from", params.from);
-    if (params.to) clearParams.set("to", params.to);
-    const qs = clearParams.toString();
-    return qs ? `/income?${qs}` : "/income";
-  })();
-
   const dailyBreakdown =
     !isCustom && tab === "week" ? await getDailyBreakdown(userId, range, "income") : null;
   const weeklyBreakdown =
@@ -76,7 +66,10 @@ export default async function IncomePage({
             Just the money coming in.
           </p>
         </div>
-        <PeriodTabs period={isCustom ? "" : tab} options={TAB_OPTIONS} />
+        <div className="flex flex-wrap items-center gap-2">
+          <CategoryFilterSelect categories={summary.incomeByCategory} category={params.category} />
+          <PeriodTabs period={isCustom ? "" : tab} options={TAB_OPTIONS} />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -119,24 +112,6 @@ export default async function IncomePage({
         <CategoryDonutChart title="Income by category" categories={summary.incomeByCategory} />
         <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
       </div>
-
-      {filteredCategory && (
-        <div className="flex items-center gap-2">
-          <span
-            className="size-2.5 rounded-full"
-            style={{ backgroundColor: filteredCategory.color }}
-          />
-          <span className="text-sm font-medium">Filtered by {filteredCategory.name}</span>
-          <Link
-            href={clearFilterHref}
-            scroll={false}
-            className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
-          >
-            <X className="size-3.5" />
-            Clear
-          </Link>
-        </div>
-      )}
 
       <TransactionListCard
         title={filteredCategory ? `Income · ${filteredCategory.name}` : "All income"}

@@ -48,7 +48,7 @@ export function TransactionListCard({
             {emptyLabel}
           </p>
         ) : (
-          <div className="flex flex-col divide-y">
+          <div className="flex max-h-[28rem] flex-col divide-y overflow-y-auto">
             {transactions.map((t) => (
               <TransactionListRow
                 key={t.id}

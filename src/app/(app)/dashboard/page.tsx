@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { X } from "lucide-react";
-
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
@@ -10,7 +7,6 @@ import {
   getTotalBalance,
   getWeeklySpending,
   getWeekDailyTotals,
-  getTransactionsByCategory,
 } from "@/lib/dashboard-data";
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
@@ -35,7 +31,6 @@ export default async function DashboardPage({
     from?: string;
     to?: string;
     weekOffset?: string;
-    category?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -66,24 +61,6 @@ export default async function DashboardPage({
         orderBy: { name: "asc" },
       }),
     ]);
-
-  const filteredCategory = params.category
-    ? [...summary.spendingByCategory, ...summary.incomeByCategory].find(
-        (c) => c.id === params.category
-      )
-    : undefined;
-  const categoryTransactions = filteredCategory
-    ? await getTransactionsByCategory(userId, range, filteredCategory.id)
-    : null;
-
-  const clearFilterHref = (() => {
-    const clearParams = new URLSearchParams();
-    if (params.period) clearParams.set("period", params.period);
-    if (params.from) clearParams.set("from", params.from);
-    if (params.to) clearParams.set("to", params.to);
-    const qs = clearParams.toString();
-    return qs ? `/dashboard?${qs}` : "/dashboard";
-  })();
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
   const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
@@ -134,64 +111,40 @@ export default async function DashboardPage({
       <WeeklySpendingCollapsible weeks={weeklySpending} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />
-        <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
+        <CategoryBreakdown
+          title="Spending by category"
+          categories={summary.spendingByCategory}
+          targetPath="/expenses"
+        />
+        <CategoryBreakdown
+          title="Income by category"
+          categories={summary.incomeByCategory}
+          targetPath="/income"
+        />
       </div>
 
-      {filteredCategory && categoryTransactions ? (
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2">
-            <span
-              className="size-2.5 rounded-full"
-              style={{ backgroundColor: filteredCategory.color }}
-            />
-            <span className="text-sm font-medium">
-              Filtered by {filteredCategory.name}
-            </span>
-            <Link
-              href={clearFilterHref}
-              scroll={false}
-              className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <X className="size-3.5" />
-              Clear
-            </Link>
-          </div>
-          <TransactionListCard
-            title={`Transactions · ${filteredCategory.name}`}
-            transactions={categoryTransactions.map((t) => ({
-              ...t,
-              originalAmount: Number(t.originalAmount),
-            }))}
-            emptyLabel="No transactions in this category for this period"
-            accounts={accounts}
-            categories={categories}
-          />
-        </div>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <TransactionListCard
-            title="Largest expenses"
-            transactions={summary.largestExpenses.map((t) => ({
-              ...t,
-              originalAmount: Number(t.originalAmount),
-            }))}
-            emptyLabel="No expenses in this period"
-            accounts={accounts}
-            categories={categories}
-          />
-          <TransactionListCard
-            title="Recent transactions"
-            transactions={summary.recentTransactions.map((t) => ({
-              ...t,
-              originalAmount: Number(t.originalAmount),
-            }))}
-            emptyLabel="No transactions in this period"
-            accounts={accounts}
-            categories={categories}
-          />
-        </div>
-      )}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TransactionListCard
+          title="Largest expenses"
+          transactions={summary.largestExpenses.map((t) => ({
+            ...t,
+            originalAmount: Number(t.originalAmount),
+          }))}
+          emptyLabel="No expenses in this period"
+          accounts={accounts}
+          categories={categories}
+        />
+        <TransactionListCard
+          title="Recent transactions"
+          transactions={summary.recentTransactions.map((t) => ({
+            ...t,
+            originalAmount: Number(t.originalAmount),
+          }))}
+          emptyLabel="No transactions in this period"
+          accounts={accounts}
+          categories={categories}
+        />
+      </div>
     </div>
   );
 }

@@ -37,18 +37,23 @@ function CustomTooltip({
 export function CategoryDonutChart({
   title,
   categories,
+  targetPath,
 }: {
   title: string;
   categories: CategoryTotal[];
+  /** Where clicking a slice should go. Defaults to the current page (in-place
+   * filtering); pass e.g. "/expenses" to navigate elsewhere instead. */
+  targetPath?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const destination = targetPath ?? pathname;
 
   function goToCategory(categoryId: string) {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = destination === pathname ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
     params.set("category", categoryId);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    router.push(`${destination}?${params.toString()}`, { scroll: false });
   }
 
   return (

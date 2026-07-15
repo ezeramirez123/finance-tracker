@@ -14,10 +14,10 @@ import {
 } from "@/components/ui/popover";
 
 const OPTIONS = [
-  { value: "today", label: "Today" },
-  { value: "week", label: "This Week" },
-  { value: "month", label: "This Month" },
-  { value: "year", label: "This Year" },
+  { value: "today", label: "Day" },
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+  { value: "year", label: "Year" },
 ] as const;
 
 export function PeriodSwitcher({

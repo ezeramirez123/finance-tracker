@@ -49,25 +49,25 @@ export function WeekCalendarStrip({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="size-7"
+            className="size-10 rounded-full sm:size-7 sm:rounded-md"
             onClick={() => goToWeekOffset(weekOffset - 1)}
             aria-label="Previous week"
           >
-            <ChevronLeft className="size-4" />
+            <ChevronLeft className="size-5 sm:size-4" />
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
-            className="size-7"
+            className="size-10 rounded-full sm:size-7 sm:rounded-md"
             onClick={() => goToWeekOffset(weekOffset + 1)}
             disabled={weekOffset >= 0}
             aria-label="Next week"
           >
-            <ChevronRight className="size-4" />
+            <ChevronRight className="size-5 sm:size-4" />
           </Button>
         </div>
       </CardHeader>

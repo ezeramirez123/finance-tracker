@@ -2,7 +2,13 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DEFAULT_OPTIONS = [
   { value: "day", label: "Day" },
@@ -30,14 +36,17 @@ export function PeriodTabs({
   }
 
   return (
-    <Tabs value={period} onValueChange={setPeriod}>
-      <TabsList>
+    <Select value={period} onValueChange={setPeriod}>
+      <SelectTrigger className="w-[110px] min-w-0 shrink-0">
+        <SelectValue placeholder="Period" className="min-w-0 truncate" />
+      </SelectTrigger>
+      <SelectContent>
         {options.map((opt) => (
-          <TabsTrigger key={opt.value} value={opt.value}>
+          <SelectItem key={opt.value} value={opt.value}>
             {opt.label}
-          </TabsTrigger>
+          </SelectItem>
         ))}
-      </TabsList>
-    </Tabs>
+      </SelectContent>
+    </Select>
   );
 }

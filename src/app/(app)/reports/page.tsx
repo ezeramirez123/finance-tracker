@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { getDateRange, type Period } from "@/lib/period";
 import { getPeriodSummary } from "@/lib/dashboard-data";
-import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
+import { PeriodRangeSelect } from "@/components/period-range-select";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
@@ -35,7 +35,7 @@ export default async function ReportsPage({
             Dig into any period you want.
           </p>
         </div>
-        <PeriodSwitcher period={period} from={params.from} to={params.to} />
+        <PeriodRangeSelect period={period} from={params.from} to={params.to} />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

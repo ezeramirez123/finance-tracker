@@ -24,8 +24,8 @@ function DayCell({ day, onClick }: { day: DayTotal; onClick: (date: string) => v
         today && "border-primary"
       )}
     >
-      <span className="text-xs text-muted-foreground">{format(parsed, "EEE")}</span>
-      <span className="text-sm font-semibold">{format(parsed, "d")}</span>
+      <span className="text-xs font-bold">{format(parsed, "EEE")}</span>
+      <span className="text-sm font-normal">{format(parsed, "d")}</span>
       <span className="text-[11px] tabular-nums text-chart-good">
         {day.income > 0 ? `+${formatUsd(day.income)}` : formatUsd(0)}
       </span>
@@ -76,7 +76,7 @@ export function WeekCalendarStrip({
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="border-b pb-4">
         <CardTitle>{title}</CardTitle>
         <div className="flex items-center gap-2">
           <Button

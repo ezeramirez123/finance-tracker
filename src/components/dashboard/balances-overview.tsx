@@ -48,7 +48,7 @@ function BalanceCard({
           <Button
             variant="ghost"
             size="icon"
-            className="size-6 rounded-full hover:ring-1 hover:ring-border"
+            className="size-6 rounded-full hover:bg-background"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();

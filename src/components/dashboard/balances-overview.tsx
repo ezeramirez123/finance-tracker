@@ -1,33 +1,12 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/format";
-
-function useHiddenState(storageKey: string) {
-  const [hidden, setHidden] = React.useState(false);
-
-  React.useEffect(() => {
-    // Read after mount (not in a lazy initializer) so server and client render
-    // the same markup on first paint; localStorage isn't available during SSR.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (localStorage.getItem(storageKey) === "true") setHidden(true);
-  }, [storageKey]);
-
-  function toggle() {
-    setHidden((prev) => {
-      const next = !prev;
-      localStorage.setItem(storageKey, String(next));
-      return next;
-    });
-  }
-
-  return [hidden, toggle] as const;
-}
+import { useHiddenState } from "@/lib/use-hidden-state";
 
 function BalanceCard({
   label,

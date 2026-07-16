@@ -16,16 +16,21 @@ export function UserMenu({
   name,
   email,
   collapsed,
+  fullWidth = true,
 }: {
   name?: string | null;
   email?: string | null;
   collapsed?: boolean;
+  /** Set false when the trigger sits in a flex row that should size it to content
+   * (e.g. the mobile top bar) instead of stretching to fill its container. */
+  fullWidth?: boolean;
 }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         className={cn(
-          "flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left hover:bg-accent/50",
+          "flex items-center gap-2.5 rounded-md px-2 py-2 text-left hover:bg-accent/50",
+          fullWidth && "w-full",
           collapsed && "justify-center px-0"
         )}
       >

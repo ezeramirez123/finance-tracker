@@ -27,7 +27,7 @@ export function WeekCalendarStrip({
     params.set("period", "custom");
     params.set("from", date.slice(0, 10));
     params.set("to", date.slice(0, 10));
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   function goToWeekOffset(offset: number) {
@@ -37,7 +37,7 @@ export function WeekCalendarStrip({
     } else {
       params.set("weekOffset", String(offset));
     }
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   const title =

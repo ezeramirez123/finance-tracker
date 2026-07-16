@@ -46,11 +46,11 @@ export function NetWorthSparkline({ data }: { data: Point[] }) {
 
   return (
     <div className="flex items-stretch gap-3">
-      <div className="flex shrink-0 flex-col justify-between py-1 text-[10px] tabular-nums text-muted-foreground">
-        <p>{formatUsd(max)}</p>
-        <p>{formatUsd(min)}</p>
+      <div className="flex h-16 shrink-0 flex-col text-[10px] tabular-nums text-muted-foreground">
+        <p className="pt-1">{formatUsd(max)}</p>
+        <p className="mt-auto mb-5">{formatUsd(min)}</p>
       </div>
-      <div className="h-16 min-w-0 flex-1">
+      <div className="h-16 min-w-0 flex-1 [&_*]:outline-none">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>
@@ -61,6 +61,7 @@ export function NetWorthSparkline({ data }: { data: Point[] }) {
             </defs>
             <XAxis
               dataKey="date"
+              height={20}
               tickFormatter={(v) => format(parseISO(v), "MMM d")}
               tickLine={false}
               axisLine={false}

@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Eye, EyeOff } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/format";
+import { useHiddenState } from "@/lib/use-hidden-state";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 
 function DeltaBadge({
@@ -90,16 +94,34 @@ export function MobileSummaryCard({
   netHref?: string;
   netWorthHistory?: { date: string; netWorth: number }[];
 }) {
+  const [hidden, toggle] = useHiddenState("hideNetWorth");
+
   return (
     <Card className="gap-3 md:hidden">
       <Link
         href="/accounts"
         className="block rounded-md px-5 py-1 transition-colors hover:bg-accent"
       >
-        <p className="text-sm font-medium text-muted-foreground">Net worth</p>
-        <p className="text-4xl font-semibold tracking-tight">{formatUsd(netWorth)}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-muted-foreground">Net worth</p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-8 rounded-full hover:bg-background/40"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggle();
+            }}
+          >
+            {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+          </Button>
+        </div>
+        <p className="text-4xl font-semibold tracking-tight">
+          {hidden ? "••••••" : formatUsd(netWorth)}
+        </p>
       </Link>
-      {netWorthHistory && (
+      {!hidden && netWorthHistory && (
         <div className="px-5">
           <NetWorthSparkline data={netWorthHistory} />
         </div>

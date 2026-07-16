@@ -12,7 +12,6 @@ import {
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeeklySpendingCollapsible } from "@/components/dashboard/weekly-spending-collapsible";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
@@ -145,8 +144,6 @@ export default async function DashboardPage({
       </div>
 
       <WeekCalendarStrip days={currentWeekDays} weekOffset={weekOffset} />
-
-      <DailyTrendChart data={summary.dailyTrend} />
 
       <WeeklySpendingCollapsible weeks={weeklySpending} />
 

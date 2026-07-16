@@ -47,6 +47,10 @@ const MERCHANT_HEADERS = ["merchant", "description", "name", "payee"];
 const AMOUNT_HEADERS = ["amount", "value"];
 const CATEGORY_HEADERS = ["category"];
 const BALANCE_HEADERS = ["balance", "running balance", "ending balance", "current balance"];
+const TYPE_HEADERS = ["type", "transaction type"];
+
+const EXPENSE_TYPE_WORDS = ["expense", "debit", "withdrawal", "purchase", "out"];
+const INCOME_TYPE_WORDS = ["income", "credit", "deposit", "in"];
 
 function findColumn(headers: string[], candidates: string[]): string | undefined {
   const lower = headers.map((h) => h.toLowerCase().trim());
@@ -59,6 +63,16 @@ function findColumn(headers: string[], candidates: string[]): string | undefined
 
 function parseAmount(raw: string): number {
   return parseFloat(raw.replace(/[^0-9.-]/g, ""));
+}
+
+/** Lets a CSV with an always-positive Amount column indicate direction via a
+ * separate Type column (Expense/Income, Debit/Credit, ...) instead of a sign. */
+function resolveSign(rawType: string | undefined): 1 | -1 | null {
+  if (!rawType) return null;
+  const value = rawType.trim().toLowerCase();
+  if (EXPENSE_TYPE_WORDS.includes(value)) return -1;
+  if (INCOME_TYPE_WORDS.includes(value)) return 1;
+  return null;
 }
 
 function CsvRequirementsInfo() {
@@ -79,12 +93,7 @@ function CsvRequirementsInfo() {
             <span className="font-medium">Required:</span> Date, Account, Amount
           </p>
           <p>
-            <span className="font-medium">Optional:</span> Merchant, Category, Balance
-          </p>
-          <p className="mt-1 text-muted-foreground">
-            Negative amount = expense. Matching Transfer rows are paired automatically.
-            Balance (running balance after the row) sets the account&apos;s true balance
-            from its most recent row.
+            <span className="font-medium">Optional:</span> Merchant, Category, Type, Balance
           </p>
         </TooltipContent>
       </Tooltip>
@@ -114,6 +123,7 @@ export function CsvImportDialog() {
         const amountCol = findColumn(headers, AMOUNT_HEADERS);
         const categoryCol = findColumn(headers, CATEGORY_HEADERS);
         const balanceCol = findColumn(headers, BALANCE_HEADERS);
+        const typeCol = findColumn(headers, TYPE_HEADERS);
 
         if (!dateCol || !accountCol || !amountCol) {
           setParseError(
@@ -127,8 +137,13 @@ export function CsvImportDialog() {
         for (const record of results.data) {
           const rawAmount = record[amountCol];
           if (!record[dateCol] || !record[accountCol] || !rawAmount) continue;
-          const amount = parseAmount(rawAmount);
+          let amount = parseAmount(rawAmount);
           if (!Number.isFinite(amount) || amount === 0) continue;
+
+          if (typeCol) {
+            const sign = resolveSign(record[typeCol]);
+            if (sign !== null) amount = Math.abs(amount) * sign;
+          }
 
           const rawBalance = balanceCol ? record[balanceCol] : undefined;
           const balance = rawBalance ? parseAmount(rawBalance) : NaN;

@@ -325,13 +325,18 @@ export async function getAccountBalanceHistorySeries(userId: string, days = 90) 
   };
 }
 
-/** Daily net worth (sum of includeInNetWorth accounts, in USD) for the past `days` days. */
-export async function getNetWorthHistory(userId: string, days = 30) {
+/**
+ * Daily net worth (sum of includeInNetWorth accounts, in USD) covering `range`,
+ * extended to at least a 7-day window so short periods (e.g. "today") still
+ * plot a legible trend rather than a single point.
+ */
+export async function getNetWorthHistory(userId: string, range: DateRange) {
   const accounts = await db.financialAccount.findMany({
     where: { userId, includeInNetWorth: true },
   });
-  const since = startOfDay(subDays(new Date(), days));
   const now = new Date();
+  const minSince = startOfDay(subDays(now, 6));
+  const since = range.from < minSince ? startOfDay(range.from) : minSince;
 
   const perAccountPoints = await Promise.all(
     accounts.map(async (account) => {

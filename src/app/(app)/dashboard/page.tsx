@@ -62,7 +62,7 @@ export default async function DashboardPage({
     getPeriodSummary(userId, range),
     getPeriodSummary(userId, previousRange),
     getNetWorth(userId),
-    getNetWorthHistory(userId),
+    getNetWorthHistory(userId, range),
     getTotalBalance(userId),
     getWeeklySpending(userId),
     getWeekDailyTotals(userId, weekOffset),

@@ -5,6 +5,7 @@ import type { Prisma } from "@prisma/client";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getDateRange, type Period } from "@/lib/period";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -31,6 +32,7 @@ export default async function TransactionsPage({
   searchParams: Promise<{
     category?: string;
     account?: string;
+    period?: string;
     from?: string;
     to?: string;
     sort?: string;
@@ -44,14 +46,18 @@ export default async function TransactionsPage({
     ? (params.sort as Sort)
     : "date-desc";
 
+  const PRESET_PERIODS = ["today", "week", "month", "year"] as const;
+  const isPreset = PRESET_PERIODS.includes(params.period as (typeof PRESET_PERIODS)[number]);
+  const isCustomRange = params.period === "custom" && !!params.from && !!params.to;
+
   const where: Prisma.TransactionWhereInput = { userId };
   if (params.category) where.categoryId = params.category;
   if (params.account) where.accountId = params.account;
-  if (params.from || params.to) {
-    where.date = {
-      ...(params.from ? { gte: new Date(params.from) } : {}),
-      ...(params.to ? { lte: endOfDay(new Date(params.to)) } : {}),
-    };
+  if (isPreset) {
+    const range = getDateRange(params.period as Period);
+    where.date = { gte: range.from, lte: range.to };
+  } else if (isCustomRange) {
+    where.date = { gte: new Date(params.from!), lte: endOfDay(new Date(params.to!)) };
   }
 
   const orderBy: Prisma.TransactionOrderByWithRelationInput =
@@ -81,6 +87,7 @@ export default async function TransactionsPage({
     const params2 = new URLSearchParams();
     if (params.category) params2.set("category", params.category);
     if (params.account) params2.set("account", params.account);
+    if (params.period) params2.set("period", params.period);
     if (params.from) params2.set("from", params.from);
     if (params.to) params2.set("to", params.to);
 
@@ -126,6 +133,7 @@ export default async function TransactionsPage({
         categories={categories}
         category={params.category}
         account={params.account}
+        period={params.period}
         from={params.from}
         to={params.to}
       />
@@ -133,7 +141,7 @@ export default async function TransactionsPage({
       {transactions.length === 0 ? (
         <Card className="items-center justify-center py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            {params.category || params.account || params.from || params.to
+            {params.category || params.account || params.period || params.from || params.to
               ? "No transactions match these filters."
               : "No transactions yet. Add your first one to see it here."}
           </p>

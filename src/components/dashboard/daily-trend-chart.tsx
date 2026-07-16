@@ -104,7 +104,10 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
                 width={64}
                 tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--muted)" }} />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "var(--muted)", style: { cursor: "pointer" } }}
+              />
               <Legend
                 wrapperStyle={{ fontSize: 12 }}
                 iconType="circle"

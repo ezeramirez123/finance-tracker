@@ -1,6 +1,6 @@
 "use client";
 
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from "recharts";
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { format, parseISO } from "date-fns";
 
 import { formatUsd } from "@/lib/format";
@@ -16,11 +16,11 @@ function SparklineTooltip({
   payload?: { value: number }[];
   label?: string;
 }) {
-  if (!active || !payload?.length) return null;
+  if (!active || !payload?.length || typeof label !== "string") return null;
 
   return (
     <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
-      <p className="text-muted-foreground">{label ? format(parseISO(label), "MMM d") : ""}</p>
+      <p className="text-muted-foreground">{format(parseISO(label), "MMM d")}</p>
       <p className="font-medium tabular-nums text-popover-foreground">
         {formatUsd(payload[0].value)}
       </p>
@@ -41,6 +41,7 @@ export function NetWorthSparkline({ data }: { data: Point[] }) {
               <stop offset="100%" stopColor="var(--muted-foreground)" stopOpacity={0} />
             </linearGradient>
           </defs>
+          <XAxis dataKey="date" hide />
           <Tooltip content={<SparklineTooltip />} cursor={{ stroke: "var(--border)" }} />
           <Area
             dataKey="netWorth"

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -48,7 +49,9 @@ export function Sidebar({
         )}
       >
         {!collapsed && (
-          <span className="text-2xl font-bold tracking-tight">Semanal</span>
+          <Link href="/dashboard" className="text-2xl font-bold tracking-tight">
+            Semanal
+          </Link>
         )}
         <Button
           variant="ghost"

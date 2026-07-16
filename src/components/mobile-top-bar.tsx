@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Menu } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -43,7 +44,9 @@ export function MobileTopBar({
           <UserMenu name={name} email={email} />
         </SheetContent>
       </Sheet>
-      <span className="text-lg font-bold tracking-tight">Semanal</span>
+      <Link href="/dashboard" className="text-lg font-bold tracking-tight">
+        Semanal
+      </Link>
     </header>
   );
 }

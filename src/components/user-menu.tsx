@@ -17,6 +17,7 @@ export function UserMenu({
   email,
   collapsed,
   fullWidth = true,
+  avatarClassName = "size-7 text-xs",
 }: {
   name?: string | null;
   email?: string | null;
@@ -24,6 +25,8 @@ export function UserMenu({
   /** Set false when the trigger sits in a flex row that should size it to content
    * (e.g. the mobile top bar) instead of stretching to fill its container. */
   fullWidth?: boolean;
+  /** Size + font-size classes for the avatar circle. */
+  avatarClassName?: string;
 }) {
   return (
     <DropdownMenu>
@@ -34,7 +37,12 @@ export function UserMenu({
           collapsed && "justify-center px-0"
         )}
       >
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
+        <div
+          className={cn(
+            "flex shrink-0 items-center justify-center rounded-full bg-muted font-medium",
+            avatarClassName
+          )}
+        >
           {(name ?? email ?? "?").charAt(0).toUpperCase()}
         </div>
         {!collapsed && (

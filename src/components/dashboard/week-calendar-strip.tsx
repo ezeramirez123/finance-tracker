@@ -11,6 +11,31 @@ import { formatUsd } from "@/lib/format";
 
 type DayTotal = { date: string; income: number; expense: number };
 
+function DayCell({ day, onClick }: { day: DayTotal; onClick: (date: string) => void }) {
+  const parsed = parseISO(day.date);
+  const today = isToday(parsed);
+
+  return (
+    <button
+      type="button"
+      onClick={() => onClick(day.date)}
+      className={cn(
+        "flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-md border p-2 text-center transition-colors hover:bg-accent",
+        today && "border-primary"
+      )}
+    >
+      <span className="text-xs text-muted-foreground">{format(parsed, "EEE")}</span>
+      <span className="text-sm font-semibold">{format(parsed, "d")}</span>
+      <span className="text-[11px] tabular-nums text-chart-good">
+        {day.income > 0 ? `+${formatUsd(day.income)}` : formatUsd(0)}
+      </span>
+      <span className="text-[11px] tabular-nums text-chart-critical">
+        {day.expense > 0 ? `-${formatUsd(day.expense)}` : formatUsd(0)}
+      </span>
+    </button>
+  );
+}
+
 export function WeekCalendarStrip({
   days,
   weekOffset,
@@ -72,33 +97,24 @@ export function WeekCalendarStrip({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-4 gap-2 sm:grid-cols-7">
-          {days.map((day) => {
-            const parsed = parseISO(day.date);
-            const today = isToday(parsed);
-            return (
-              <button
-                key={day.date}
-                type="button"
-                onClick={() => goToDay(day.date)}
-                className={cn(
-                  "flex cursor-pointer flex-col items-center gap-1.5 rounded-md border p-2 text-center transition-colors hover:bg-accent",
-                  today && "border-primary"
-                )}
-              >
-                <span className="text-xs text-muted-foreground">
-                  {format(parsed, "EEE")}
-                </span>
-                <span className="text-sm font-semibold">{format(parsed, "d")}</span>
-                <span className="text-[11px] tabular-nums text-chart-good">
-                  {day.income > 0 ? `+${formatUsd(day.income)}` : formatUsd(0)}
-                </span>
-                <span className="text-[11px] tabular-nums text-chart-critical">
-                  {day.expense > 0 ? `-${formatUsd(day.expense)}` : formatUsd(0)}
-                </span>
-              </button>
-            );
-          })}
+        <div className="sm:hidden">
+          <div className="grid grid-cols-4 gap-2">
+            {days.slice(0, 4).map((day) => (
+              <DayCell key={day.date} day={day} onClick={goToDay} />
+            ))}
+          </div>
+          <div className="mt-2 flex justify-center gap-2">
+            {days.slice(4).map((day) => (
+              <div key={day.date} className="basis-[calc((100%-1.5rem)/4)]">
+                <DayCell day={day} onClick={goToDay} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="hidden gap-2 sm:grid sm:grid-cols-7">
+          {days.map((day) => (
+            <DayCell key={day.date} day={day} onClick={goToDay} />
+          ))}
         </div>
       </CardContent>
     </Card>

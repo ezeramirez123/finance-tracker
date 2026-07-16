@@ -25,7 +25,7 @@ function BalanceCard({
         <div className="flex items-center justify-between px-5">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             className="size-8 rounded-full hover:bg-background/40"
             onClick={(e) => {

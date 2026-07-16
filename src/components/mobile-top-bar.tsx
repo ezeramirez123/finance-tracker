@@ -24,6 +24,46 @@ export function MobileTopBar({
 }) {
   const [open, setOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+
+    function onTouchStart(e: TouchEvent) {
+      const touch = e.touches[0];
+      // Only start tracking swipes that begin near the left screen edge, so
+      // this doesn't hijack horizontal scrolling elsewhere on the page.
+      if (touch.clientX > 24) return;
+      startX = touch.clientX;
+      startY = touch.clientY;
+      tracking = true;
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      if (!tracking) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+      if (deltaX > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        setOpen(true);
+        tracking = false;
+      }
+    }
+
+    function onTouchEnd() {
+      tracking = false;
+    }
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b bg-background px-4 py-3 md:hidden">
       <div className="flex items-center gap-3">
@@ -48,7 +88,13 @@ export function MobileTopBar({
           Semanal
         </Link>
       </div>
-      <UserMenu name={name} email={email} collapsed fullWidth={false} />
+      <UserMenu
+        name={name}
+        email={email}
+        collapsed
+        fullWidth={false}
+        avatarClassName="size-9 text-sm"
+      />
     </header>
   );
 }

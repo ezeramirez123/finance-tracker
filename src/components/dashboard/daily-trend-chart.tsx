@@ -69,7 +69,7 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
       <CardHeader>
         <CardTitle>Daily activity</CardTitle>
       </CardHeader>
-      <CardContent className="h-64">
+      <CardContent className="h-64 [&_*]:outline-none">
         {data.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             No activity yet

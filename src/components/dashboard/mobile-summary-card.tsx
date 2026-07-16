@@ -105,7 +105,7 @@ export function MobileSummaryCard({
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-muted-foreground">Net worth</p>
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             className="size-8 rounded-full hover:bg-background/40"
             onClick={(e) => {
@@ -126,7 +126,7 @@ export function MobileSummaryCard({
           <NetWorthSparkline data={netWorthHistory} />
         </div>
       )}
-      <div className="flex flex-col divide-y px-5">
+      <div className="flex flex-col divide-y border-t px-5 pt-1">
         <Row
           label="Income"
           value={totalIncome}

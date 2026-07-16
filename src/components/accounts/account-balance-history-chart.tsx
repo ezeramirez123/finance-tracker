@@ -69,7 +69,7 @@ export function AccountBalanceHistoryChart({
         <CardTitle>Account balances over time</CardTitle>
         <PeriodTabs period={period} paramName="historyPeriod" options={HISTORY_OPTIONS} />
       </CardHeader>
-      <CardContent className="h-72">
+      <CardContent className="h-72 [&_*]:outline-none">
         {accounts.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             No accounts yet

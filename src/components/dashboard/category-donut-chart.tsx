@@ -72,7 +72,7 @@ export function CategoryDonutChart({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="h-64">
+      <CardContent className="h-64 [&_*]:outline-none">
         {categories.length === 0 ? (
           <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             Nothing here yet

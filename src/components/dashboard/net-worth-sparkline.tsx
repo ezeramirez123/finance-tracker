@@ -50,7 +50,7 @@ export function NetWorthSparkline({ data }: { data: Point[] }) {
         <p className="pt-1">{formatUsd(max)}</p>
         <p className="mt-auto mb-5">{formatUsd(min)}</p>
       </div>
-      <div className="h-16 min-w-0 flex-1 [&_*]:outline-none">
+      <div className="h-16 min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
             <defs>

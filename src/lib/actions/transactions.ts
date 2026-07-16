@@ -26,6 +26,10 @@ const csvRowSchema = z.object({
   merchant: z.string().max(120).optional().default(""),
   amount: z.coerce.number().finite().refine((n) => n !== 0, "Amount can't be zero"),
   category: z.string().optional(),
+  /** The account's running balance after this row posted, straight from the bank
+   * export. When present, the most recent row's balance per account overwrites the
+   * computed balance after import, correcting for any history the CSV doesn't cover. */
+  balance: z.coerce.number().finite().optional(),
 });
 
 const transferSchema = z.object({
@@ -274,6 +278,19 @@ export async function importTransactions(rows: z.infer<typeof csvRowSchema>[]) {
   let categorized = 0;
   let transfersCreated = 0;
 
+  // Track the most recent balance reading per account so the account's stored
+  // balance can be corrected to the bank's own number after import, rather than
+  // relying solely on the sum of whatever transactions happen to be in this file.
+  const finalBalanceByAccount = new Map<string, { balance: number; date: Date }>();
+  for (const row of parsedRows) {
+    if (row.balance === undefined) continue;
+    const account = resolveAccount(row.account);
+    const existing = finalBalanceByAccount.get(account.id);
+    if (!existing || row.date >= existing.date) {
+      finalBalanceByAccount.set(account.id, { balance: row.balance, date: row.date });
+    }
+  }
+
   async function createPlainTransaction(row: (typeof parsedRows)[number]) {
     const account = resolveAccount(row.account);
     const kind: "income" | "expense" = row.amount < 0 ? "expense" : "income";
@@ -374,6 +391,13 @@ export async function importTransactions(rows: z.infer<typeof csvRowSchema>[]) {
       });
       transfersCreated++;
     }
+  }
+
+  for (const [accountId, { balance }] of finalBalanceByAccount) {
+    await db.financialAccount.update({
+      where: { id: accountId },
+      data: { currentBalance: balance },
+    });
   }
 
   revalidatePath("/transactions");

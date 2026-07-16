@@ -38,6 +38,7 @@ type ParsedRow = {
   merchant: string;
   amount: number;
   category?: string;
+  balance?: number;
 };
 
 const DATE_HEADERS = ["date", "transaction date", "posted date"];
@@ -45,6 +46,7 @@ const ACCOUNT_HEADERS = ["account", "account name"];
 const MERCHANT_HEADERS = ["merchant", "description", "name", "payee"];
 const AMOUNT_HEADERS = ["amount", "value"];
 const CATEGORY_HEADERS = ["category"];
+const BALANCE_HEADERS = ["balance", "running balance", "ending balance", "current balance"];
 
 function findColumn(headers: string[], candidates: string[]): string | undefined {
   const lower = headers.map((h) => h.toLowerCase().trim());
@@ -72,29 +74,17 @@ function CsvRequirementsInfo() {
             <Info className="size-3.5" />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-72 text-left">
-          <p className="font-medium">Required columns</p>
+        <TooltipContent side="right" className="max-w-56 text-left">
           <p>
-            <span className="font-medium">Date</span> — Date, Transaction Date, or Posted Date
+            <span className="font-medium">Required:</span> Date, Account, Amount
           </p>
           <p>
-            <span className="font-medium">Account</span> — the account name; matched to an
-            existing account by name, or created automatically if it doesn&apos;t exist
+            <span className="font-medium">Optional:</span> Merchant, Category, Balance
           </p>
-          <p>
-            <span className="font-medium">Amount</span> — Amount or Value. Negative = expense,
-            positive = income
-          </p>
-          <p className="mt-1.5 font-medium">Optional columns</p>
-          <p>Merchant, Description, Name, or Payee — the transaction&apos;s description</p>
-          <p>
-            Category — matched to an existing category by name, or auto-guessed by merchant
-          </p>
-          <p className="mt-1.5">
-            Rows with <span className="font-medium">Category = Transfer</span> that share a
-            date, opposite sign, and matching amount with another Transfer row are linked into
-            a single transfer between those two rows&apos; accounts, instead of counting as
-            income or an expense.
+          <p className="mt-1 text-muted-foreground">
+            Negative amount = expense. Matching Transfer rows are paired automatically.
+            Balance (running balance after the row) sets the account&apos;s true balance
+            from its most recent row.
           </p>
         </TooltipContent>
       </Tooltip>
@@ -123,6 +113,7 @@ export function CsvImportDialog() {
         const merchantCol = findColumn(headers, MERCHANT_HEADERS);
         const amountCol = findColumn(headers, AMOUNT_HEADERS);
         const categoryCol = findColumn(headers, CATEGORY_HEADERS);
+        const balanceCol = findColumn(headers, BALANCE_HEADERS);
 
         if (!dateCol || !accountCol || !amountCol) {
           setParseError(
@@ -139,12 +130,16 @@ export function CsvImportDialog() {
           const amount = parseAmount(rawAmount);
           if (!Number.isFinite(amount) || amount === 0) continue;
 
+          const rawBalance = balanceCol ? record[balanceCol] : undefined;
+          const balance = rawBalance ? parseAmount(rawBalance) : NaN;
+
           parsed.push({
             date: record[dateCol],
             account: record[accountCol],
             merchant: merchantCol ? record[merchantCol] ?? "" : "",
             amount,
             category: categoryCol ? record[categoryCol] || undefined : undefined,
+            balance: Number.isFinite(balance) ? balance : undefined,
           });
         }
 
@@ -206,7 +201,10 @@ export function CsvImportDialog() {
           <span className="hidden sm:inline">Import CSV</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent
+        className="sm:max-w-2xl"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-1.5">
             Import transactions from CSV

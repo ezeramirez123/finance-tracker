@@ -76,6 +76,7 @@ export default async function DashboardPage({
   }
   const incomeHref = `/income?${periodQuery.toString()}`;
   const expensesHref = `/expenses?${periodQuery.toString()}`;
+  const netHref = `/reports?${periodQuery.toString()}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -99,6 +100,7 @@ export default async function DashboardPage({
         netDelta={netDelta}
         incomeHref={incomeHref}
         expensesHref={expensesHref}
+        netHref={netHref}
       />
 
       <div className="hidden md:block">
@@ -125,6 +127,7 @@ export default async function DashboardPage({
           value={summary.net}
           delta={netDelta}
           deltaGoodDirection="up"
+          href={netHref}
           className="md:col-span-2 lg:col-span-1"
         />
       </div>

@@ -74,6 +74,7 @@ export function MobileSummaryCard({
   netDelta,
   incomeHref = "/income",
   expensesHref = "/expenses",
+  netHref = "/reports",
 }: {
   netWorth: number;
   totalIncome: number;
@@ -84,6 +85,7 @@ export function MobileSummaryCard({
   netDelta?: number | null;
   incomeHref?: string;
   expensesHref?: string;
+  netHref?: string;
 }) {
   return (
     <Card className="gap-3 md:hidden">
@@ -117,6 +119,7 @@ export function MobileSummaryCard({
           delta={netDelta}
           deltaGoodDirection="up"
           valueColorClass={net >= 0 ? "text-chart-good" : "text-chart-critical"}
+          href={netHref}
         />
       </div>
     </Card>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -36,15 +37,22 @@ function Row({
   delta,
   deltaGoodDirection,
   valueColorClass,
+  href,
 }: {
   label: string;
   value: number;
   delta?: number | null;
   deltaGoodDirection: "up" | "down";
   valueColorClass?: string;
+  href?: string;
 }) {
-  return (
-    <div className="flex items-center justify-between py-3">
+  const content = (
+    <div
+      className={cn(
+        "flex items-center justify-between py-3",
+        href && "cursor-pointer"
+      )}
+    >
       <span className="text-sm text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
         <span className={cn("text-sm font-semibold tabular-nums", valueColorClass)}>
@@ -54,6 +62,8 @@ function Row({
       </div>
     </div>
   );
+
+  return href ? <Link href={href}>{content}</Link> : content;
 }
 
 export function MobileSummaryCard({
@@ -75,10 +85,10 @@ export function MobileSummaryCard({
 }) {
   return (
     <Card className="gap-3 md:hidden">
-      <div className="px-5">
+      <Link href="/accounts" className="px-5">
         <p className="text-sm font-medium text-muted-foreground">Net worth</p>
         <p className="text-4xl font-semibold tracking-tight">{formatUsd(netWorth)}</p>
-      </div>
+      </Link>
       <div className="flex flex-col divide-y px-5">
         <Row
           label="Income"
@@ -86,6 +96,7 @@ export function MobileSummaryCard({
           delta={incomeDelta}
           deltaGoodDirection="up"
           valueColorClass="text-chart-good"
+          href="/income"
         />
         <Row
           label="Expenses"
@@ -93,6 +104,7 @@ export function MobileSummaryCard({
           delta={expenseDelta}
           deltaGoodDirection="down"
           valueColorClass="text-chart-critical"
+          href="/expenses"
         />
         <Row
           label="Net"

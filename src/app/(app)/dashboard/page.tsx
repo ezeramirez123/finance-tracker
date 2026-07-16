@@ -93,8 +93,20 @@ export default async function DashboardPage({
       </div>
 
       <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
-        <StatTile label="Income" value={summary.totalIncome} delta={incomeDelta} deltaGoodDirection="up" />
-        <StatTile label="Expenses" value={summary.totalExpenses} delta={expenseDelta} deltaGoodDirection="down" />
+        <StatTile
+          label="Income"
+          value={summary.totalIncome}
+          delta={incomeDelta}
+          deltaGoodDirection="up"
+          href="/income"
+        />
+        <StatTile
+          label="Expenses"
+          value={summary.totalExpenses}
+          delta={expenseDelta}
+          deltaGoodDirection="down"
+          href="/expenses"
+        />
         <StatTile
           label="Net"
           value={summary.net}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -10,6 +11,7 @@ export function StatTile({
   delta,
   deltaGoodDirection = "up",
   className,
+  href,
 }: {
   label: string;
   value: number;
@@ -17,13 +19,21 @@ export function StatTile({
   /** which direction of change should read as "good" (green) for this metric */
   deltaGoodDirection?: "up" | "down";
   className?: string;
+  /** Where clicking the whole card should go. Omit for metrics with no dedicated page. */
+  href?: string;
 }) {
   const hasDelta = delta !== undefined && delta !== null && Number.isFinite(delta);
   const isUp = hasDelta && delta! > 0;
   const isGood = hasDelta && (deltaGoodDirection === "up" ? isUp : !isUp);
 
-  return (
-    <Card className={cn("gap-1.5", className)}>
+  const content = (
+    <Card
+      className={cn(
+        "gap-1.5",
+        href && "cursor-pointer transition-colors hover:bg-accent/50",
+        className
+      )}
+    >
       <p className="px-5 text-sm font-medium text-muted-foreground">{label}</p>
       <div className="flex flex-col gap-1 px-5">
         <p className="text-2xl font-semibold tracking-tight">{formatUsd(value)}</p>
@@ -45,4 +55,6 @@ export function StatTile({
       </div>
     </Card>
   );
+
+  return href ? <Link href={href}>{content}</Link> : content;
 }

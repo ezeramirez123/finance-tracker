@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -40,17 +41,28 @@ function BalanceCard({
   const [hidden, toggle] = useHiddenState(storageKey);
 
   return (
-    <Card className="gap-1.5">
-      <div className="flex items-center justify-between px-5">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
-        <Button variant="ghost" size="icon" className="size-6" onClick={toggle}>
-          {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-        </Button>
-      </div>
-      <p className="px-5 text-2xl font-semibold tracking-tight">
-        {hidden ? "••••••" : formatUsd(value)}
-      </p>
-    </Card>
+    <Link href="/accounts">
+      <Card className="gap-1.5 cursor-pointer transition-colors hover:bg-accent/50">
+        <div className="flex items-center justify-between px-5">
+          <p className="text-sm font-medium text-muted-foreground">{label}</p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-6"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggle();
+            }}
+          >
+            {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+          </Button>
+        </div>
+        <p className="px-5 text-2xl font-semibold tracking-tight">
+          {hidden ? "••••••" : formatUsd(value)}
+        </p>
+      </Card>
+    </Link>
   );
 }
 

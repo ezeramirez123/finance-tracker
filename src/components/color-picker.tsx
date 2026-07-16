@@ -34,7 +34,7 @@ export function ColorPicker({
           <button
             key={color}
             type="button"
-            className="flex size-7 items-center justify-center rounded-full ring-offset-2 ring-offset-background transition-shadow"
+            className="flex size-7 cursor-pointer items-center justify-center rounded-full ring-offset-2 ring-offset-background transition-shadow"
             style={{
               backgroundColor: color,
               boxShadow: selected ? `0 0 0 2px var(--ring)` : "none",

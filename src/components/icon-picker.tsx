@@ -26,7 +26,7 @@ export function IconPicker({
           type="button"
           onClick={() => onChange(icon)}
           className={cn(
-            "flex size-9 items-center justify-center rounded-md border text-lg transition-colors hover:bg-accent",
+            "flex size-9 cursor-pointer items-center justify-center rounded-md border text-lg transition-colors hover:bg-accent",
             value === icon ? "border-primary bg-accent" : "border-transparent"
           )}
           aria-label={`Use icon ${icon}`}

@@ -54,7 +54,7 @@ export function WeeklySpendingCollapsible({ weeks }: { weeks: WeekSpending[] }) 
                 key={week.from}
                 type="button"
                 onClick={() => goToWeek(week)}
-                className="flex flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-accent/50"
+                className="flex cursor-pointer flex-col gap-1 rounded-md p-1 text-left transition-colors hover:bg-accent/50"
               >
                 <div className="flex items-center justify-between text-sm">
                   <span>

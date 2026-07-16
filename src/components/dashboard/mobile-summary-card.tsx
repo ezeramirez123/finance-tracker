@@ -50,7 +50,7 @@ function Row({
     <div
       className={cn(
         "flex items-center justify-between py-3",
-        href && "-mx-5 cursor-pointer rounded-md px-5 transition-colors hover:bg-accent/50"
+        href && "-mx-5 cursor-pointer rounded-md px-5 transition-colors hover:bg-accent"
       )}
     >
       <span className="text-sm text-muted-foreground">{label}</span>
@@ -87,7 +87,7 @@ export function MobileSummaryCard({
     <Card className="gap-3 md:hidden">
       <Link
         href="/accounts"
-        className="block rounded-md px-5 py-1 transition-colors hover:bg-accent/50"
+        className="block rounded-md px-5 py-1 transition-colors hover:bg-accent"
       >
         <p className="text-sm font-medium text-muted-foreground">Net worth</p>
         <p className="text-4xl font-semibold tracking-tight">{formatUsd(netWorth)}</p>

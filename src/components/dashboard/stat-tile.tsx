@@ -30,7 +30,7 @@ export function StatTile({
     <Card
       className={cn(
         "gap-1.5",
-        href && "cursor-pointer transition-colors hover:bg-accent/50",
+        href && "cursor-pointer transition-colors hover:bg-accent",
         className
       )}
     >

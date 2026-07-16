@@ -42,7 +42,7 @@ function BalanceCard({
 
   return (
     <Link href="/accounts">
-      <Card className="gap-1.5 cursor-pointer transition-colors hover:bg-accent/50">
+      <Card className="gap-1.5 cursor-pointer transition-colors hover:bg-accent">
         <div className="flex items-center justify-between px-5">
           <p className="text-sm font-medium text-muted-foreground">{label}</p>
           <Button

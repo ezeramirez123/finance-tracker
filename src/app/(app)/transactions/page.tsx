@@ -19,7 +19,6 @@ import { TransactionRow } from "@/components/transactions/transaction-row";
 import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
 import { CategoryCombobox } from "@/components/transactions/category-combobox";
 import { CsvImportDialog } from "@/components/transactions/csv-import-dialog";
-import { TransferDialog } from "@/components/transactions/transfer-dialog";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { formatMoney, formatUsd } from "@/lib/format";
 
@@ -118,7 +117,6 @@ export default async function TransactionsPage({
         </div>
         <div className="flex items-center gap-2">
           <CsvImportDialog />
-          <TransferDialog accounts={accounts} />
           <TransactionDialog accounts={accounts} categories={categories} />
         </div>
       </div>

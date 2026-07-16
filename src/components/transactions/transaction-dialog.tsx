@@ -8,8 +8,9 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Plus } from "lucide-react";
 
-import { createTransaction, updateTransaction } from "@/lib/actions/transactions";
+import { createTransaction, updateTransaction, createTransfer } from "@/lib/actions/transactions";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,16 +38,26 @@ type Account = { id: string; name: string; icon: string; currency: string };
 // "income"/"expense", so a transfer category is never actually selectable here.
 type Category = { id: string; name: string; kind: "income" | "expense" | "transfer"; color: string };
 
-const formSchema = z.object({
-  accountId: z.string().min(1, "Choose an account"),
-  categoryId: z.string().nullable(),
-  kind: z.enum(["income", "expense"]),
-  amount: z.coerce.number().positive("Amount must be greater than 0"),
-  currency: z.enum(SUPPORTED_CURRENCIES),
-  merchant: z.string().optional(),
-  date: z.string().min(1),
-  notes: z.string().optional(),
-});
+const formSchema = z
+  .object({
+    kind: z.enum(["income", "expense", "transfer"]),
+    accountId: z.string().min(1, "Choose an account"),
+    toAccountId: z.string().optional(),
+    categoryId: z.string().nullable(),
+    amount: z.coerce.number().positive("Amount must be greater than 0"),
+    currency: z.enum(SUPPORTED_CURRENCIES),
+    merchant: z.string().optional(),
+    date: z.string().min(1),
+    notes: z.string().optional(),
+  })
+  .refine((data) => data.kind !== "transfer" || !!data.toAccountId, {
+    message: "Choose a destination account",
+    path: ["toAccountId"],
+  })
+  .refine((data) => data.kind !== "transfer" || data.toAccountId !== data.accountId, {
+    message: "Choose two different accounts",
+    path: ["toAccountId"],
+  });
 
 type FormInput = z.input<typeof formSchema>;
 type FormValues = z.output<typeof formSchema>;
@@ -86,9 +97,10 @@ export function TransactionDialog({
     resolver: zodResolver(formSchema),
     defaultValues: transaction
       ? {
-          accountId: transaction.accountId,
-          categoryId: transaction.categoryId,
           kind: transaction.kind,
+          accountId: transaction.accountId,
+          toAccountId: accounts.find((a) => a.id !== transaction.accountId)?.id ?? "",
+          categoryId: transaction.categoryId,
           amount: transaction.originalAmount,
           currency: transaction.originalCurrency as FormValues["currency"],
           merchant: transaction.merchant ?? "",
@@ -96,9 +108,10 @@ export function TransactionDialog({
           notes: transaction.notes ?? "",
         }
       : {
-          accountId: accounts[0]?.id ?? "",
-          categoryId: null,
           kind: "expense",
+          accountId: accounts[0]?.id ?? "",
+          toAccountId: accounts[1]?.id ?? "",
+          categoryId: null,
           amount: 0,
           currency: "USD",
           merchant: "",
@@ -108,26 +121,43 @@ export function TransactionDialog({
   });
 
   const kind = form.watch("kind");
+  const isTransfer = kind === "transfer";
   const filteredCategories = categories.filter((c) => c.kind === kind);
+  const fromAccount = accounts.find((a) => a.id === form.watch("accountId"));
 
   async function onSubmit(values: FormValues) {
     try {
-      const payload = {
-        ...values,
-        merchant: values.merchant ?? "",
-        notes: values.notes ?? "",
-        date: new Date(values.date),
-      };
-      if (isEdit) {
-        await updateTransaction(transaction.id, payload);
-        toast.success("Transaction updated");
+      if (values.kind === "transfer") {
+        await createTransfer({
+          fromAccountId: values.accountId,
+          toAccountId: values.toAccountId!,
+          amount: values.amount,
+          date: new Date(values.date),
+          notes: values.notes ?? "",
+        });
+        toast.success("Transfer added");
       } else {
-        await createTransaction(payload);
-        toast.success("Transaction added");
-        form.reset({
-          accountId: values.accountId,
-          categoryId: null,
+        const payload = {
+          ...values,
           kind: values.kind,
+          merchant: values.merchant ?? "",
+          notes: values.notes ?? "",
+          date: new Date(values.date),
+        };
+        if (isEdit) {
+          await updateTransaction(transaction.id, payload);
+          toast.success("Transaction updated");
+        } else {
+          await createTransaction(payload);
+          toast.success("Transaction added");
+        }
+      }
+      if (!isEdit) {
+        form.reset({
+          kind: values.kind,
+          accountId: values.accountId,
+          toAccountId: values.toAccountId,
+          categoryId: null,
           amount: 0,
           currency: values.currency,
           merchant: "",
@@ -136,8 +166,8 @@ export function TransactionDialog({
         });
       }
       setOpen(false);
-    } catch {
-      toast.error("Something went wrong");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Something went wrong");
     }
   }
 
@@ -158,7 +188,7 @@ export function TransactionDialog({
           <DialogTitle>{isEdit ? "Edit transaction" : "Add transaction"}</DialogTitle>
         </DialogHeader>
         <form className="flex flex-col gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-2 gap-2">
+          <div className={cn("grid gap-2", isEdit ? "grid-cols-2" : "grid-cols-3")}>
             <Button
               type="button"
               variant={kind === "expense" ? "default" : "outline"}
@@ -179,6 +209,18 @@ export function TransactionDialog({
             >
               Income
             </Button>
+            {!isEdit && (
+              <Button
+                type="button"
+                variant={kind === "transfer" ? "default" : "outline"}
+                onClick={() => {
+                  form.setValue("kind", "transfer");
+                  form.setValue("categoryId", null);
+                }}
+              >
+                Transfer
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -187,7 +229,7 @@ export function TransactionDialog({
               <CurrencyInput
                 id="amount"
                 value={Number(form.watch("amount"))}
-                currency={form.watch("currency")}
+                currency={isTransfer ? (fromAccount?.currency ?? "USD") : form.watch("currency")}
                 onChange={(v) => form.setValue("amount", v)}
               />
               {form.formState.errors.amount && (
@@ -196,91 +238,150 @@ export function TransactionDialog({
                 </p>
               )}
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Currency</Label>
-              <Select
-                value={form.watch("currency")}
-                onValueChange={(v) =>
-                  form.setValue("currency", v as FormValues["currency"])
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SUPPORTED_CURRENCIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {c}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {isTransfer ? (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="date">Date</Label>
+                <Input id="date" type="date" {...form.register("date")} />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1.5">
+                <Label>Currency</Label>
+                <Select
+                  value={form.watch("currency")}
+                  onValueChange={(v) =>
+                    form.setValue("currency", v as FormValues["currency"])
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUPPORTED_CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex min-w-0 flex-col gap-1.5">
-              <Label>Account</Label>
-              <Select
-                value={form.watch("accountId")}
-                onValueChange={(v) => form.setValue("accountId", v)}
-              >
-                <SelectTrigger className="w-full min-w-0">
-                  <SelectValue
-                    placeholder="Select account"
-                    className="block min-w-0 flex-1 truncate text-left"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      <span className="truncate">
-                        {a.icon} {a.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          {isTransfer ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <Label>From</Label>
+                <Select
+                  value={form.watch("accountId")}
+                  onValueChange={(v) => form.setValue("accountId", v)}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder="Select account" className="min-w-0 truncate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        <span className="truncate">
+                          {a.icon} {a.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <Label>To</Label>
+                <Select
+                  value={form.watch("toAccountId")}
+                  onValueChange={(v) => form.setValue("toAccountId", v)}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue placeholder="Select account" className="min-w-0 truncate" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        <span className="truncate">
+                          {a.icon} {a.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {form.formState.errors.toAccountId && (
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.toAccountId.message}
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="flex min-w-0 flex-col gap-1.5">
-              <Label>Category</Label>
-              <Select
-                value={form.watch("categoryId") ?? undefined}
-                onValueChange={(v) => form.setValue("categoryId", v)}
-              >
-                <SelectTrigger className="w-full min-w-0">
-                  <SelectValue
-                    placeholder="Select category"
-                    className="block min-w-0 flex-1 truncate text-left"
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <span className="flex min-w-0 items-center gap-2 truncate">
-                        <span
-                          className="size-2 shrink-0 rounded-full"
-                          style={{ backgroundColor: c.color }}
-                        />
-                        {c.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <Label>Account</Label>
+                <Select
+                  value={form.watch("accountId")}
+                  onValueChange={(v) => form.setValue("accountId", v)}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue
+                      placeholder="Select account"
+                      className="block min-w-0 flex-1 truncate text-left"
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((a) => (
+                      <SelectItem key={a.id} value={a.id}>
+                        <span className="truncate">
+                          {a.icon} {a.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <Label>Category</Label>
+                <Select
+                  value={form.watch("categoryId") ?? undefined}
+                  onValueChange={(v) => form.setValue("categoryId", v)}
+                >
+                  <SelectTrigger className="w-full min-w-0">
+                    <SelectValue
+                      placeholder="Select category"
+                      className="block min-w-0 flex-1 truncate text-left"
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCategories.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        <span className="flex min-w-0 items-center gap-2 truncate">
+                          <span
+                            className="size-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: c.color }}
+                          />
+                          {c.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="merchant">Merchant</Label>
-              <Input id="merchant" placeholder="e.g. Trader Joe's" {...form.register("merchant")} />
+          {!isTransfer && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="merchant">Merchant</Label>
+                <Input id="merchant" placeholder="e.g. Trader Joe's" {...form.register("merchant")} />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="date">Date</Label>
+                <Input id="date" type="date" {...form.register("date")} />
+              </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="date">Date</Label>
-              <Input id="date" type="date" {...form.register("date")} />
-            </div>
-          </div>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="notes">Notes</Label>
@@ -289,7 +390,7 @@ export function TransactionDialog({
 
           <DialogFooter>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {isEdit ? "Save changes" : "Add transaction"}
+              {isEdit ? "Save changes" : isTransfer ? "Add transfer" : "Add transaction"}
             </Button>
           </DialogFooter>
         </form>

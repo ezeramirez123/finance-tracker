@@ -6,14 +6,12 @@ import {
   getNetWorthHistory,
   getPeriodSummary,
   getTotalBalance,
-  getWeeklySpending,
   getWeekDailyTotals,
 } from "@/lib/dashboard-data";
 import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
-import { WeeklySpendingCollapsible } from "@/components/dashboard/weekly-spending-collapsible";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
 import { BalancesOverview } from "@/components/dashboard/balances-overview";
 import { MobileSummaryCard } from "@/components/dashboard/mobile-summary-card";
@@ -53,7 +51,6 @@ export default async function DashboardPage({
     netWorth,
     netWorthHistory,
     totalBalance,
-    weeklySpending,
     currentWeekDays,
     accounts,
     categories,
@@ -63,7 +60,6 @@ export default async function DashboardPage({
     getNetWorth(userId),
     getNetWorthHistory(userId, range),
     getTotalBalance(userId),
-    getWeeklySpending(userId),
     getWeekDailyTotals(userId, weekOffset),
     db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
     db.category.findMany({
@@ -144,8 +140,6 @@ export default async function DashboardPage({
       </div>
 
       <WeekCalendarStrip days={currentWeekDays} weekOffset={weekOffset} />
-
-      <WeeklySpendingCollapsible weeks={weeklySpending} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <CategoryBreakdown

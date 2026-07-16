@@ -70,6 +70,10 @@ export function WeekCalendarStrip({
       ? "This week"
       : `${format(parseISO(days[0].date), "MMM d")} – ${format(parseISO(days[6].date), "MMM d")}`;
 
+  const weekIncome = days.reduce((sum, d) => sum + d.income, 0);
+  const weekExpense = days.reduce((sum, d) => sum + d.expense, 0);
+  const weekNet = weekIncome - weekExpense;
+
   return (
     <Card>
       <CardHeader>
@@ -115,6 +119,32 @@ export function WeekCalendarStrip({
           {days.map((day) => (
             <DayCell key={day.date} day={day} onClick={goToDay} />
           ))}
+        </div>
+
+        <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-4 text-center">
+          <div>
+            <p className="text-xs text-muted-foreground">Income</p>
+            <p className="text-sm font-semibold tabular-nums text-chart-good">
+              {formatUsd(weekIncome)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Expenses</p>
+            <p className="text-sm font-semibold tabular-nums text-chart-critical">
+              {formatUsd(weekExpense)}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Net</p>
+            <p
+              className={cn(
+                "text-sm font-semibold tabular-nums",
+                weekNet >= 0 ? "text-chart-good" : "text-chart-critical"
+              )}
+            >
+              {formatUsd(weekNet)}
+            </p>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
 import {
   getNetWorth,
+  getNetWorthHistory,
   getPeriodSummary,
   getTotalBalance,
   getWeeklySpending,
@@ -47,20 +48,30 @@ export default async function DashboardPage({
   const previousRange = getPreviousRange(range);
   const weekOffset = Math.min(0, parseInt(params.weekOffset ?? "0", 10) || 0);
 
-  const [summary, previousSummary, netWorth, totalBalance, weeklySpending, currentWeekDays, accounts, categories] =
-    await Promise.all([
-      getPeriodSummary(userId, range),
-      getPeriodSummary(userId, previousRange),
-      getNetWorth(userId),
-      getTotalBalance(userId),
-      getWeeklySpending(userId),
-      getWeekDailyTotals(userId, weekOffset),
-      db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
-      db.category.findMany({
-        where: { OR: [{ userId }, { userId: null }] },
-        orderBy: { name: "asc" },
-      }),
-    ]);
+  const [
+    summary,
+    previousSummary,
+    netWorth,
+    netWorthHistory,
+    totalBalance,
+    weeklySpending,
+    currentWeekDays,
+    accounts,
+    categories,
+  ] = await Promise.all([
+    getPeriodSummary(userId, range),
+    getPeriodSummary(userId, previousRange),
+    getNetWorth(userId),
+    getNetWorthHistory(userId),
+    getTotalBalance(userId),
+    getWeeklySpending(userId),
+    getWeekDailyTotals(userId, weekOffset),
+    db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    db.category.findMany({
+      where: { OR: [{ userId }, { userId: null }] },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
   const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
@@ -101,6 +112,7 @@ export default async function DashboardPage({
         incomeHref={incomeHref}
         expensesHref={expensesHref}
         netHref={netHref}
+        netWorthHistory={netWorthHistory}
       />
 
       <div className="hidden md:block">

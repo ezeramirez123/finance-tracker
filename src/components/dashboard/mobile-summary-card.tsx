@@ -4,6 +4,7 @@ import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
+import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 
 function DeltaBadge({
   delta,
@@ -75,6 +76,7 @@ export function MobileSummaryCard({
   incomeHref = "/income",
   expensesHref = "/expenses",
   netHref = "/reports",
+  netWorthHistory,
 }: {
   netWorth: number;
   totalIncome: number;
@@ -86,6 +88,7 @@ export function MobileSummaryCard({
   incomeHref?: string;
   expensesHref?: string;
   netHref?: string;
+  netWorthHistory?: { date: string; netWorth: number }[];
 }) {
   return (
     <Card className="gap-3 md:hidden">
@@ -96,6 +99,11 @@ export function MobileSummaryCard({
         <p className="text-sm font-medium text-muted-foreground">Net worth</p>
         <p className="text-4xl font-semibold tracking-tight">{formatUsd(netWorth)}</p>
       </Link>
+      {netWorthHistory && (
+        <div className="px-5">
+          <NetWorthSparkline data={netWorthHistory} />
+        </div>
+      )}
       <div className="flex flex-col divide-y px-5">
         <Row
           label="Income"

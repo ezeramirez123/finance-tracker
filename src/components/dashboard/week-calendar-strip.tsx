@@ -101,27 +101,7 @@ export function WeekCalendarStrip({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="sm:hidden">
-          <div className="grid grid-cols-4 gap-2">
-            {days.slice(0, 4).map((day) => (
-              <DayCell key={day.date} day={day} onClick={goToDay} />
-            ))}
-          </div>
-          <div className="mt-2 flex justify-center gap-2">
-            {days.slice(4).map((day) => (
-              <div key={day.date} className="basis-[calc((100%-1.5rem)/4)]">
-                <DayCell day={day} onClick={goToDay} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="hidden gap-2 sm:grid sm:grid-cols-7">
-          {days.map((day) => (
-            <DayCell key={day.date} day={day} onClick={goToDay} />
-          ))}
-        </div>
-
-        <div className="mt-4 grid grid-cols-3 gap-2 border-t pt-4 text-center">
+        <div className="mb-4 grid grid-cols-3 gap-2 border-b pb-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground">Income</p>
             <p className="text-sm font-semibold tabular-nums text-chart-good">
@@ -145,6 +125,26 @@ export function WeekCalendarStrip({
               {formatUsd(weekNet)}
             </p>
           </div>
+        </div>
+
+        <div className="sm:hidden">
+          <div className="grid grid-cols-4 gap-2">
+            {days.slice(0, 4).map((day) => (
+              <DayCell key={day.date} day={day} onClick={goToDay} />
+            ))}
+          </div>
+          <div className="mt-2 flex justify-center gap-2">
+            {days.slice(4).map((day) => (
+              <div key={day.date} className="basis-[calc((100%-1.5rem)/4)]">
+                <DayCell day={day} onClick={goToDay} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="hidden gap-2 sm:grid sm:grid-cols-7">
+          {days.map((day) => (
+            <DayCell key={day.date} day={day} onClick={goToDay} />
+          ))}
         </div>
       </CardContent>
     </Card>

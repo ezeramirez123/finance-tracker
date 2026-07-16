@@ -51,7 +51,18 @@ export function CategoryDonutChart({
   const destination = targetPath ?? pathname;
 
   function goToCategory(categoryId: string) {
-    const params = destination === pathname ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
+    let params: URLSearchParams;
+    if (destination === pathname) {
+      params = new URLSearchParams(searchParams.toString());
+    } else {
+      // Cross-page navigation: carry over the current period/date-range
+      // selection instead of resetting the target page to its own default.
+      params = new URLSearchParams();
+      for (const key of ["period", "from", "to"]) {
+        const value = searchParams.get(key);
+        if (value) params.set(key, value);
+      }
+    }
     params.set("category", categoryId);
     router.push(`${destination}?${params.toString()}`, { scroll: false });
   }

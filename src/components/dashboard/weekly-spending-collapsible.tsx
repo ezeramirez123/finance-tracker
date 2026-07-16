@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { format, parseISO } from "date-fns";
 
@@ -18,7 +18,6 @@ type WeekSpending = { from: string; to: string; total: number };
 export function WeeklySpendingCollapsible({ weeks }: { weeks: WeekSpending[] }) {
   const [open, setOpen] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
   const mostRecentFirst = [...weeks].reverse();
   const max = Math.max(...weeks.map((w) => w.total), 0.01);
   const total = weeks.reduce((sum, w) => sum + w.total, 0);
@@ -28,7 +27,7 @@ export function WeeklySpendingCollapsible({ weeks }: { weeks: WeekSpending[] }) 
     params.set("period", "custom");
     params.set("from", week.from.slice(0, 10));
     params.set("to", week.to.slice(0, 10));
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`/expenses?${params.toString()}`);
   }
 
   return (

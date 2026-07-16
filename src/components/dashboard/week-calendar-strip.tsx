@@ -82,7 +82,7 @@ export function WeekCalendarStrip({
                 type="button"
                 onClick={() => goToDay(day.date)}
                 className={cn(
-                  "flex cursor-pointer flex-col items-center gap-1.5 rounded-md border p-2 text-center transition-colors hover:bg-accent/50",
+                  "flex cursor-pointer flex-col items-center gap-1.5 rounded-md border p-2 text-center transition-colors hover:bg-accent",
                   today && "border-primary"
                 )}
               >

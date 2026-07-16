@@ -116,6 +116,7 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
                 fill="var(--chart-good)"
                 radius={[4, 4, 0, 0]}
                 maxBarSize={20}
+                cursor="pointer"
               />
               <Bar
                 dataKey="expense"
@@ -123,6 +124,7 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
                 fill="var(--chart-critical)"
                 radius={[4, 4, 0, 0]}
                 maxBarSize={20}
+                cursor="pointer"
               />
             </BarChart>
           </ResponsiveContainer>

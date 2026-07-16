@@ -13,20 +13,18 @@ function DeltaBadge({
   deltaGoodDirection: "up" | "down";
 }) {
   const hasDelta = delta !== undefined && delta !== null && Number.isFinite(delta) && delta !== 0;
-  if (!hasDelta) return null;
-
-  const isUp = delta! > 0;
+  const isUp = hasDelta && delta! > 0;
   const isGood = deltaGoodDirection === "up" ? isUp : !isUp;
 
   return (
     <span
       className={cn(
         "flex items-center gap-0.5 text-xs font-medium",
-        isGood ? "text-chart-good" : "text-chart-critical"
+        hasDelta ? (isGood ? "text-chart-good" : "text-chart-critical") : "invisible"
       )}
     >
       {isUp ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
-      {Math.abs(delta!).toFixed(0)}%
+      {Math.abs(delta ?? 0).toFixed(0)}%
     </span>
   );
 }
@@ -74,6 +72,8 @@ export function MobileSummaryCard({
   incomeDelta,
   expenseDelta,
   netDelta,
+  incomeHref = "/income",
+  expensesHref = "/expenses",
 }: {
   netWorth: number;
   totalIncome: number;
@@ -82,6 +82,8 @@ export function MobileSummaryCard({
   incomeDelta?: number | null;
   expenseDelta?: number | null;
   netDelta?: number | null;
+  incomeHref?: string;
+  expensesHref?: string;
 }) {
   return (
     <Card className="gap-3 md:hidden">
@@ -99,7 +101,7 @@ export function MobileSummaryCard({
           delta={incomeDelta}
           deltaGoodDirection="up"
           valueColorClass="text-chart-good"
-          href="/income"
+          href={incomeHref}
         />
         <Row
           label="Expenses"
@@ -107,7 +109,7 @@ export function MobileSummaryCard({
           delta={expenseDelta}
           deltaGoodDirection="down"
           valueColorClass="text-chart-critical"
-          href="/expenses"
+          href={expensesHref}
         />
         <Row
           label="Net"

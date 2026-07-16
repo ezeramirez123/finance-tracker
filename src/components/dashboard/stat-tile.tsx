@@ -37,21 +37,23 @@ export function StatTile({
       <p className="px-5 text-sm font-medium text-muted-foreground">{label}</p>
       <div className="flex flex-col gap-1 px-5">
         <p className="text-2xl font-semibold tracking-tight">{formatUsd(value)}</p>
-        {hasDelta && delta !== 0 && (
-          <span
-            className={cn(
-              "flex items-center gap-0.5 text-xs font-medium",
-              isGood ? "text-chart-good" : "text-chart-critical"
-            )}
-          >
-            {isUp ? (
-              <ArrowUpRight className="size-3.5" />
-            ) : (
-              <ArrowDownRight className="size-3.5" />
-            )}
-            {Math.abs(delta!).toFixed(0)}% vs last week
-          </span>
-        )}
+        <span
+          className={cn(
+            "flex items-center gap-0.5 text-xs font-medium",
+            hasDelta && delta !== 0
+              ? isGood
+                ? "text-chart-good"
+                : "text-chart-critical"
+              : "invisible"
+          )}
+        >
+          {isUp ? (
+            <ArrowUpRight className="size-3.5" />
+          ) : (
+            <ArrowDownRight className="size-3.5" />
+          )}
+          {Math.abs(delta ?? 0).toFixed(0)}% vs last week
+        </span>
       </div>
     </Card>
   );

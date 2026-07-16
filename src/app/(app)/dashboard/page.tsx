@@ -66,6 +66,17 @@ export default async function DashboardPage({
   const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
   const netDelta = percentDelta(summary.net, previousSummary.net);
 
+  // Carry the currently-selected period through to Income/Expenses so those
+  // pages open scoped to the same range instead of resetting to their default.
+  const periodQuery = new URLSearchParams();
+  periodQuery.set("period", period);
+  if (period === "custom" && params.from && params.to) {
+    periodQuery.set("from", params.from);
+    periodQuery.set("to", params.to);
+  }
+  const incomeHref = `/income?${periodQuery.toString()}`;
+  const expensesHref = `/expenses?${periodQuery.toString()}`;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -86,6 +97,8 @@ export default async function DashboardPage({
         incomeDelta={incomeDelta}
         expenseDelta={expenseDelta}
         netDelta={netDelta}
+        incomeHref={incomeHref}
+        expensesHref={expensesHref}
       />
 
       <div className="hidden md:block">
@@ -98,14 +111,14 @@ export default async function DashboardPage({
           value={summary.totalIncome}
           delta={incomeDelta}
           deltaGoodDirection="up"
-          href="/income"
+          href={incomeHref}
         />
         <StatTile
           label="Expenses"
           value={summary.totalExpenses}
           delta={expenseDelta}
           deltaGoodDirection="down"
-          href="/expenses"
+          href={expensesHref}
         />
         <StatTile
           label="Net"

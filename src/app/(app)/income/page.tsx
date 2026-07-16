@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 
 import { auth } from "@/lib/auth";
-import { getDateRange } from "@/lib/period";
+import { getDateRange, type Period } from "@/lib/period";
 import {
   getPeriodSummary,
   getIncomeTransactions,
@@ -17,10 +17,12 @@ import { TransactionListCard } from "@/components/dashboard/transaction-list-car
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
 
-const TAB_TO_PERIOD = { day: "today", week: "week", month: "month", year: "year" } as const;
+// Values match the shared `Period` type so a period selected on the Dashboard
+// (or any other page) survives a cross-page link unchanged.
+const PRESET_PERIODS = ["today", "week", "month", "year"] as const;
 
 const TAB_OPTIONS = [
-  { value: "day", label: "Day" },
+  { value: "today", label: "Day" },
   { value: "week", label: "Week" },
   { value: "month", label: "Month" },
   { value: "year", label: "Year" },
@@ -36,12 +38,12 @@ export default async function IncomePage({
   const userId = session!.user.id;
 
   const isCustom = params.period === "custom" && !!params.from && !!params.to;
-  const tab = !isCustom && (params.period as keyof typeof TAB_TO_PERIOD) in TAB_TO_PERIOD
-    ? (params.period as keyof typeof TAB_TO_PERIOD)
+  const tab = !isCustom && PRESET_PERIODS.includes(params.period as (typeof PRESET_PERIODS)[number])
+    ? (params.period as (typeof PRESET_PERIODS)[number])
     : "week";
   const range = isCustom
     ? getDateRange("custom", { from: new Date(params.from!), to: new Date(params.to!) })
-    : getDateRange(TAB_TO_PERIOD[tab]);
+    : getDateRange(tab as Period);
 
   const [summary, incomeTransactions] = await Promise.all([
     getPeriodSummary(userId, range),

@@ -25,7 +25,18 @@ export function CategoryBreakdown({
   const max = Math.max(...categories.map((c) => c.total), 0.01);
 
   function hrefFor(categoryId: string) {
-    const params = destination === pathname ? new URLSearchParams(searchParams.toString()) : new URLSearchParams();
+    let params: URLSearchParams;
+    if (destination === pathname) {
+      params = new URLSearchParams(searchParams.toString());
+    } else {
+      // Cross-page navigation: carry over the current period/date-range
+      // selection instead of resetting the target page to its own default.
+      params = new URLSearchParams();
+      for (const key of ["period", "from", "to"]) {
+        const value = searchParams.get(key);
+        if (value) params.set(key, value);
+      }
+    }
     params.set("category", categoryId);
     return `${destination}?${params.toString()}`;
   }

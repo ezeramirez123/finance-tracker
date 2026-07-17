@@ -40,8 +40,7 @@ function TrendTooltip({
 export function IncomeExpenseTrendChart({ data }: { data: DailyPoint[] }) {
   if (data.length < 2) return null;
 
-  const totalIncome = data.reduce((sum, d) => sum + d.income, 0);
-  const totalExpense = data.reduce((sum, d) => sum + d.expense, 0);
+  const max = Math.max(...data.flatMap((d) => [d.income, d.expense]));
 
   return (
     <Card>
@@ -50,8 +49,8 @@ export function IncomeExpenseTrendChart({ data }: { data: DailyPoint[] }) {
       </CardHeader>
       <CardContent className="flex items-stretch gap-3">
         <div className="flex h-48 shrink-0 flex-col justify-between py-1 text-[11px] tabular-nums text-muted-foreground">
-          <p>{formatUsd(totalIncome)}</p>
-          <p>{formatUsd(totalExpense)}</p>
+          <p>{formatUsd(max)}</p>
+          <p>{formatUsd(0)}</p>
         </div>
         <div className="h-48 min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]">
           <ResponsiveContainer width="100%" height="100%">

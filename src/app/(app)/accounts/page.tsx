@@ -23,8 +23,7 @@ import {
 } from "@/components/accounts/account-actions";
 import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
-import { AccountBalanceHistoryChart } from "@/components/accounts/account-balance-history-chart";
-import { BalancesOverview } from "@/components/dashboard/balances-overview";
+import { AccountsOverviewCard } from "@/components/accounts/accounts-overview-card";
 import { formatMoney } from "@/lib/format";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -82,9 +81,9 @@ export default async function AccountsPage({
         </div>
       </div>
 
-      <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
-
-      <AccountBalanceHistoryChart
+      <AccountsOverviewCard
+        netWorth={netWorth}
+        totalBalance={totalBalance}
         accounts={balanceHistory.accounts}
         series={balanceHistory.series}
         period={historyPeriod}

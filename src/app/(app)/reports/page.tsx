@@ -2,10 +2,12 @@ import { auth } from "@/lib/auth";
 import { getDateRange, type Period } from "@/lib/period";
 import { getPeriodSummary } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
-import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
 import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { formatUsd } from "@/lib/format";
 
 export default async function ReportsPage({
   searchParams,
@@ -38,11 +40,33 @@ export default async function ReportsPage({
         <PeriodRangeSelect period={period} from={params.from} to={params.to} />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatTile label="Total income" value={summary.totalIncome} />
-        <StatTile label="Total expenses" value={summary.totalExpenses} />
-        <StatTile label="Net income" value={summary.net} />
-      </div>
+      <Card className="gap-1.5">
+        <div className="grid grid-cols-3 gap-4 px-5">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Total income</p>
+            <p className="text-xl font-semibold tracking-tight text-chart-good sm:text-2xl">
+              {formatUsd(summary.totalIncome)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Total expenses</p>
+            <p className="text-xl font-semibold tracking-tight text-chart-critical sm:text-2xl">
+              {formatUsd(summary.totalExpenses)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Net income</p>
+            <p
+              className={cn(
+                "text-xl font-semibold tracking-tight sm:text-2xl",
+                summary.net >= 0 ? "text-chart-good" : "text-chart-critical"
+              )}
+            >
+              {formatUsd(summary.net)}
+            </p>
+          </div>
+        </div>
+      </Card>
 
       <DailyTrendChart data={summary.dailyTrend} />
 

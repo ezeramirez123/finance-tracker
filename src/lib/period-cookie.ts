@@ -1,10 +1,8 @@
 import { cookies } from "next/headers";
 
-export type PersistedPeriod = { period: string; from?: string; to?: string };
+import { periodCookieName } from "@/lib/period-cookie-name";
 
-export function periodCookieName(key: string) {
-  return `period_${key}`;
-}
+export type PersistedPeriod = { period: string; from?: string; to?: string };
 
 /** Reads a page's last-persisted period (set client-side by usePersistedPeriod)
  * so the server can render with it directly instead of the page's hardcoded

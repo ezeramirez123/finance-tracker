@@ -18,11 +18,13 @@ export function CurrencyInput({
   value,
   currency,
   onChange,
+  autoFocus,
 }: {
   id?: string;
   value: number;
   currency: string;
   onChange: (value: number) => void;
+  autoFocus?: boolean;
 }) {
   const isPyg = currency === "PYG";
 
@@ -30,6 +32,7 @@ export function CurrencyInput({
     <CurrencyInputField
       id={id}
       value={value}
+      autoFocus={autoFocus}
       prefix={currencyPrefix(currency)}
       groupSeparator=","
       decimalSeparator="."

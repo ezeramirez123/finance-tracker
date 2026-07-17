@@ -141,7 +141,12 @@ export function AccountDialog({
         >
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="name">Name</Label>
-            <Input id="name" placeholder="e.g. Bank of America" {...form.register("name")} />
+            <Input
+              id="name"
+              placeholder="e.g. Bank of America"
+              autoFocus
+              {...form.register("name")}
+            />
             {form.formState.errors.name && (
               <p className="text-xs text-destructive">
                 {form.formState.errors.name.message}

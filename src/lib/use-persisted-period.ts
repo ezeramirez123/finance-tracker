@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { periodCookieName } from "@/lib/period-cookie";
+import { periodCookieName } from "@/lib/period-cookie-name";
 
 /**
  * Persists a page's period/date-range selection to a cookie so the server

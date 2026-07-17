@@ -52,10 +52,13 @@ export function verifyMfaCookie(cookieValue: string, userId: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+// No `maxAge` — a session cookie, so closing the browser/app clears it and
+// the next open re-prompts for biometric verification. The 12-hour value in
+// signMfaCookie's signed payload still caps how long a single session can
+// go without re-verifying, as a defense-in-depth backstop.
 export const mfaCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
   path: "/",
-  maxAge: MFA_COOKIE_MAX_AGE_SECONDS,
 };

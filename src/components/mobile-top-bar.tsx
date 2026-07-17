@@ -23,6 +23,11 @@ export function MobileTopBar({
   email?: string | null;
 }) {
   const [open, setOpen] = React.useState(false);
+  const openRef = React.useRef(open);
+
+  React.useEffect(() => {
+    openRef.current = open;
+  }, [open]);
 
   React.useEffect(() => {
     let startX = 0;
@@ -31,8 +36,15 @@ export function MobileTopBar({
 
     function onTouchStart(e: TouchEvent) {
       const touch = e.touches[0];
-      // Only start tracking swipes that begin near the left screen edge, so
-      // this doesn't hijack horizontal scrolling elsewhere on the page.
+      if (openRef.current) {
+        // Drawer is open: any swipe-left anywhere on it should close it.
+        startX = touch.clientX;
+        startY = touch.clientY;
+        tracking = true;
+        return;
+      }
+      // Drawer is closed: only track swipes starting near the left screen
+      // edge, so this doesn't hijack horizontal scrolling elsewhere.
       if (touch.clientX > 24) return;
       startX = touch.clientX;
       startY = touch.clientY;
@@ -44,7 +56,12 @@ export function MobileTopBar({
       const touch = e.touches[0];
       const deltaX = touch.clientX - startX;
       const deltaY = touch.clientY - startY;
-      if (deltaX > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      if (openRef.current) {
+        if (deltaX < -60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+          setOpen(false);
+          tracking = false;
+        }
+      } else if (deltaX > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
         setOpen(true);
         tracking = false;
       }
@@ -65,12 +82,12 @@ export function MobileTopBar({
   }, []);
 
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b bg-background px-4 py-3 md:hidden">
-      <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 flex items-center justify-between gap-3 border-b bg-background px-4 py-2 md:hidden">
+      <div className="flex items-center gap-2.5">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label="Open menu">
-              <Menu className="size-5" />
+            <Button variant="ghost" size="icon" className="size-8" aria-label="Open menu">
+              <Menu className="size-4" />
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-64 gap-0 px-3 py-4">
@@ -84,7 +101,7 @@ export function MobileTopBar({
             </div>
           </SheetContent>
         </Sheet>
-        <Link href="/dashboard" className="text-lg font-bold tracking-tight">
+        <Link href="/dashboard" className="text-base font-bold tracking-tight">
           Semanal
         </Link>
       </div>
@@ -93,7 +110,7 @@ export function MobileTopBar({
         email={email}
         collapsed
         fullWidth={false}
-        avatarClassName="size-9 text-sm"
+        avatarClassName="size-8 text-xs"
       />
     </header>
   );

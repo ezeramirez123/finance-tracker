@@ -193,6 +193,7 @@ export default async function TransactionsPage({
                     {t.date.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
+                      year: "numeric",
                     })}
                   </TableCell>
                   <TableCell className="max-w-[200px] truncate font-medium">

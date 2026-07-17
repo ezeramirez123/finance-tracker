@@ -83,13 +83,11 @@ function BalanceStat({
 
 export function AccountsOverviewCard({
   netWorth,
-  totalBalance,
   accounts,
   series,
   period,
 }: {
   netWorth: number;
-  totalBalance: number;
   accounts: AccountMeta[];
   series: SeriesPoint[];
   period: string;
@@ -108,10 +106,7 @@ export function AccountsOverviewCard({
         <PeriodTabs period={period} paramName="historyPeriod" options={HISTORY_OPTIONS} />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
-          <BalanceStat label="Net worth" value={netWorth} storageKey="hideNetWorth" />
-          <BalanceStat label="Total" value={totalBalance} storageKey="hideTotal" />
-        </div>
+        <BalanceStat label="Total balance" value={netWorth} storageKey="hideNetWorth" />
 
         {accounts.length > 0 && (
           <div className="h-64 [&_*]:outline-none">

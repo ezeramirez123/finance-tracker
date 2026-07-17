@@ -1,10 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import {
-  getAccountBalanceHistorySeries,
-  getNetWorth,
-  getTotalBalance,
-} from "@/lib/dashboard-data";
+import { getAccountBalanceHistorySeries, getNetWorth } from "@/lib/dashboard-data";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -55,14 +51,13 @@ export default async function AccountsPage({
       ? params.historyPeriod
       : "month";
 
-  const [accounts, balanceHistory, netWorth, totalBalance] = await Promise.all([
+  const [accounts, balanceHistory, netWorth] = await Promise.all([
     db.financialAccount.findMany({
       where: { userId },
       orderBy: { createdAt: "asc" },
     }),
     getAccountBalanceHistorySeries(userId, HISTORY_PERIOD_DAYS[historyPeriod]),
     getNetWorth(userId),
-    getTotalBalance(userId),
   ]);
 
   return (
@@ -78,7 +73,6 @@ export default async function AccountsPage({
 
       <AccountsOverviewCard
         netWorth={netWorth}
-        totalBalance={totalBalance}
         accounts={balanceHistory.accounts}
         series={balanceHistory.series}
         period={historyPeriod}

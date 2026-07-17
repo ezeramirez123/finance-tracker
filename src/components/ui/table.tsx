@@ -4,15 +4,17 @@ import { cn } from "@/lib/utils";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div data-slot="table-container" className="flex w-full overflow-x-auto">
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />
+      {/* Sticky (not absolute) so the scroll-hint fade stays pinned to the
+       * visible right edge instead of scrolling away with the table content. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-background to-transparent md:hidden"
+        className="sticky right-0 -ml-8 w-8 shrink-0 self-stretch bg-gradient-to-l from-background to-transparent pointer-events-none md:hidden"
       />
     </div>
   );

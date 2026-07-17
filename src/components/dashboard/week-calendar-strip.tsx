@@ -102,10 +102,6 @@ export function WeekCalendarStrip({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 border-b pb-4">
-          <IncomeExpenseTrendGraph data={days} variant="bar" />
-        </div>
-
         <div className="mb-4 grid grid-cols-3 gap-2 border-b pb-4 text-center">
           <div>
             <p className="text-xs text-muted-foreground">Income</p>
@@ -130,6 +126,10 @@ export function WeekCalendarStrip({
               {formatUsd(weekNet)}
             </p>
           </div>
+        </div>
+
+        <div className="mb-4 border-b pb-4">
+          <IncomeExpenseTrendGraph data={days} variant="bar" />
         </div>
 
         <div className="sm:hidden">

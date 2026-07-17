@@ -8,7 +8,7 @@ import { Fingerprint } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-export function PasskeySigninButton() {
+export function PasskeySigninButton({ className }: { className?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +41,13 @@ export function PasskeySigninButton() {
   }
 
   return (
-    <Button onClick={handleClick} disabled={loading} variant="outline" size="lg">
+    <Button
+      onClick={handleClick}
+      disabled={loading}
+      variant="outline"
+      size="lg"
+      className={className}
+    >
       <Fingerprint className="size-4" />
       {loading ? "Signing in..." : "Sign in with passkey"}
     </Button>

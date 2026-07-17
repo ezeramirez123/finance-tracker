@@ -92,8 +92,10 @@ export function MobileTopBar({
           </SheetTrigger>
           <SheetContent side="left" className="w-64 gap-0 px-3 py-4">
             <SheetHeader className="px-2 pb-4">
-              <SheetTitle className="text-left text-xl font-bold tracking-tight">
-                Semanal
+              <SheetTitle asChild className="text-left text-xl font-bold tracking-tight">
+                <Link href="/dashboard" onClick={() => setOpen(false)}>
+                  Semanal
+                </Link>
               </SheetTitle>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto">

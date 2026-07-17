@@ -75,12 +75,7 @@ export default async function CategoriesPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Categories</h1>
-        <p className="text-sm text-muted-foreground">
-          Organize where your money comes from and goes.
-        </p>
-      </div>
+      <h1 className="text-xl font-semibold tracking-tight">Categories</h1>
 
       <div className="grid gap-6 md:grid-cols-2">
         <CategoryList title="Expense categories" kind="expense" categories={expenseCategories} />

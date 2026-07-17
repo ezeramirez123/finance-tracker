@@ -68,12 +68,7 @@ export default async function AccountsPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Accounts</h1>
-          <p className="text-sm text-muted-foreground">
-            Every place your money lives.
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold tracking-tight">Accounts</h1>
         <div className="flex items-center gap-2">
           {accounts.some((a) => a.isConnected) && <SyncTransactionsButton />}
           <ConnectBankButton />

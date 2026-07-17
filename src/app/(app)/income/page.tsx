@@ -62,12 +62,7 @@ export default async function IncomePage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Income</h1>
-          <p className="text-sm text-muted-foreground">
-            Just the money coming in.
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold tracking-tight">Income</h1>
         <div className="flex flex-wrap items-center gap-2">
           <CategoryFilterSelect categories={summary.incomeByCategory} category={params.category} />
           <PeriodTabs period={isCustom ? "" : tab} options={TAB_OPTIONS} />

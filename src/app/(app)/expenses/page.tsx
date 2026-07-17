@@ -62,12 +62,7 @@ export default async function ExpensesPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Expenses</h1>
-          <p className="text-sm text-muted-foreground">
-            Just the money going out.
-          </p>
-        </div>
+        <h1 className="text-xl font-semibold tracking-tight">Expenses</h1>
         <div className="flex flex-wrap items-center gap-2">
           <CategoryFilterSelect categories={summary.spendingByCategory} category={params.category} />
           <PeriodTabs period={isCustom ? "" : tab} options={TAB_OPTIONS} />

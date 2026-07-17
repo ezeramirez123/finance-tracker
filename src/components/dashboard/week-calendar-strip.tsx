@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { IncomeExpenseTrendGraph } from "@/components/dashboard/income-expense-trend-chart";
 import { cn } from "@/lib/utils";
 import { formatUsd } from "@/lib/format";
 
@@ -125,6 +126,10 @@ export function WeekCalendarStrip({
               {formatUsd(weekNet)}
             </p>
           </div>
+        </div>
+
+        <div className="mb-4 border-b pb-4">
+          <IncomeExpenseTrendGraph data={days} />
         </div>
 
         <div className="sm:hidden">

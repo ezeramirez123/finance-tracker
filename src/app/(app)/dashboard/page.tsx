@@ -14,7 +14,6 @@ import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
-import { IncomeExpenseTrendChart } from "@/components/dashboard/income-expense-trend-chart";
 import { BalancesOverview } from "@/components/dashboard/balances-overview";
 import { MobileSummaryCard } from "@/components/dashboard/mobile-summary-card";
 
@@ -138,8 +137,6 @@ export default async function DashboardPage({
       </div>
 
       <WeekCalendarStrip days={currentWeekDays} weekOffset={weekOffset} />
-
-      <IncomeExpenseTrendChart data={summary.dailyTrend} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <CategoryPieBreakdown

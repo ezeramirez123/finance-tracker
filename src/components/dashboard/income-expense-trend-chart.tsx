@@ -50,14 +50,8 @@ export function IncomeExpenseTrendChart({ data }: { data: DailyPoint[] }) {
       </CardHeader>
       <CardContent className="flex items-stretch gap-3">
         <div className="flex h-48 shrink-0 flex-col justify-between py-1 text-[11px] tabular-nums text-muted-foreground">
-          <div>
-            <p>Income</p>
-            <p className="font-semibold">{formatUsd(totalIncome)}</p>
-          </div>
-          <div>
-            <p>Expenses</p>
-            <p className="font-semibold">{formatUsd(totalExpense)}</p>
-          </div>
+          <p>{formatUsd(totalIncome)}</p>
+          <p>{formatUsd(totalExpense)}</p>
         </div>
         <div className="h-48 min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]">
           <ResponsiveContainer width="100%" height="100%">

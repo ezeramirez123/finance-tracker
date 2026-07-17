@@ -9,13 +9,13 @@ import {
   getWeeklyBreakdown,
 } from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
-import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
 import { MetricTrendChart } from "@/components/dashboard/metric-trend-chart";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
+import { formatUsd } from "@/lib/format";
 
 // Values match the shared `Period` type so a period selected on the Dashboard
 // (or any other page) survives a cross-page link unchanged.
@@ -74,21 +74,26 @@ export default async function ExpensesPage({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <StatTile label="Total expenses" value={summary.totalExpenses} />
-        <Card className="gap-1.5">
-          <p className="px-5 text-sm font-medium text-muted-foreground">Transactions</p>
-          <p className="px-5 text-3xl font-semibold tracking-tight">
-            {expenseTransactions.length}
-          </p>
-        </Card>
-      </div>
-
-      <MetricTrendChart
-        title="Expenses trend"
-        color="var(--chart-critical)"
-        data={summary.dailyTrend.map((d) => ({ date: d.date, value: d.expense }))}
-      />
+      <Card className="gap-3">
+        <div className="flex items-start justify-between px-5">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">Total expenses</p>
+            <p className="text-2xl font-semibold tracking-tight">
+              {formatUsd(summary.totalExpenses)}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-sm font-medium text-muted-foreground">Transactions</p>
+            <p className="text-2xl font-semibold tracking-tight">{expenseTransactions.length}</p>
+          </div>
+        </div>
+        <div className="px-5">
+          <MetricTrendChart
+            color="var(--chart-critical)"
+            data={summary.dailyTrend.map((d) => ({ date: d.date, value: d.expense }))}
+          />
+        </div>
+      </Card>
 
       {dailyBreakdown && (
         <PeriodBreakdownCollapsible

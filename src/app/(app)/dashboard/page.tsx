@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
 import {
+  getLargestExpenses,
   getNetWorth,
   getNetWorthHistory,
   getPeriodSummary,
@@ -12,6 +13,7 @@ import { PeriodRangeSelect } from "@/components/period-range-select";
 import { readPersistedPeriod } from "@/lib/period-cookie";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
+import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
 import { IncomeExpenseTrendChart } from "@/components/dashboard/income-expense-trend-chart";
@@ -31,6 +33,7 @@ export default async function DashboardPage({
     from?: string;
     to?: string;
     weekOffset?: string;
+    category?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -57,6 +60,7 @@ export default async function DashboardPage({
     currentWeekDays,
     accounts,
     categories,
+    largestExpenses,
   ] = await Promise.all([
     getPeriodSummary(userId, range),
     getPeriodSummary(userId, previousRange),
@@ -69,6 +73,7 @@ export default async function DashboardPage({
       where: { OR: [{ userId }, { userId: null }] },
       orderBy: { name: "asc" },
     }),
+    getLargestExpenses(userId, range, params.category),
   ]);
 
   const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
@@ -157,7 +162,13 @@ export default async function DashboardPage({
       <div className="grid gap-4 lg:grid-cols-2">
         <TransactionListCard
           title="Largest expenses"
-          transactions={summary.largestExpenses.map((t) => ({
+          titleAction={
+            <CategoryFilterSelect
+              categories={summary.spendingByCategory}
+              category={params.category}
+            />
+          }
+          transactions={largestExpenses.map((t) => ({
             ...t,
             originalAmount: Number(t.originalAmount),
           }))}

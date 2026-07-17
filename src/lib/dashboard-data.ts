@@ -119,11 +119,6 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
     dailyTotals.set(day, dayEntry);
   }
 
-  const largestExpenses = transactions
-    .filter((t) => t.kind === "expense")
-    .sort((a, b) => Number(b.usdEquivalent) - Number(a.usdEquivalent))
-    .slice(0, 5);
-
   const dailyTrend = Array.from(dailyTotals.entries())
     .map(([date, totals]) => ({ date, ...totals }))
     .sort((a, b) => a.date.localeCompare(b.date));
@@ -138,7 +133,6 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
     incomeByCategory: Array.from(incomeByCategory.values()).sort(
       (a, b) => b.total - a.total
     ),
-    largestExpenses,
     dailyTrend,
     recentTransactions: transactions.slice(0, 8),
     transactionCount: transactions.length,
@@ -198,6 +192,25 @@ export async function getLargestTransactions(
     include: { category: true },
     orderBy: { usdEquivalent: "desc" },
     take: 10,
+  });
+}
+
+/** Largest expenses by USD magnitude in the period, optionally filtered by category. */
+export async function getLargestExpenses(
+  userId: string,
+  range: DateRange,
+  categoryId?: string
+) {
+  return db.transaction.findMany({
+    where: {
+      userId,
+      kind: "expense",
+      date: { gte: range.from, lte: range.to },
+      ...(categoryId ? { categoryId } : {}),
+    },
+    include: { category: true },
+    orderBy: { usdEquivalent: "desc" },
+    take: 5,
   });
 }
 

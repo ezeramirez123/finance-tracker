@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
@@ -38,12 +39,15 @@ export function CategoryPieBreakdown({
   title,
   categories,
   targetPath,
+  action,
 }: {
   title: string;
   categories: CategoryTotal[];
   /** Where clicking a category should go. Defaults to the current page (in-place
    * filtering); pass e.g. "/expenses" to navigate elsewhere instead. */
   targetPath?: string;
+  /** Extra control rendered in the header next to the title, e.g. a category filter. */
+  action?: ReactNode;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -75,6 +79,7 @@ export function CategoryPieBreakdown({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        {action}
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">

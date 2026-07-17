@@ -21,6 +21,7 @@ import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
 import { AccountsOverviewCard } from "@/components/accounts/accounts-overview-card";
 import { formatMoney } from "@/lib/format";
+import { readPersistedPeriod } from "@/lib/period-cookie";
 
 const TYPE_LABELS: Record<string, string> = {
   bank: "Bank",
@@ -46,9 +47,13 @@ export default async function AccountsPage({
   const session = await auth();
   const userId = session!.user.id;
 
+  const persisted = params.historyPeriod
+    ? null
+    : await readPersistedPeriod("accounts-history");
+  const effectiveHistoryPeriod = params.historyPeriod ?? persisted?.period;
   const historyPeriod =
-    params.historyPeriod && params.historyPeriod in HISTORY_PERIOD_DAYS
-      ? params.historyPeriod
+    effectiveHistoryPeriod && effectiveHistoryPeriod in HISTORY_PERIOD_DAYS
+      ? effectiveHistoryPeriod
       : "month";
 
   const [accounts, balanceHistory, netWorth] = await Promise.all([

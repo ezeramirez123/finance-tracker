@@ -103,7 +103,7 @@ export function MobileSummaryCard({
         className="block rounded-md px-5 py-1 transition-colors hover:bg-accent"
       >
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-muted-foreground">Net worth</p>
+          <p className="text-sm font-medium text-muted-foreground">Balance</p>
           <Button
             variant="outline"
             size="icon"

@@ -21,15 +21,20 @@ export function PeriodTabs({
   period,
   paramName = "period",
   options = DEFAULT_OPTIONS,
+  persistKey,
 }: {
   period: string;
   paramName?: string;
   options?: readonly { value: string; label: string }[];
+  /** Unique key to persist this period under (see usePersistedPeriod) — pass a
+   * page-specific value (e.g. "income") so pages sharing paramName="period"
+   * don't overwrite each other's saved state. */
+  persistKey: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const persistPeriod = usePersistedPeriod(paramName);
+  const persistPeriod = usePersistedPeriod(persistKey);
 
   function setPeriod(value: string) {
     const params = new URLSearchParams(searchParams.toString());

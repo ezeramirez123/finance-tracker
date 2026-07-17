@@ -9,6 +9,7 @@ import {
   getWeekDailyTotals,
 } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
+import { readPersistedPeriod } from "@/lib/period-cookie";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
@@ -36,12 +37,13 @@ export default async function DashboardPage({
   const session = await auth();
   const userId = session!.user.id;
 
-  const period = (params.period as Period) || "week";
+  const persisted = params.period ? null : await readPersistedPeriod("dashboard");
+  const period = (params.period as Period) || (persisted?.period as Period) || "week";
+  const from = params.from ?? persisted?.from;
+  const to = params.to ?? persisted?.to;
   const range = getDateRange(
     period,
-    period === "custom" && params.from && params.to
-      ? { from: new Date(params.from), to: new Date(params.to) }
-      : undefined
+    period === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined
   );
   const previousRange = getPreviousRange(range);
   const weekOffset = Math.min(0, parseInt(params.weekOffset ?? "0", 10) || 0);
@@ -77,9 +79,9 @@ export default async function DashboardPage({
   // pages open scoped to the same range instead of resetting to their default.
   const periodQuery = new URLSearchParams();
   periodQuery.set("period", period);
-  if (period === "custom" && params.from && params.to) {
-    periodQuery.set("from", params.from);
-    periodQuery.set("to", params.to);
+  if (period === "custom" && from && to) {
+    periodQuery.set("from", from);
+    periodQuery.set("to", to);
   }
   const incomeHref = `/income?${periodQuery.toString()}`;
   const expensesHref = `/expenses?${periodQuery.toString()}`;
@@ -89,7 +91,7 @@ export default async function DashboardPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-        <PeriodRangeSelect period={period} from={params.from} to={params.to} />
+        <PeriodRangeSelect period={period} from={from} to={to} persistKey="dashboard" />
       </div>
 
       <MobileSummaryCard

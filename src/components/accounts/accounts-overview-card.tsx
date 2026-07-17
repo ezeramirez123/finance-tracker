@@ -103,7 +103,12 @@ export function AccountsOverviewCard({
     <Card>
       <CardHeader>
         <CardTitle>Balances over time</CardTitle>
-        <PeriodTabs period={period} paramName="historyPeriod" options={HISTORY_OPTIONS} />
+        <PeriodTabs
+          period={period}
+          paramName="historyPeriod"
+          options={HISTORY_OPTIONS}
+          persistKey="accounts-history"
+        />
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <BalanceStat label="Total balance" value={netWorth} storageKey="hideNetWorth" />

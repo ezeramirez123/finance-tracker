@@ -181,6 +181,26 @@ export async function getIncomeTransactions(
   });
 }
 
+/** Largest transactions by USD magnitude in the period, any kind, optionally
+ * filtered by category. usdEquivalent is always stored as a positive
+ * magnitude, so sorting by it directly ranks by size regardless of direction. */
+export async function getLargestTransactions(
+  userId: string,
+  range: DateRange,
+  categoryId?: string
+) {
+  return db.transaction.findMany({
+    where: {
+      userId,
+      date: { gte: range.from, lte: range.to },
+      ...(categoryId ? { categoryId } : {}),
+    },
+    include: { category: true },
+    orderBy: { usdEquivalent: "desc" },
+    take: 10,
+  });
+}
+
 /** Expense totals for the past `weeksCount` weeks (most recent week last), Mon-Sun buckets. */
 export async function getWeeklySpending(userId: string, weeksCount = 4) {
   const now = new Date();

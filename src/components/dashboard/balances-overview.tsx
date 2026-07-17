@@ -54,7 +54,7 @@ export function BalancesOverview({
 }) {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <BalanceCard label="Net worth" value={netWorth} storageKey="hideNetWorth" />
+      <BalanceCard label="Balance" value={netWorth} storageKey="hideNetWorth" />
       <BalanceCard label="Total" value={totalBalance} storageKey="hideTotal" />
     </div>
   );

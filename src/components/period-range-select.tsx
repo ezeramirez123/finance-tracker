@@ -32,17 +32,20 @@ export function PeriodRangeSelect({
   period,
   from,
   to,
+  persistKey,
 }: {
   period: string;
   from?: string;
   to?: string;
+  /** Unique key to persist this period under (see usePersistedPeriod). */
+  persistKey: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [customFrom, setCustomFrom] = React.useState(from ?? "");
   const [customTo, setCustomTo] = React.useState(to ?? "");
-  const persistPeriod = usePersistedPeriod();
+  const persistPeriod = usePersistedPeriod(persistKey);
 
   function setPeriod(value: string) {
     const params = new URLSearchParams(searchParams.toString());

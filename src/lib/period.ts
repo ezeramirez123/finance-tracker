@@ -29,7 +29,16 @@ export function getDateRange(period: Period, custom?: DateRange): DateRange {
     case "year":
       return { from: startOfYear(now), to: endOfYear(now) };
     case "custom":
-      if (!custom) throw new Error("Custom range requires from/to");
+      // "custom" can land in the URL/cookie before the user has actually
+      // picked dates in the range popover (selecting it from the dropdown
+      // alone pushes period=custom immediately) — fall back to the current
+      // week rather than crashing the page in that gap.
+      if (!custom) {
+        return {
+          from: startOfWeek(now, { weekStartsOn: 1 }),
+          to: endOfWeek(now, { weekStartsOn: 1 }),
+        };
+      }
       return { from: startOfDay(custom.from), to: endOfDay(custom.to) };
   }
 }

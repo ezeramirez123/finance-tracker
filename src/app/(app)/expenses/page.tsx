@@ -16,6 +16,7 @@ import { TransactionListCard } from "@/components/dashboard/transaction-list-car
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
+import { readPersistedPeriod } from "@/lib/period-cookie";
 
 // Values match the shared `Period` type so a period selected on the Dashboard
 // (or any other page) survives a cross-page link unchanged.
@@ -37,12 +38,17 @@ export default async function ExpensesPage({
   const session = await auth();
   const userId = session!.user.id;
 
-  const isCustom = params.period === "custom" && !!params.from && !!params.to;
-  const tab = !isCustom && PRESET_PERIODS.includes(params.period as (typeof PRESET_PERIODS)[number])
-    ? (params.period as (typeof PRESET_PERIODS)[number])
+  const persisted = params.period ? null : await readPersistedPeriod("expenses");
+  const effectivePeriod = params.period ?? persisted?.period;
+  const effectiveFrom = params.from ?? persisted?.from;
+  const effectiveTo = params.to ?? persisted?.to;
+
+  const isCustom = effectivePeriod === "custom" && !!effectiveFrom && !!effectiveTo;
+  const tab = !isCustom && PRESET_PERIODS.includes(effectivePeriod as (typeof PRESET_PERIODS)[number])
+    ? (effectivePeriod as (typeof PRESET_PERIODS)[number])
     : "week";
   const range = isCustom
-    ? getDateRange("custom", { from: new Date(params.from!), to: new Date(params.to!) })
+    ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
     : getDateRange(tab as Period);
 
   const [summary, expenseTransactions] = await Promise.all([
@@ -63,10 +69,11 @@ export default async function ExpensesPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Expenses</h1>
-        <div className="flex flex-wrap items-center gap-2">
-          <CategoryFilterSelect categories={summary.spendingByCategory} category={params.category} />
-          <PeriodTabs period={isCustom ? "" : tab} options={TAB_OPTIONS} />
-        </div>
+        <PeriodTabs
+          period={isCustom ? "" : tab}
+          options={TAB_OPTIONS}
+          persistKey="expenses"
+        />
       </div>
 
       <Card className="gap-3">
@@ -116,7 +123,16 @@ export default async function ExpensesPage({
         />
       )}
 
-      <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
+      <CategoryPieBreakdown
+        title="Spending by category"
+        categories={summary.spendingByCategory}
+        action={
+          <CategoryFilterSelect
+            categories={summary.spendingByCategory}
+            category={params.category}
+          />
+        }
+      />
 
       <TransactionListCard
         title={filteredCategory ? `Expenses · ${filteredCategory.name}` : "All expenses"}

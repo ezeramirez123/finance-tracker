@@ -1,47 +1,20 @@
 "use client";
 
 import * as React from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-type PersistedPeriod = { period: string; from?: string; to?: string };
+import { periodCookieName } from "@/lib/period-cookie";
 
 /**
- * Remembers the last period/date-range selected on this page (keyed by
- * pathname + paramName) so returning to the page later restores it instead
- * of falling back to the page's hardcoded default.
+ * Persists a page's period/date-range selection to a cookie so the server
+ * can render with it directly on the next visit — see period-cookie.ts's
+ * readPersistedPeriod for the server-side read.
  */
-export function usePersistedPeriod(paramName = "period") {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const storageKey = `period:${pathname}:${paramName}`;
-
-  React.useEffect(() => {
-    if (searchParams.get(paramName)) return;
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return;
-
-    let saved: PersistedPeriod;
-    try {
-      saved = JSON.parse(raw);
-    } catch {
-      return;
-    }
-    if (!saved.period) return;
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(paramName, saved.period);
-    if (saved.from) params.set("from", saved.from);
-    if (saved.to) params.set("to", saved.to);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    // Only ever run this restore once, on mount.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+export function usePersistedPeriod(key: string) {
   return React.useCallback(
     (period: string, from?: string, to?: string) => {
-      localStorage.setItem(storageKey, JSON.stringify({ period, from, to }));
+      const value = encodeURIComponent(JSON.stringify({ period, from, to }));
+      document.cookie = `${periodCookieName(key)}=${value}; path=/; max-age=31536000; SameSite=Lax`;
     },
-    [storageKey]
+    [key]
   );
 }

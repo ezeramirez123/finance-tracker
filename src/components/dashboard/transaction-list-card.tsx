@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -66,6 +66,7 @@ function TransactionList({
 
 export function TransactionListCard({
   title,
+  titleAction,
   transactions,
   emptyLabel,
   accounts,
@@ -73,6 +74,8 @@ export function TransactionListCard({
   collapsible = false,
 }: {
   title: string;
+  /** Extra control rendered next to the title, e.g. a category filter. */
+  titleAction?: ReactNode;
   transactions: TransactionLike[];
   emptyLabel: string;
   /** When given (alongside `categories`), rows become clickable to open the edit dialog. */
@@ -87,14 +90,17 @@ export function TransactionListCard({
     return (
       <Card className="gap-0 py-0">
         <Collapsible open={open} onOpenChange={setOpen}>
-          <CollapsibleTrigger className="flex w-full items-center justify-between gap-1.5 px-5 py-5 text-left">
-            <span className="text-sm font-medium text-muted-foreground">{title}</span>
-            <ChevronDown
-              className={`size-4 shrink-0 text-muted-foreground transition-transform ${
-                open ? "rotate-180" : ""
-              }`}
-            />
-          </CollapsibleTrigger>
+          <div className="flex items-center justify-between gap-1.5 px-5 py-5">
+            <CollapsibleTrigger className="flex flex-1 items-center justify-between gap-1.5 text-left">
+              <span className="text-sm font-medium text-muted-foreground">{title}</span>
+              <ChevronDown
+                className={`size-4 shrink-0 text-muted-foreground transition-transform ${
+                  open ? "rotate-180" : ""
+                }`}
+              />
+            </CollapsibleTrigger>
+            {titleAction}
+          </div>
           <CollapsibleContent>
             <CardContent className="pb-5">
               <TransactionList
@@ -114,6 +120,7 @@ export function TransactionListCard({
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        {titleAction}
       </CardHeader>
       <CardContent>
         <TransactionList

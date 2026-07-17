@@ -1,6 +1,15 @@
 "use client";
 
-import { Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import {
+  Bar,
+  BarChart,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+} from "recharts";
 import { format, parseISO } from "date-fns";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -39,8 +48,49 @@ function TrendTooltip({
 
 /** The chart itself, without a surrounding Card — meant to be embedded
  * inside another card (e.g. the week card) as well as used standalone. */
-export function IncomeExpenseTrendGraph({ data }: { data: DailyPoint[] }) {
+export function IncomeExpenseTrendGraph({
+  data,
+  variant = "line",
+}: {
+  data: DailyPoint[];
+  variant?: "line" | "bar";
+}) {
   if (data.length < 2) return null;
+
+  if (variant === "bar") {
+    return (
+      <div className="h-32 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
+            <XAxis
+              dataKey="date"
+              height={20}
+              tickFormatter={(v) => format(parseISO(v), "MMM d")}
+              tickLine={false}
+              axisLine={false}
+              interval="preserveStartEnd"
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            />
+            <Tooltip content={<TrendTooltip />} cursor={{ fill: "var(--accent)" }} />
+            <Bar
+              dataKey="income"
+              name="Income"
+              fill="var(--chart-good)"
+              radius={[2, 2, 0, 0]}
+              isAnimationActive={false}
+            />
+            <Bar
+              dataKey="expense"
+              name="Expenses"
+              fill="var(--chart-critical)"
+              radius={[2, 2, 0, 0]}
+              isAnimationActive={false}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
 
   const max = Math.max(...data.flatMap((d) => [d.income, d.expense]));
 

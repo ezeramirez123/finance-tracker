@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePersistedPeriod } from "@/lib/use-persisted-period";
 
 const DEFAULT_OPTIONS = [
   { value: "day", label: "Day" },
@@ -28,11 +29,13 @@ export function PeriodTabs({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const persistPeriod = usePersistedPeriod(paramName);
 
   function setPeriod(value: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set(paramName, value);
     router.push(`${pathname}?${params.toString()}`);
+    persistPeriod(value);
   }
 
   return (

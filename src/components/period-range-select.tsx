@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { usePersistedPeriod } from "@/lib/use-persisted-period";
 
 const OPTIONS = [
   { value: "today", label: "Day" },
@@ -41,6 +42,7 @@ export function PeriodRangeSelect({
   const searchParams = useSearchParams();
   const [customFrom, setCustomFrom] = React.useState(from ?? "");
   const [customTo, setCustomTo] = React.useState(to ?? "");
+  const persistPeriod = usePersistedPeriod();
 
   function setPeriod(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -50,6 +52,7 @@ export function PeriodRangeSelect({
       params.delete("to");
     }
     router.push(`${pathname}?${params.toString()}`);
+    persistPeriod(value);
   }
 
   function applyCustomRange() {
@@ -59,6 +62,7 @@ export function PeriodRangeSelect({
     params.set("from", customFrom);
     params.set("to", customTo);
     router.push(`${pathname}?${params.toString()}`);
+    persistPeriod("custom", customFrom, customTo);
   }
 
   return (

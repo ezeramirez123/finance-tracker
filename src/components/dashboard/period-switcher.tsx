@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { usePersistedPeriod } from "@/lib/use-persisted-period";
 
 const OPTIONS = [
   { value: "today", label: "Day" },
@@ -34,6 +35,7 @@ export function PeriodSwitcher({
   const searchParams = useSearchParams();
   const [customFrom, setCustomFrom] = React.useState(from ?? "");
   const [customTo, setCustomTo] = React.useState(to ?? "");
+  const persistPeriod = usePersistedPeriod();
 
   function setPeriod(value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -43,6 +45,7 @@ export function PeriodSwitcher({
       params.delete("to");
     }
     router.push(`${pathname}?${params.toString()}`);
+    persistPeriod(value);
   }
 
   function applyCustomRange() {
@@ -52,6 +55,7 @@ export function PeriodSwitcher({
     params.set("from", customFrom);
     params.set("to", customTo);
     router.push(`${pathname}?${params.toString()}`);
+    persistPeriod("custom", customFrom, customTo);
   }
 
   return (

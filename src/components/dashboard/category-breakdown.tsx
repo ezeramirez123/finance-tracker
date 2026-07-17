@@ -22,6 +22,9 @@ export function CategoryBreakdown({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const destination = targetPath ?? pathname;
+
+  if (categories.length === 0) return null;
+
   const max = Math.max(...categories.map((c) => c.total), 0.01);
 
   function hrefFor(categoryId: string) {
@@ -47,44 +50,36 @@ export function CategoryBreakdown({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        {categories.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            Nothing here yet
-          </p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {categories.slice(0, 8).map((cat) => (
-              <Link
-                key={cat.id}
-                href={hrefFor(cat.id)}
-                scroll={false}
-                className="flex flex-col gap-1 rounded-md p-1 transition-colors hover:bg-accent/50"
-              >
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    {cat.name}
-                  </span>
-                  <span className="font-medium tabular-nums">
-                    {formatUsd(cat.total)}
-                  </span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.max((cat.total / max) * 100, 3)}%`,
-                      backgroundColor: cat.color,
-                    }}
+        <div className="flex flex-col gap-3">
+          {categories.slice(0, 8).map((cat) => (
+            <Link
+              key={cat.id}
+              href={hrefFor(cat.id)}
+              scroll={false}
+              className="flex flex-col gap-1 rounded-md p-1 transition-colors hover:bg-accent/50"
+            >
+              <div className="flex items-center justify-between text-sm">
+                <span className="flex items-center gap-2">
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ backgroundColor: cat.color }}
                   />
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                  {cat.name}
+                </span>
+                <span className="font-medium tabular-nums">{formatUsd(cat.total)}</span>
+              </div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${Math.max((cat.total / max) * 100, 3)}%`,
+                    backgroundColor: cat.color,
+                  }}
+                />
+              </div>
+            </Link>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );

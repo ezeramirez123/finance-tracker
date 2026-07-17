@@ -25,7 +25,7 @@ function DayCell({ day, onClick }: { day: DayTotal; onClick: (date: string) => v
       )}
     >
       <span className="text-xs font-bold">{format(parsed, "EEE")}</span>
-      <span className="text-sm font-normal">{format(parsed, "d")}</span>
+      <span className="text-sm font-bold">{format(parsed, "d")}</span>
       <span className="text-[11px] tabular-nums text-chart-good">
         {day.income > 0 ? `+${formatUsd(day.income)}` : formatUsd(0)}
       </span>

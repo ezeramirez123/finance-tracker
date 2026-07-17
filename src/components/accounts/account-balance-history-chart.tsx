@@ -56,6 +56,8 @@ export function AccountBalanceHistoryChart({
   series: SeriesPoint[];
   period: string;
 }) {
+  if (accounts.length === 0) return null;
+
   const tickFormat = period === "year" ? "MMM yy" : "MMM d";
 
   const totalSeries = series.map((point) => {
@@ -70,41 +72,35 @@ export function AccountBalanceHistoryChart({
         <PeriodTabs period={period} paramName="historyPeriod" options={HISTORY_OPTIONS} />
       </CardHeader>
       <CardContent className="h-72 [&_*]:outline-none">
-        {accounts.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            No accounts yet
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={totalSeries} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="0" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(v) => format(parseISO(v), tickFormat)}
-                tickLine={false}
-                axisLine={false}
-                minTickGap={32}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              />
-              <YAxis
-                tickFormatter={(v) => formatUsd(v)}
-                tickLine={false}
-                axisLine={false}
-                width={64}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Line
-                type="monotone"
-                dataKey="total"
-                stroke="var(--chart-good)"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={totalSeries} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+            <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="0" />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(v) => format(parseISO(v), tickFormat)}
+              tickLine={false}
+              axisLine={false}
+              minTickGap={32}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            />
+            <YAxis
+              tickFormatter={(v) => formatUsd(v)}
+              tickLine={false}
+              axisLine={false}
+              width={64}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Line
+              type="monotone"
+              dataKey="total"
+              stroke="var(--chart-good)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );

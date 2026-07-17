@@ -10,8 +10,8 @@ import {
 } from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
 import { StatTile } from "@/components/dashboard/stat-tile";
-import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
+import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
+import { MetricTrendChart } from "@/components/dashboard/metric-trend-chart";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
@@ -84,6 +84,12 @@ export default async function IncomePage({
         </Card>
       </div>
 
+      <MetricTrendChart
+        title="Income trend"
+        color="var(--chart-good)"
+        data={summary.dailyTrend.map((d) => ({ date: d.date, value: d.income }))}
+      />
+
       {dailyBreakdown && (
         <PeriodBreakdownCollapsible
           title="Income by day"
@@ -110,10 +116,7 @@ export default async function IncomePage({
         />
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryDonutChart title="Income by category" categories={summary.incomeByCategory} />
-        <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
-      </div>
+      <CategoryPieBreakdown title="Income by category" categories={summary.incomeByCategory} />
 
       <TransactionListCard
         title={filteredCategory ? `Income · ${filteredCategory.name}` : "All income"}

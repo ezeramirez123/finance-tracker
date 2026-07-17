@@ -56,6 +56,8 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  if (data.length === 0) return null;
+
   function goToDay(date: string) {
     const params = new URLSearchParams();
     params.set("period", "custom");
@@ -70,68 +72,54 @@ export function DailyTrendChart({ data }: { data: DailyPoint[] }) {
         <CardTitle>Daily activity</CardTitle>
       </CardHeader>
       <CardContent className="h-64 [&_*]:outline-none">
-        {data.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            No activity yet
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              barGap={2}
-              margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
-              onClick={(state) => {
-                if (state?.activeLabel != null) goToDay(String(state.activeLabel));
-              }}
-              className="cursor-pointer"
-            >
-              <CartesianGrid
-                vertical={false}
-                stroke="var(--chart-grid)"
-                strokeDasharray="0"
-              />
-              <XAxis
-                dataKey="date"
-                tickFormatter={(v) => format(parseISO(v), "EEE")}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              />
-              <YAxis
-                tickFormatter={(v) => formatUsd(v)}
-                tickLine={false}
-                axisLine={false}
-                width={64}
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ fill: "var(--muted)", style: { cursor: "pointer" } }}
-              />
-              <Legend
-                wrapperStyle={{ fontSize: 12 }}
-                iconType="circle"
-                iconSize={8}
-              />
-              <Bar
-                dataKey="income"
-                name="Income"
-                fill="var(--chart-good)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={20}
-                cursor="pointer"
-              />
-              <Bar
-                dataKey="expense"
-                name="Expense"
-                fill="var(--chart-critical)"
-                radius={[4, 4, 0, 0]}
-                maxBarSize={20}
-                cursor="pointer"
-              />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={data}
+            barGap={2}
+            margin={{ top: 4, right: 4, left: 4, bottom: 0 }}
+            onClick={(state) => {
+              if (state?.activeLabel != null) goToDay(String(state.activeLabel));
+            }}
+            className="cursor-pointer"
+          >
+            <CartesianGrid vertical={false} stroke="var(--chart-grid)" strokeDasharray="0" />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(v) => format(parseISO(v), "EEE")}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            />
+            <YAxis
+              tickFormatter={(v) => formatUsd(v)}
+              tickLine={false}
+              axisLine={false}
+              width={64}
+              tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+            />
+            <Tooltip
+              content={<CustomTooltip />}
+              cursor={{ fill: "var(--muted)", style: { cursor: "pointer" } }}
+            />
+            <Legend wrapperStyle={{ fontSize: 12 }} iconType="circle" iconSize={8} />
+            <Bar
+              dataKey="income"
+              name="Income"
+              fill="var(--chart-good)"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={20}
+              cursor="pointer"
+            />
+            <Bar
+              dataKey="expense"
+              name="Expense"
+              fill="var(--chart-critical)"
+              radius={[4, 4, 0, 0]}
+              maxBarSize={20}
+              cursor="pointer"
+            />
+          </BarChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );

@@ -10,8 +10,8 @@ import {
 } from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
 import { StatTile } from "@/components/dashboard/stat-tile";
-import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
+import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
+import { MetricTrendChart } from "@/components/dashboard/metric-trend-chart";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
@@ -84,6 +84,12 @@ export default async function ExpensesPage({
         </Card>
       </div>
 
+      <MetricTrendChart
+        title="Expenses trend"
+        color="var(--chart-critical)"
+        data={summary.dailyTrend.map((d) => ({ date: d.date, value: d.expense }))}
+      />
+
       {dailyBreakdown && (
         <PeriodBreakdownCollapsible
           title="Expenses by day"
@@ -110,10 +116,7 @@ export default async function ExpensesPage({
         />
       )}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryDonutChart title="Spending by category" categories={summary.spendingByCategory} />
-        <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />
-      </div>
+      <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
 
       <TransactionListCard
         title={filteredCategory ? `Expenses · ${filteredCategory.name}` : "All expenses"}

@@ -50,6 +50,8 @@ export function CategoryDonutChart({
   const searchParams = useSearchParams();
   const destination = targetPath ?? pathname;
 
+  if (categories.length === 0) return null;
+
   function goToCategory(categoryId: string) {
     let params: URLSearchParams;
     if (destination === pathname) {
@@ -73,40 +75,34 @@ export function CategoryDonutChart({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent className="h-64 [&_*]:outline-none">
-        {categories.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-            Nothing here yet
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={categories}
-                dataKey="total"
-                nameKey="name"
-                innerRadius="55%"
-                outerRadius="85%"
-                paddingAngle={2}
-                strokeWidth={0}
-                cursor="pointer"
-                onClick={(entry) => goToCategory((entry as unknown as CategoryTotal).id)}
-              >
-                {categories.map((c) => (
-                  <Cell key={c.id} fill={c.color} />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: 12 }}
-                layout="vertical"
-                verticalAlign="middle"
-                align="right"
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={categories}
+              dataKey="total"
+              nameKey="name"
+              innerRadius="55%"
+              outerRadius="85%"
+              paddingAngle={2}
+              strokeWidth={0}
+              cursor="pointer"
+              onClick={(entry) => goToCategory((entry as unknown as CategoryTotal).id)}
+            >
+              {categories.map((c) => (
+                <Cell key={c.id} fill={c.color} />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{ fontSize: 12 }}
+              layout="vertical"
+              verticalAlign="middle"
+              align="right"
+            />
+          </PieChart>
+        </ResponsiveContainer>
       </CardContent>
     </Card>
   );

@@ -167,6 +167,7 @@ export default async function DashboardPage({
           emptyLabel="No expenses in this period"
           accounts={accounts}
           categories={categories}
+          collapsible
         />
         <TransactionListCard
           title="Recent transactions"
@@ -177,6 +178,7 @@ export default async function DashboardPage({
           emptyLabel="No transactions in this period"
           accounts={accounts}
           categories={categories}
+          collapsible
         />
       </div>
     </div>

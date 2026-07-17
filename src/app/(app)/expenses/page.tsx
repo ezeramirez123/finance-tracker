@@ -7,6 +7,7 @@ import {
   getExpenseTransactions,
   getDailyBreakdown,
   getWeeklyBreakdown,
+  getLargestExpenses,
 } from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
@@ -51,9 +52,10 @@ export default async function ExpensesPage({
     ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
     : getDateRange(tab as Period);
 
-  const [summary, expenseTransactions] = await Promise.all([
+  const [summary, expenseTransactions, largestExpenses] = await Promise.all([
     getPeriodSummary(userId, range),
     getExpenseTransactions(userId, range, params.category),
+    getLargestExpenses(userId, range, params.category),
   ]);
 
   const filteredCategory = params.category
@@ -124,6 +126,16 @@ export default async function ExpensesPage({
       )}
 
       <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
+
+      <TransactionListCard
+        title="Largest expenses"
+        transactions={largestExpenses.map((t) => ({
+          ...t,
+          originalAmount: Number(t.originalAmount),
+        }))}
+        emptyLabel="No expenses in this period"
+        collapsible
+      />
 
       <TransactionListCard
         title={filteredCategory ? `Expenses · ${filteredCategory.name}` : "All expenses"}

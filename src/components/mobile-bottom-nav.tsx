@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { TrendingUp, Receipt, Wallet, Plus } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Receipt, Wallet, Plus } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 
 const NAV_ITEMS = [
+  { href: "/dashboard", label: "Home", icon: LayoutDashboard },
   { href: "/income", label: "Income", icon: TrendingUp },
   { href: "/expenses", label: "Expenses", icon: Receipt },
   { href: "/accounts", label: "Accounts", icon: Wallet },
@@ -34,7 +35,7 @@ export function MobileBottomNav({
           <button
             type="button"
             aria-label="Add transaction"
-            className="fixed right-4 bottom-20 z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 md:hidden"
+            className="fixed right-4 bottom-[5.5rem] z-40 flex size-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 md:hidden"
           >
             <Plus className="size-6" />
           </button>
@@ -49,11 +50,11 @@ export function MobileBottomNav({
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium transition-colors",
+                "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
                 active ? "text-foreground" : "text-muted-foreground"
               )}
             >
-              <Icon className="size-5" />
+              <Icon className="size-6" />
               {item.label}
             </Link>
           );

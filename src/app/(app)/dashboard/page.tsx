@@ -8,7 +8,7 @@ import {
   getTotalBalance,
   getWeekDailyTotals,
 } from "@/lib/dashboard-data";
-import { PeriodSwitcher } from "@/components/dashboard/period-switcher";
+import { PeriodRangeSelect } from "@/components/period-range-select";
 import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
@@ -88,13 +88,8 @@ export default async function DashboardPage({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-          <p className="text-sm text-muted-foreground">
-            Here&apos;s where your money went.
-          </p>
-        </div>
-        <PeriodSwitcher period={period} from={params.from} to={params.to} />
+        <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
+        <PeriodRangeSelect period={period} from={params.from} to={params.to} />
       </div>
 
       <MobileSummaryCard

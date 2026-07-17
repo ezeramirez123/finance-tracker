@@ -98,21 +98,14 @@ export function MobileSummaryCard({
 
   return (
     <Card className="gap-3 md:hidden">
-      <Link
-        href="/accounts"
-        className="block rounded-md px-5 py-1 transition-colors hover:bg-accent"
-      >
+      <div className="px-5 py-1">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-muted-foreground">Balance</p>
           <Button
             variant="outline"
             size="icon"
             className="size-8 rounded-full hover:bg-background/40"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggle();
-            }}
+            onClick={toggle}
           >
             {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
           </Button>
@@ -120,7 +113,7 @@ export function MobileSummaryCard({
         <p className="text-4xl font-semibold tracking-tight">
           {hidden ? "••••••" : formatUsd(netWorth)}
         </p>
-      </Link>
+      </div>
       {!hidden && netWorthHistory && (
         <div className="px-5">
           <NetWorthSparkline data={netWorthHistory} />

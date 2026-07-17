@@ -3,7 +3,7 @@ import { getDateRange, type Period } from "@/lib/period";
 import { getPeriodSummary, getLargestTransactions } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
 import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
-import { DailyTrendChart } from "@/components/dashboard/daily-trend-chart";
+import { IncomeExpenseTrendChart } from "@/components/dashboard/income-expense-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { Card } from "@/components/ui/card";
@@ -43,22 +43,23 @@ export default async function ReportsPage({
         <PeriodRangeSelect period={period} from={from} to={to} persistKey="reports" />
       </div>
 
-      <Card className="gap-1.5">
+      <Card className="gap-3">
+        <p className="px-5 text-sm font-medium text-muted-foreground">Totals</p>
         <div className="grid grid-cols-3 divide-x px-5">
           <div className="pr-4">
-            <p className="text-sm font-medium text-muted-foreground">Total income</p>
+            <p className="text-xs font-medium text-muted-foreground">Income</p>
             <p className="text-xl font-semibold tracking-tight text-chart-good sm:text-2xl">
               {formatUsd(summary.totalIncome)}
             </p>
           </div>
           <div className="px-4">
-            <p className="text-sm font-medium text-muted-foreground">Total expenses</p>
+            <p className="text-xs font-medium text-muted-foreground">Expenses</p>
             <p className="text-xl font-semibold tracking-tight text-chart-critical sm:text-2xl">
               {formatUsd(summary.totalExpenses)}
             </p>
           </div>
           <div className="pl-4">
-            <p className="text-sm font-medium text-muted-foreground">Net income</p>
+            <p className="text-xs font-medium text-muted-foreground">Net</p>
             <p
               className={cn(
                 "text-xl font-semibold tracking-tight sm:text-2xl",
@@ -71,7 +72,7 @@ export default async function ReportsPage({
         </div>
       </Card>
 
-      <DailyTrendChart data={summary.dailyTrend} />
+      <IncomeExpenseTrendChart data={summary.dailyTrend} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />

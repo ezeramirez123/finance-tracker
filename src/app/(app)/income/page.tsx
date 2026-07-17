@@ -123,16 +123,13 @@ export default async function IncomePage({
         />
       )}
 
-      <CategoryPieBreakdown
-        title="Income by category"
-        categories={summary.incomeByCategory}
-        action={
-          <CategoryFilterSelect categories={summary.incomeByCategory} category={params.category} />
-        }
-      />
+      <CategoryPieBreakdown title="Income by category" categories={summary.incomeByCategory} />
 
       <TransactionListCard
         title={filteredCategory ? `Income · ${filteredCategory.name}` : "All income"}
+        titleAction={
+          <CategoryFilterSelect categories={summary.incomeByCategory} category={params.category} />
+        }
         transactions={incomeTransactions.map((t) => ({
           ...t,
           originalAmount: Number(t.originalAmount),

@@ -1,7 +1,17 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
@@ -41,7 +51,7 @@ export function CategoryDonutChart({
 }: {
   title: string;
   categories: CategoryTotal[];
-  /** Where clicking a slice should go. Defaults to the current page (in-place
+  /** Where clicking a slice/bar should go. Defaults to the current page (in-place
    * filtering); pass e.g. "/expenses" to navigate elsewhere instead. */
   targetPath?: string;
 }) {
@@ -69,40 +79,71 @@ export function CategoryDonutChart({
     router.push(`${destination}?${params.toString()}`, { scroll: false });
   }
 
+  const topCategories = categories.slice(0, 8);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="h-64 [&_*]:outline-none">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={categories}
-              dataKey="total"
-              nameKey="name"
-              innerRadius="55%"
-              outerRadius="85%"
-              paddingAngle={2}
-              strokeWidth={0}
-              cursor="pointer"
-              onClick={(entry) => goToCategory((entry as unknown as CategoryTotal).id)}
-            >
-              {categories.map((c) => (
-                <Cell key={c.id} fill={c.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: 12 }}
+      <CardContent className="flex flex-col gap-2">
+        <div className="h-48 [&_*]:outline-none">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={categories}
+                dataKey="total"
+                nameKey="name"
+                innerRadius="55%"
+                outerRadius="85%"
+                paddingAngle={2}
+                strokeWidth={0}
+                cursor="pointer"
+                onClick={(entry) => goToCategory((entry as unknown as CategoryTotal).id)}
+              >
+                {categories.map((c) => (
+                  <Cell key={c.id} fill={c.color} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div
+          className="[&_*]:outline-none"
+          style={{ height: Math.max(topCategories.length * 32, 64) }}
+        >
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={topCategories}
               layout="vertical"
-              verticalAlign="middle"
-              align="right"
-            />
-          </PieChart>
-        </ResponsiveContainer>
+              margin={{ top: 0, right: 8, left: 0, bottom: 0 }}
+            >
+              <XAxis type="number" hide />
+              <YAxis
+                type="category"
+                dataKey="name"
+                width={88}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "var(--muted)" }} />
+              <Bar
+                dataKey="total"
+                radius={[0, 4, 4, 0]}
+                maxBarSize={16}
+                cursor="pointer"
+                onClick={(entry) => goToCategory((entry as unknown as CategoryTotal).id)}
+              >
+                {topCategories.map((c) => (
+                  <Cell key={c.id} fill={c.color} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

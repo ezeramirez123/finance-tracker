@@ -123,19 +123,16 @@ export default async function ExpensesPage({
         />
       )}
 
-      <CategoryPieBreakdown
-        title="Spending by category"
-        categories={summary.spendingByCategory}
-        action={
+      <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
+
+      <TransactionListCard
+        title={filteredCategory ? `Expenses · ${filteredCategory.name}` : "All expenses"}
+        titleAction={
           <CategoryFilterSelect
             categories={summary.spendingByCategory}
             category={params.category}
           />
         }
-      />
-
-      <TransactionListCard
-        title={filteredCategory ? `Expenses · ${filteredCategory.name}` : "All expenses"}
         transactions={expenseTransactions.map((t) => ({
           ...t,
           originalAmount: Number(t.originalAmount),

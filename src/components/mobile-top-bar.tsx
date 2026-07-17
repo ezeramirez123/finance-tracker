@@ -99,6 +99,9 @@ export function MobileTopBar({
             <div className="flex-1 overflow-y-auto">
               <Nav onNavigate={() => setOpen(false)} />
             </div>
+            <div onClick={() => setOpen(false)}>
+              <UserMenu name={name} email={email} />
+            </div>
           </SheetContent>
         </Sheet>
         <Link href="/dashboard" className="text-base font-bold tracking-tight">

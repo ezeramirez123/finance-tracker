@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { getDateRange, type Period } from "@/lib/period";
 import { getPeriodSummary, getLargestTransactions } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
-import { CategoryBreakdown } from "@/components/dashboard/category-breakdown";
+import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
 import { IncomeExpenseTrendChart } from "@/components/dashboard/income-expense-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
@@ -75,8 +75,8 @@ export default async function ReportsPage({
       <IncomeExpenseTrendChart data={summary.dailyTrend} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryBreakdown title="Spending by category" categories={summary.spendingByCategory} />
-        <CategoryBreakdown title="Income by category" categories={summary.incomeByCategory} />
+        <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
+        <CategoryPieBreakdown title="Income by category" categories={summary.incomeByCategory} />
       </div>
 
       <TransactionListCard

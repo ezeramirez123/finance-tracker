@@ -49,6 +49,7 @@ export function TransactionFilters({
   const searchParams = useSearchParams();
   const [customFrom, setCustomFrom] = React.useState(from ?? "");
   const [customTo, setCustomTo] = React.useState(to ?? "");
+  const [datePopoverOpen, setDatePopoverOpen] = React.useState(false);
 
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -58,16 +59,24 @@ export function TransactionFilters({
   }
 
   function setPeriod(value: string) {
+    // "Custom" needs a date range before it means anything, so just open the
+    // picker instead of navigating yet — navigating here (even to the same
+    // route) re-renders the page behind a loading.tsx Suspense boundary,
+    // which remounts this component and would close the popover right after
+    // it opens.
+    if (value === "custom") {
+      setDatePopoverOpen(true);
+      return;
+    }
     const params = new URLSearchParams(searchParams.toString());
     if (value === "all") {
       params.delete("period");
     } else {
       params.set("period", value);
     }
-    if (value !== "custom") {
-      params.delete("from");
-      params.delete("to");
-    }
+    params.delete("from");
+    params.delete("to");
+    setDatePopoverOpen(false);
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
@@ -78,6 +87,7 @@ export function TransactionFilters({
     else params.delete("from");
     if (customTo) params.set("to", customTo);
     else params.delete("to");
+    setDatePopoverOpen(false);
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
@@ -92,94 +102,118 @@ export function TransactionFilters({
     params.delete("to");
     setCustomFrom("");
     setCustomTo("");
+    setDatePopoverOpen(false);
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Select
-        value={category ?? "all"}
-        onValueChange={(v) => updateParam("category", v === "all" ? null : v)}
-      >
-        <SelectTrigger className="w-[130px] min-w-0 shrink-0">
-          <SelectValue placeholder="Category" className="min-w-0 truncate" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All categories</SelectItem>
-          {categories.map((c) => (
-            <SelectItem key={c.id} value={c.id}>
-              <span className="truncate">{c.name}</span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Select
+          value={category ?? "all"}
+          onValueChange={(v) => updateParam("category", v === "all" ? null : v)}
+        >
+          <SelectTrigger className="w-[130px] min-w-0 shrink-0">
+            <SelectValue placeholder="Category" className="min-w-0 truncate" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All categories</SelectItem>
+            {categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                <span className="truncate">{c.name}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select
-        value={account ?? "all"}
-        onValueChange={(v) => updateParam("account", v === "all" ? null : v)}
-      >
-        <SelectTrigger className="w-[130px] min-w-0 shrink-0">
-          <SelectValue placeholder="Account" className="min-w-0 truncate" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All accounts</SelectItem>
-          {accounts.map((a) => (
-            <SelectItem key={a.id} value={a.id}>
-              <span className="truncate">
-                {a.icon} {a.name}
-              </span>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <Select
+          value={account ?? "all"}
+          onValueChange={(v) => updateParam("account", v === "all" ? null : v)}
+        >
+          <SelectTrigger className="w-[130px] min-w-0 shrink-0">
+            <SelectValue placeholder="Account" className="min-w-0 truncate" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All accounts</SelectItem>
+            {accounts.map((a) => (
+              <SelectItem key={a.id} value={a.id}>
+                <span className="truncate">
+                  {a.icon} {a.name}
+                </span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-      <Select value={period ?? "all"} onValueChange={setPeriod}>
-        <SelectTrigger className="w-[110px] min-w-0 shrink-0">
-          <SelectValue placeholder="Period" className="min-w-0 truncate" />
-        </SelectTrigger>
-        <SelectContent>
-          {PERIOD_OPTIONS.map((opt) => (
-            <SelectItem key={opt.value} value={opt.value}>
-              {opt.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        {hasFilters && (
+          <Button variant="ghost" size="sm" onClick={clearAll} className="text-muted-foreground">
+            <X className="size-3.5" />
+            Clear filters
+          </Button>
+        )}
+      </div>
 
-      {period === "custom" && (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 max-w-[150px] shrink-0 truncate">
-              {from && to ? `${from} – ${to}` : "Pick dates"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent align="start" className="flex w-64 flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">From</label>
-              <Input
-                type="date"
-                value={customFrom}
-                onChange={(e) => setCustomFrom(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-muted-foreground">To</label>
-              <Input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} />
-            </div>
-            <Button size="sm" onClick={applyDateRange}>
-              Apply
-            </Button>
-          </PopoverContent>
-        </Popover>
-      )}
+      <div className="flex items-center gap-2">
+        {(period === "custom" || datePopoverOpen) && (
+          <Popover open={datePopoverOpen} onOpenChange={setDatePopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9 max-w-[150px] shrink-0 truncate">
+                {from && to ? `${from} – ${to}` : "Pick dates"}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              className="flex w-64 flex-col gap-3"
+              onInteractOutside={(e) => {
+                // The period Select restores focus to its own trigger after
+                // closing, which fires shortly after this popover opens and
+                // would otherwise register as an outside interaction and
+                // close it immediately.
+                if ((e.target as HTMLElement).closest('[data-slot="select-trigger"]')) {
+                  e.preventDefault();
+                }
+              }}
+            >
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-muted-foreground">From</label>
+                <Input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs text-muted-foreground">To</label>
+                <Input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                />
+              </div>
+              <Button size="sm" onClick={applyDateRange}>
+                Apply
+              </Button>
+            </PopoverContent>
+          </Popover>
+        )}
 
-      {hasFilters && (
-        <Button variant="ghost" size="sm" onClick={clearAll} className="text-muted-foreground">
-          <X className="size-3.5" />
-          Clear filters
-        </Button>
-      )}
+        <Select
+          value={datePopoverOpen ? "custom" : period ?? "all"}
+          onValueChange={setPeriod}
+        >
+          <SelectTrigger className="w-[110px] min-w-0 shrink-0">
+            <SelectValue placeholder="Period" className="min-w-0 truncate" />
+          </SelectTrigger>
+          <SelectContent>
+            {PERIOD_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 }

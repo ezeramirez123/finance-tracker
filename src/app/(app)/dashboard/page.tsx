@@ -11,7 +11,7 @@ import {
 import { PeriodRangeSelect } from "@/components/period-range-select";
 import { readPersistedPeriod } from "@/lib/period-cookie";
 import { StatTile } from "@/components/dashboard/stat-tile";
-import { CategoryDonutChart } from "@/components/dashboard/category-donut-chart";
+import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
 import { IncomeExpenseTrendChart } from "@/components/dashboard/income-expense-trend-chart";
@@ -142,12 +142,12 @@ export default async function DashboardPage({
       <IncomeExpenseTrendChart data={summary.dailyTrend} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryDonutChart
+        <CategoryPieBreakdown
           title="Spending by category"
           categories={summary.spendingByCategory}
           targetPath="/expenses"
         />
-        <CategoryDonutChart
+        <CategoryPieBreakdown
           title="Income by category"
           categories={summary.incomeByCategory}
           targetPath="/income"

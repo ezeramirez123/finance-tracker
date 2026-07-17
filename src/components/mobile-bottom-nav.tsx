@@ -69,7 +69,7 @@ export function MobileBottomNav({
             <button
               type="button"
               aria-label="Add transaction"
-              className="-mt-6 flex size-14 cursor-pointer items-center justify-center rounded-full border bg-secondary text-secondary-foreground shadow-lg transition-transform hover:scale-105"
+              className="flex size-12 cursor-pointer items-center justify-center rounded-full border bg-secondary text-secondary-foreground shadow-lg transition-transform hover:scale-105"
             >
               <Plus className="size-6" />
             </button>

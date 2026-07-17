@@ -129,7 +129,7 @@ export function WeekCalendarStrip({
         </div>
 
         <div className="mb-4 border-b pb-4">
-          <IncomeExpenseTrendGraph data={days} variant="bar" />
+          <IncomeExpenseTrendGraph data={days} />
         </div>
 
         <div className="sm:hidden">

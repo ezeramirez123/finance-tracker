@@ -56,7 +56,7 @@ export function CategoryPieBreakdown({
 
   if (categories.length === 0) return null;
 
-  const max = Math.max(...categories.map((c) => c.total), 0.01);
+  const totalSum = categories.reduce((sum, c) => sum + c.total, 0) || 0.01;
 
   function hrefFor(categoryId: string) {
     let params: URLSearchParams;
@@ -83,14 +83,14 @@ export function CategoryPieBreakdown({
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
-          <div className="h-40 [&_*]:outline-none">
+          <div className="relative h-40 [&_*]:outline-none">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categories}
                   dataKey="total"
                   nameKey="name"
-                  innerRadius="55%"
+                  innerRadius="72%"
                   outerRadius="85%"
                   paddingAngle={2}
                   strokeWidth={0}
@@ -108,6 +108,10 @@ export function CategoryPieBreakdown({
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+              <span className="text-[11px] text-muted-foreground">Total</span>
+              <span className="text-sm font-semibold tabular-nums">{formatUsd(totalSum)}</span>
+            </div>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -116,27 +120,21 @@ export function CategoryPieBreakdown({
                 key={cat.id}
                 href={hrefFor(cat.id)}
                 scroll={false}
-                className="flex flex-col gap-1 rounded-md p-1 transition-colors hover:bg-accent/50"
+                className="flex items-center justify-between gap-2 rounded-md p-1 text-sm transition-colors hover:bg-accent/50"
               >
-                <div className="flex items-center justify-between text-sm">
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    {cat.name}
-                  </span>
-                  <span className="font-medium tabular-nums">{formatUsd(cat.total)}</span>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.max((cat.total / max) * 100, 3)}%`,
-                      backgroundColor: cat.color,
-                    }}
+                <span className="flex items-center gap-2 truncate">
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: cat.color }}
                   />
-                </div>
+                  <span className="truncate">{cat.name}</span>
+                </span>
+                <span className="flex shrink-0 flex-col items-end">
+                  <span className="font-medium tabular-nums">{formatUsd(cat.total)}</span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {((cat.total / totalSum) * 100).toFixed(0)}%
+                  </span>
+                </span>
               </Link>
             ))}
           </div>

@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 
 import { auth } from "@/lib/auth";
-import { getDateRange, type Period } from "@/lib/period";
+import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import {
   getPeriodSummary,
   getExpenseTransactions,
@@ -125,7 +125,11 @@ export default async function ExpensesPage({
         />
       )}
 
-      <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
+      <CategoryPieBreakdown
+        title="Spending by category"
+        categories={summary.spendingByCategory}
+        periodLabel={getPeriodLabel(isCustom ? "custom" : tab, range)}
+      />
 
       <TransactionListCard
         title="Largest expenses"

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getDateRange, getPreviousRange, type Period } from "@/lib/period";
+import { getDateRange, getPeriodLabel, getPreviousRange, type Period } from "@/lib/period";
 import {
   getNetWorth,
   getNetWorthHistory,
@@ -146,11 +146,13 @@ export default async function DashboardPage({
           title="Spending by category"
           categories={summary.spendingByCategory}
           targetPath="/expenses"
+          periodLabel={getPeriodLabel(period, range)}
         />
         <CategoryPieBreakdown
           title="Income by category"
           categories={summary.incomeByCategory}
           targetPath="/income"
+          periodLabel={getPeriodLabel(period, range)}
         />
       </div>
 

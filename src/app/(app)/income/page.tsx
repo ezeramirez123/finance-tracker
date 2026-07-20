@@ -1,7 +1,7 @@
 import { format, parseISO } from "date-fns";
 
 import { auth } from "@/lib/auth";
-import { getDateRange, type Period } from "@/lib/period";
+import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import {
   getPeriodSummary,
   getIncomeTransactions,
@@ -123,7 +123,11 @@ export default async function IncomePage({
         />
       )}
 
-      <CategoryPieBreakdown title="Income by category" categories={summary.incomeByCategory} />
+      <CategoryPieBreakdown
+        title="Income by category"
+        categories={summary.incomeByCategory}
+        periodLabel={getPeriodLabel(isCustom ? "custom" : tab, range)}
+      />
 
       <TransactionListCard
         title={filteredCategory ? `Income · ${filteredCategory.name}` : "All income"}

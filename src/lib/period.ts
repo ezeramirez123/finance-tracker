@@ -8,6 +8,7 @@ import {
   startOfYear,
   endOfYear,
   subWeeks,
+  format,
 } from "date-fns";
 
 export type Period = "today" | "week" | "month" | "year" | "custom";
@@ -50,6 +51,23 @@ export function getPreviousRange(range: DateRange): DateRange {
     from: new Date(range.from.getTime() - lengthMs - 1),
     to: new Date(range.from.getTime() - 1),
   };
+}
+
+/** Short, human-readable label for a period + its resolved range, e.g. "July",
+ * "This week", "2026", or "Jul 1 – Jul 15" for a custom range. */
+export function getPeriodLabel(period: string, range: DateRange): string {
+  switch (period) {
+    case "today":
+      return "Today";
+    case "week":
+      return "This week";
+    case "month":
+      return format(range.from, "MMMM");
+    case "year":
+      return format(range.from, "yyyy");
+    default:
+      return `${format(range.from, "MMM d")} – ${format(range.to, "MMM d")}`;
+  }
 }
 
 export function getPreviousWeekRange(): DateRange {

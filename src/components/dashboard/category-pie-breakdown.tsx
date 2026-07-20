@@ -1,14 +1,16 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/format";
 
 type CategoryTotal = { id: string; name: string; color: string; total: number };
+
+const VISIBLE_COUNT = 5;
 
 function CustomTooltip({
   active,
@@ -34,20 +36,22 @@ function CustomTooltip({
 }
 
 /** A pie chart (no legend/slice labels) with the category list acting as its
- * legend underneath — the pie and the list share a single click target. */
+ * legend — the pie and the list share a single click target. Stacks on
+ * mobile, splits pie-left/list-right on desktop. */
 export function CategoryPieBreakdown({
   title,
   categories,
   targetPath,
-  action,
+  periodLabel,
 }: {
   title: string;
   categories: CategoryTotal[];
   /** Where clicking a category should go. Defaults to the current page (in-place
    * filtering); pass e.g. "/expenses" to navigate elsewhere instead. */
   targetPath?: string;
-  /** Extra control rendered in the header next to the title, e.g. a category filter. */
-  action?: ReactNode;
+  /** Human-readable period, e.g. "July", "This week" — shown in the pie's
+   * center as "{Income|Spending} in {periodLabel}" instead of the raw title. */
+  periodLabel?: string;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -57,6 +61,16 @@ export function CategoryPieBreakdown({
   if (categories.length === 0) return null;
 
   const totalSum = categories.reduce((sum, c) => sum + c.total, 0) || 0.01;
+  const metricLabel = title.replace(/ by category$/i, "");
+  const centerLabel = periodLabel ? `${metricLabel} in ${periodLabel}` : title;
+
+  // Only truncate when there's somewhere else to send people for the rest —
+  // on the category's own tab (e.g. Income by category on /income) there's
+  // nowhere further to go, so just show everything.
+  const respectiveHref = /income/i.test(metricLabel) ? "/income" : "/expenses";
+  const isOwnTab = pathname === respectiveHref;
+  const showTruncated = !isOwnTab && categories.length > VISIBLE_COUNT;
+  const visible = showTruncated ? categories.slice(0, VISIBLE_COUNT) : categories;
 
   function hrefFor(categoryId: string) {
     let params: URLSearchParams;
@@ -75,26 +89,36 @@ export function CategoryPieBreakdown({
     return `${destination}?${params.toString()}`;
   }
 
+  function moreHref() {
+    const params = new URLSearchParams();
+    for (const key of ["period", "from", "to"]) {
+      const value = searchParams.get(key);
+      if (value) params.set(key, value);
+    }
+    const qs = params.toString();
+    return qs ? `${respectiveHref}?${qs}` : respectiveHref;
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
-        {action}
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-4">
-          <div className="relative h-40 [&_*]:outline-none">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:gap-6">
+          <div className="relative h-52 shrink-0 [&_*]:outline-none lg:w-56">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categories}
                   dataKey="total"
                   nameKey="name"
-                  innerRadius="72%"
-                  outerRadius="85%"
+                  innerRadius="76%"
+                  outerRadius="88%"
                   paddingAngle={2}
                   strokeWidth={0}
                   cursor="pointer"
+                  isAnimationActive={false}
                   onClick={(entry) =>
                     router.push(hrefFor((entry as unknown as CategoryTotal).id), {
                       scroll: false,
@@ -108,35 +132,51 @@ export function CategoryPieBreakdown({
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-              <span className="text-[11px] text-muted-foreground">Total</span>
-              <span className="text-sm font-semibold tabular-nums">{formatUsd(totalSum)}</span>
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-8 text-center">
+              <span className="text-[11px] text-muted-foreground">{centerLabel}</span>
+              <span className="text-lg font-semibold tabular-nums">{formatUsd(totalSum)}</span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {categories.slice(0, 8).map((cat) => (
-              <Link
-                key={cat.id}
-                href={hrefFor(cat.id)}
-                scroll={false}
-                className="flex items-center justify-between gap-2 rounded-md p-1 text-sm transition-colors hover:bg-accent/50"
-              >
-                <span className="flex items-center gap-2 truncate">
-                  <span
-                    className="size-2 shrink-0 rounded-full"
-                    style={{ backgroundColor: cat.color }}
-                  />
-                  <span className="truncate">{cat.name}</span>
-                </span>
-                <span className="flex shrink-0 flex-col items-end">
-                  <span className="font-medium tabular-nums">{formatUsd(cat.total)}</span>
-                  <span className="text-xs tabular-nums text-muted-foreground">
-                    {((cat.total / totalSum) * 100).toFixed(0)}%
+          <div className="hidden w-px shrink-0 self-stretch bg-border lg:block" />
+
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col divide-y">
+              {visible.map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={hrefFor(cat.id)}
+                  scroll={false}
+                  className="flex items-center justify-between gap-2 py-3 text-sm transition-colors hover:bg-accent/50"
+                >
+                  <span className="flex items-center gap-2 truncate">
+                    <span
+                      className="size-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    <span className="truncate">{cat.name}</span>
                   </span>
-                </span>
-              </Link>
-            ))}
+                  <span className="flex shrink-0 flex-col items-end">
+                    <span className="font-medium tabular-nums">{formatUsd(cat.total)}</span>
+                    <span className="text-xs tabular-nums text-muted-foreground">
+                      {((cat.total / totalSum) * 100).toFixed(0)}%
+                    </span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+            {showTruncated && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2 w-full text-muted-foreground"
+                asChild
+              >
+                <Link href={moreHref()} scroll={false}>
+                  See more
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

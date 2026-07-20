@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getDateRange, type Period } from "@/lib/period";
+import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import { getPeriodSummary, getLargestTransactions } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
@@ -79,8 +79,16 @@ export default async function ReportsPage({
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryPieBreakdown title="Spending by category" categories={summary.spendingByCategory} />
-        <CategoryPieBreakdown title="Income by category" categories={summary.incomeByCategory} />
+        <CategoryPieBreakdown
+          title="Spending by category"
+          categories={summary.spendingByCategory}
+          periodLabel={getPeriodLabel(period, range)}
+        />
+        <CategoryPieBreakdown
+          title="Income by category"
+          categories={summary.incomeByCategory}
+          periodLabel={getPeriodLabel(period, range)}
+        />
       </div>
 
       <TransactionListCard

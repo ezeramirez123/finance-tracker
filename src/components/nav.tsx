@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   Wallet,
-  Tags,
   BarChart3,
   Receipt,
   TrendingUp,
@@ -20,7 +19,6 @@ const NAV_ITEMS = [
   { href: "/income", label: "Income", icon: TrendingUp },
   { href: "/expenses", label: "Expenses", icon: Receipt },
   { href: "/accounts", label: "Accounts", icon: Wallet },
-  { href: "/categories", label: "Categories", icon: Tags },
   { href: "/reports", label: "Reports", icon: BarChart3 },
 ];
 

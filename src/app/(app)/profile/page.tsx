@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, LogOut, ChevronRight } from "lucide-react";
+import { ShieldCheck, Tags, LogOut, ChevronRight } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { signOutAction } from "@/lib/actions/auth";
@@ -33,6 +33,16 @@ export default async function ProfilePage() {
           <div className="flex items-center gap-3">
             <ShieldCheck className="size-4 text-muted-foreground" />
             <p className="text-sm font-medium">Two-factor authentication</p>
+          </div>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Card>
+      </Link>
+
+      <Link href="/categories" className="cursor-pointer transition-colors hover:bg-accent">
+        <Card className="flex-row items-center justify-between px-5">
+          <div className="flex items-center gap-3">
+            <Tags className="size-4 text-muted-foreground" />
+            <p className="text-sm font-medium">Categories</p>
           </div>
           <ChevronRight className="size-4 text-muted-foreground" />
         </Card>

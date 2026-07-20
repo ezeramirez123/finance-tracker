@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { format, parseISO, isToday } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -47,6 +48,7 @@ export function WeekCalendarStrip({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const cardRef = useRef<HTMLDivElement>(null);
 
   function goToDay(date: string) {
     const params = new URLSearchParams();
@@ -56,15 +58,64 @@ export function WeekCalendarStrip({
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
-  function goToWeekOffset(offset: number) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (offset === 0) {
-      params.delete("weekOffset");
-    } else {
-      params.set("weekOffset", String(offset));
+  const goToWeekOffset = useCallback(
+    (offset: number) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (offset === 0) {
+        params.delete("weekOffset");
+      } else {
+        params.set("weekOffset", String(offset));
+      }
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParams, pathname, router]
+  );
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+
+    let startX = 0;
+    let startY = 0;
+    let tracking = false;
+    let handled = false;
+
+    function onTouchStart(e: TouchEvent) {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      tracking = true;
+      handled = false;
     }
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }
+
+    function onTouchMove(e: TouchEvent) {
+      if (!tracking || handled) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - startX;
+      const deltaY = touch.clientY - startY;
+      if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+        handled = true;
+        if (deltaX < 0) {
+          if (weekOffset < 0) goToWeekOffset(weekOffset + 1);
+        } else {
+          goToWeekOffset(weekOffset - 1);
+        }
+      }
+    }
+
+    function onTouchEnd() {
+      tracking = false;
+    }
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: true });
+    el.addEventListener("touchend", onTouchEnd);
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [weekOffset, goToWeekOffset]);
 
   const title =
     weekOffset === 0
@@ -76,7 +127,7 @@ export function WeekCalendarStrip({
   const weekNet = weekIncome - weekExpense;
 
   return (
-    <Card>
+    <Card ref={cardRef}>
       <CardHeader className="border-b pb-4">
         <CardTitle>{title}</CardTitle>
         <div className="flex items-center gap-2">

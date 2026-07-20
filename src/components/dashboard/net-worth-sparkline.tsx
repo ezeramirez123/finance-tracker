@@ -54,9 +54,10 @@ export function NetWorthSparkline({
 
   return (
     <div className="flex items-stretch gap-3">
-      <div className="flex h-16 shrink-0 flex-col text-[10px] tabular-nums text-muted-foreground">
-        <p className="pt-1">{formatUsd(max)}</p>
-        <p className="mt-auto mb-5">{formatUsd(min)}</p>
+      <div className="flex h-16 shrink-0 flex-col justify-between pt-1 pb-5 text-[10px] tabular-nums text-muted-foreground">
+        <p>{formatUsd(max)}</p>
+        <p>{formatUsd((max + min) / 2)}</p>
+        <p>{formatUsd(min)}</p>
       </div>
       <div className="h-16 min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]">
         <ResponsiveContainer width="100%" height="100%">

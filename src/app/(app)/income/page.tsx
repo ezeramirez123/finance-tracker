@@ -6,7 +6,6 @@ import {
   getPeriodSummary,
   getIncomeTransactions,
   getDailyBreakdown,
-  getWeeklyBreakdown,
 } from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
@@ -62,8 +61,6 @@ export default async function IncomePage({
 
   const dailyBreakdown =
     !isCustom && tab === "week" ? await getDailyBreakdown(userId, range, "income") : null;
-  const weeklyBreakdown =
-    !isCustom && tab === "month" ? await getWeeklyBreakdown(userId, range, "income") : null;
 
   return (
     <div className="flex flex-col gap-6">
@@ -106,19 +103,6 @@ export default async function IncomePage({
             total: d.total,
             from: d.date,
             to: d.date,
-          }))}
-        />
-      )}
-
-      {weeklyBreakdown && (
-        <PeriodBreakdownCollapsible
-          title="Income by week"
-          barColorVar="--chart-good"
-          buckets={weeklyBreakdown.map((w) => ({
-            label: `${format(parseISO(w.from), "MMM d")} – ${format(parseISO(w.to), "MMM d")}`,
-            total: w.total,
-            from: w.from,
-            to: w.to,
           }))}
         />
       )}

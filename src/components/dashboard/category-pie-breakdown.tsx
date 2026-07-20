@@ -68,6 +68,7 @@ export function CategoryPieBreakdown({
   // on the category's own tab (e.g. Income by category on /income) there's
   // nowhere further to go, so just show everything.
   const respectiveHref = /income/i.test(metricLabel) ? "/income" : "/expenses";
+  const sectionId = `${metricLabel.toLowerCase()}-by-category`;
   const isOwnTab = pathname === respectiveHref;
   const showTruncated = !isOwnTab && categories.length > VISIBLE_COUNT;
   const visible = showTruncated ? categories.slice(0, VISIBLE_COUNT) : categories;
@@ -96,11 +97,11 @@ export function CategoryPieBreakdown({
       if (value) params.set(key, value);
     }
     const qs = params.toString();
-    return qs ? `${respectiveHref}?${qs}` : respectiveHref;
+    return `${respectiveHref}${qs ? `?${qs}` : ""}#${sectionId}`;
   }
 
   return (
-    <Card>
+    <Card id={sectionId} className="scroll-mt-16">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -172,9 +173,7 @@ export function CategoryPieBreakdown({
                 className="mt-2 w-full text-muted-foreground"
                 asChild
               >
-                <Link href={moreHref()} scroll={false}>
-                  See more
-                </Link>
+                <Link href={moreHref()}>See more</Link>
               </Button>
             )}
           </div>

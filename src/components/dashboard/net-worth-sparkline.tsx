@@ -30,13 +30,21 @@ function SparklineTooltip({
   );
 }
 
-export function NetWorthSparkline({ data }: { data: Point[] }) {
+export function NetWorthSparkline({
+  data,
+  color: fixedColor,
+}: {
+  data: Point[];
+  /** Use a fixed line/badge color instead of green-up/red-down — for series
+   * like income or expenses where "up" isn't inherently good or bad. */
+  color?: string;
+}) {
   if (data.length < 2) return null;
 
   const first = data[0].netWorth;
   const last = data[data.length - 1].netWorth;
   const isUp = last >= first;
-  const color = isUp ? "var(--chart-good)" : "var(--chart-critical)";
+  const color = fixedColor ?? (isUp ? "var(--chart-good)" : "var(--chart-critical)");
   const gradientId = isUp ? "netWorthSparklineFillUp" : "netWorthSparklineFillDown";
   const percentChange = first !== 0 ? ((last - first) / Math.abs(first)) * 100 : 0;
 
@@ -84,8 +92,9 @@ export function NetWorthSparkline({ data }: { data: Point[] }) {
       <div
         className={cn(
           "flex shrink-0 items-center gap-0.5 self-center text-xs font-medium tabular-nums",
-          isUp ? "text-chart-good" : "text-chart-critical"
+          fixedColor ? undefined : isUp ? "text-chart-good" : "text-chart-critical"
         )}
+        style={fixedColor ? { color: fixedColor } : undefined}
       >
         {isUp ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
         {Math.abs(percentChange).toFixed(1)}%

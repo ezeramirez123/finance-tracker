@@ -10,7 +10,7 @@ import {
 } from "@/lib/dashboard-data";
 import { PeriodTabs } from "@/components/period-tabs";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
-import { MetricTrendChart } from "@/components/dashboard/metric-trend-chart";
+import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
@@ -80,7 +80,7 @@ export default async function IncomePage({
         <div className="flex items-start justify-between px-5">
           <div>
             <p className="text-sm font-medium text-muted-foreground">Total income</p>
-            <p className="text-2xl font-semibold tracking-tight">
+            <p className="text-3xl font-semibold tracking-tight">
               {formatUsd(summary.totalIncome)}
             </p>
           </div>
@@ -90,9 +90,9 @@ export default async function IncomePage({
           </div>
         </div>
         <div className="px-5">
-          <MetricTrendChart
+          <NetWorthSparkline
             color="var(--chart-good)"
-            data={summary.dailyTrend.map((d) => ({ date: d.date, value: d.income }))}
+            data={summary.dailyTrend.map((d) => ({ date: d.date, netWorth: d.income }))}
           />
         </div>
       </Card>

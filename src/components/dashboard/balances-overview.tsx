@@ -43,6 +43,7 @@ export function BalancesOverview({
           <div className="px-5">
             <NetWorthSparkline
               data={totalBalanceHistory.map((d) => ({ date: d.date, netWorth: d.total }))}
+              size="lg"
             />
           </div>
         )}

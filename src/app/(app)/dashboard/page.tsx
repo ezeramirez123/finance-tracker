@@ -6,6 +6,7 @@ import {
   getNetWorthHistory,
   getPeriodSummary,
   getTotalBalance,
+  getTotalBalanceHistory,
   getWeekDailyTotals,
 } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
@@ -53,6 +54,7 @@ export default async function DashboardPage({
     netWorth,
     netWorthHistory,
     totalBalance,
+    totalBalanceHistory,
     currentWeekDays,
     accounts,
     categories,
@@ -62,6 +64,7 @@ export default async function DashboardPage({
     getNetWorth(userId),
     getNetWorthHistory(userId, range),
     getTotalBalance(userId),
+    getTotalBalanceHistory(userId, range),
     getWeekDailyTotals(userId, weekOffset),
     db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
     db.category.findMany({
@@ -108,7 +111,7 @@ export default async function DashboardPage({
       />
 
       <div className="hidden md:block">
-        <BalancesOverview netWorth={netWorth} totalBalance={totalBalance} />
+        <BalancesOverview totalBalance={totalBalance} totalBalanceHistory={totalBalanceHistory} />
       </div>
 
       <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">

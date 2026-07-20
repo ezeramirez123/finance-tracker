@@ -408,6 +408,51 @@ export async function getNetWorthHistory(userId: string, range: DateRange) {
   });
 }
 
+/** Same as getNetWorthHistory, but over every account (matches getTotalBalance's
+ * scope) instead of just the ones flagged includeInNetWorth. */
+export async function getTotalBalanceHistory(userId: string, range: DateRange) {
+  const accounts = await db.financialAccount.findMany({ where: { userId } });
+  const now = new Date();
+  const minSince = startOfDay(subDays(now, 6));
+  const since = range.from < minSince ? startOfDay(range.from) : minSince;
+
+  const perAccountPoints = await Promise.all(
+    accounts.map(async (account) => {
+      const transactions = await db.transaction.findMany({
+        where: { userId, accountId: account.id, date: { gte: since } },
+        orderBy: { date: "asc" },
+      });
+
+      const { usdEquivalent: currentBalanceUsd } = await convertToUsd(
+        Number(account.currentBalance),
+        account.currency
+      );
+
+      const totalImpact = transactions.reduce((sum, t) => sum + signedBalanceImpact(t), 0);
+
+      let running = currentBalanceUsd - totalImpact;
+      const points: { date: Date; balance: number }[] = [{ date: since, balance: running }];
+      for (const t of transactions) {
+        running += signedBalanceImpact(t);
+        points.push({ date: t.date, balance: running });
+      }
+      points.push({ date: now, balance: currentBalanceUsd });
+
+      return points;
+    })
+  );
+
+  const dayList = eachDayOfInterval({ start: since, end: now });
+  return dayList.map((day) => {
+    const dayEnd = endOfDay(day);
+    const total = perAccountPoints.reduce((sum, points) => {
+      const applicable = points.filter((p) => p.date <= dayEnd);
+      return sum + (applicable.length > 0 ? applicable[applicable.length - 1].balance : points[0].balance);
+    }, 0);
+    return { date: format(day, "yyyy-MM-dd"), total };
+  });
+}
+
 /** Income/expense totals for each of the 7 days (Mon-Sun) in the week `weekOffset` weeks from now. */
 export async function getWeekDailyTotals(userId: string, weekOffset = 0) {
   const base = weekOffset === 0 ? new Date() : addWeeks(new Date(), weekOffset);

@@ -125,7 +125,12 @@ export function MobileSummaryCard({
       </div>
       {!hidden && netWorthHistory && (
         <div className="px-5">
-          <NetWorthSparkline data={netWorthHistory} size="lg" showLabels={false} />
+          <NetWorthSparkline
+            data={netWorthHistory}
+            size="lg"
+            showLabels={false}
+            showXAxis={false}
+          />
         </div>
       )}
       <div className="flex flex-col divide-y border-t px-5 pt-1">

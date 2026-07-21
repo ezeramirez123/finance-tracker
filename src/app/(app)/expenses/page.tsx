@@ -8,10 +8,11 @@ import {
   getDailyBreakdown,
   getWeeklyBreakdown,
   getLargestExpenses,
+  getEarliestTransactionDate,
 } from "@/lib/dashboard-data";
-import { PeriodTabs } from "@/components/period-tabs";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
+import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
@@ -22,13 +23,6 @@ import { readPersistedPeriod } from "@/lib/period-cookie";
 // Values match the shared `Period` type so a period selected on the Dashboard
 // (or any other page) survives a cross-page link unchanged.
 const PRESET_PERIODS = ["today", "week", "month", "year"] as const;
-
-const TAB_OPTIONS = [
-  { value: "today", label: "Day" },
-  { value: "week", label: "Week" },
-  { value: "month", label: "Month" },
-  { value: "year", label: "Year" },
-] as const;
 
 export default async function ExpensesPage({
   searchParams,
@@ -45,12 +39,19 @@ export default async function ExpensesPage({
   const effectiveTo = params.to ?? persisted?.to;
 
   const isCustom = effectivePeriod === "custom" && !!effectiveFrom && !!effectiveTo;
-  const tab = !isCustom && PRESET_PERIODS.includes(effectivePeriod as (typeof PRESET_PERIODS)[number])
-    ? (effectivePeriod as (typeof PRESET_PERIODS)[number])
-    : "week";
+  const isAll = effectivePeriod === "all";
+  const tab =
+    !isCustom &&
+    !isAll &&
+    PRESET_PERIODS.includes(effectivePeriod as (typeof PRESET_PERIODS)[number])
+      ? (effectivePeriod as (typeof PRESET_PERIODS)[number])
+      : "week";
+  const period: Period = isCustom ? "custom" : isAll ? "all" : tab;
+
+  const earliestTransactionDate = isAll ? await getEarliestTransactionDate(userId) : null;
   const range = isCustom
     ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
-    : getDateRange(tab as Period);
+    : getDateRange(period, undefined, earliestTransactionDate ?? undefined);
 
   const [summary, expenseTransactions, largestExpenses] = await Promise.all([
     getPeriodSummary(userId, range),
@@ -63,19 +64,14 @@ export default async function ExpensesPage({
     : undefined;
 
   const dailyBreakdown =
-    !isCustom && tab === "week" ? await getDailyBreakdown(userId, range, "expense") : null;
+    !isCustom && !isAll && tab === "week" ? await getDailyBreakdown(userId, range, "expense") : null;
   const weeklyBreakdown =
-    !isCustom && tab === "month" ? await getWeeklyBreakdown(userId, range, "expense") : null;
+    !isCustom && !isAll && tab === "month" ? await getWeeklyBreakdown(userId, range, "expense") : null;
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Expenses</h1>
-        <PeriodTabs
-          period={isCustom ? "" : tab}
-          options={TAB_OPTIONS}
-          persistKey="expenses"
-        />
       </div>
 
       <Card className="gap-3">
@@ -96,6 +92,15 @@ export default async function ExpensesPage({
             color="var(--chart-critical)"
             data={summary.dailyTrend.map((d) => ({ date: d.date, netWorth: d.expense }))}
             size="lg"
+            variant="bar"
+          />
+        </div>
+        <div className="border-t px-5 pt-3">
+          <InlinePeriodSelect
+            period={period}
+            from={effectiveFrom}
+            to={effectiveTo}
+            persistKey="expenses"
           />
         </div>
       </Card>
@@ -129,7 +134,7 @@ export default async function ExpensesPage({
       <CategoryPieBreakdown
         title="Spending by category"
         categories={summary.spendingByCategory}
-        periodLabel={getPeriodLabel(isCustom ? "custom" : tab, range)}
+        periodLabel={getPeriodLabel(period, range)}
       />
 
       <TransactionListCard

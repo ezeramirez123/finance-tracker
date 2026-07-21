@@ -1,6 +1,6 @@
 "use client";
 
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
 import { format, parseISO } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
@@ -35,6 +35,8 @@ export function NetWorthSparkline({
   color: fixedColor,
   size = "sm",
   showLabels = true,
+  showXAxis = true,
+  variant = "area",
 }: {
   data: Point[];
   /** Use a fixed line/badge color instead of green-up/red-down — for series
@@ -46,6 +48,11 @@ export function NetWorthSparkline({
   /** Set false to hide the max/mid/min column and trend badge, letting the
    * chart fill the full width — e.g. mobile's compact balance card. */
   showLabels?: boolean;
+  /** Set false to hide the date labels below the chart, giving the plot the
+   * full height instead of reserving space for them. */
+  showXAxis?: boolean;
+  /** "bar" renders one bar per point instead of a filled area/line. */
+  variant?: "area" | "bar";
 }) {
   if (data.length < 2) return null;
 
@@ -67,7 +74,8 @@ export function NetWorthSparkline({
       {showLabels && (
         <div
           className={cn(
-            "flex shrink-0 flex-col justify-between pt-1 pb-5 text-[10px] tabular-nums text-muted-foreground",
+            "flex shrink-0 flex-col justify-between pt-1 text-[10px] tabular-nums text-muted-foreground",
+            showXAxis ? "pb-5" : "pb-1",
             heightClass
           )}
         >
@@ -83,33 +91,58 @@ export function NetWorthSparkline({
         )}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity={0.15} />
-                <stop offset="100%" stopColor={color} stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis
-              dataKey="date"
-              height={20}
-              tickFormatter={(v) => format(parseISO(v), "MMM d")}
-              tickLine={false}
-              axisLine={false}
-              interval="preserveStartEnd"
-              tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-            />
-            <Tooltip content={<SparklineTooltip />} cursor={{ stroke: "var(--border)" }} />
-            <Area
-              dataKey="netWorth"
-              stroke={color}
-              strokeWidth={2}
-              fill={`url(#${gradientId})`}
-              isAnimationActive={false}
-              dot={false}
-              activeDot={{ r: 4, fill: color, stroke: "var(--card)", strokeWidth: 2 }}
-            />
-          </AreaChart>
+          {variant === "bar" ? (
+            <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              {showXAxis && (
+                <XAxis
+                  dataKey="date"
+                  height={20}
+                  tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                  tickLine={false}
+                  axisLine={false}
+                  interval="preserveStartEnd"
+                  tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                />
+              )}
+              <Tooltip content={<SparklineTooltip />} cursor={{ fill: "var(--accent)" }} />
+              <Bar
+                dataKey="netWorth"
+                fill={color}
+                radius={[2, 2, 0, 0]}
+                isAnimationActive={false}
+              />
+            </BarChart>
+          ) : (
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.15} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              {showXAxis && (
+                <XAxis
+                  dataKey="date"
+                  height={20}
+                  tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                  tickLine={false}
+                  axisLine={false}
+                  interval="preserveStartEnd"
+                  tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                />
+              )}
+              <Tooltip content={<SparklineTooltip />} cursor={{ stroke: "var(--border)" }} />
+              <Area
+                dataKey="netWorth"
+                stroke={color}
+                strokeWidth={2}
+                fill={`url(#${gradientId})`}
+                isAnimationActive={false}
+                dot={false}
+                activeDot={{ r: 4, fill: color, stroke: "var(--card)", strokeWidth: 2 }}
+              />
+            </AreaChart>
+          )}
         </ResponsiveContainer>
       </div>
       {showLabels && (

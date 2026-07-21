@@ -75,7 +75,7 @@ export function BalancesOverview({
         <Link
           href={incomeHref}
           scroll={false}
-          className="cursor-pointer pr-4 transition-colors hover:text-foreground"
+          className="cursor-pointer py-1.5 pr-4 transition-colors hover:text-foreground"
         >
           <p className="text-xs text-muted-foreground">Income</p>
           <p className="text-sm font-semibold tabular-nums text-chart-good">
@@ -85,7 +85,7 @@ export function BalancesOverview({
         <Link
           href={expensesHref}
           scroll={false}
-          className="cursor-pointer px-4 transition-colors hover:text-foreground"
+          className="cursor-pointer py-1.5 px-4 transition-colors hover:text-foreground"
         >
           <p className="text-xs text-muted-foreground">Expenses</p>
           <p className="text-sm font-semibold tabular-nums text-chart-critical">
@@ -95,7 +95,7 @@ export function BalancesOverview({
         <Link
           href={netHref}
           scroll={false}
-          className="cursor-pointer pl-4 transition-colors hover:text-foreground"
+          className="cursor-pointer py-1.5 pl-4 transition-colors hover:text-foreground"
         >
           <p className="text-xs text-muted-foreground">Net</p>
           <p

@@ -34,6 +34,7 @@ export function NetWorthSparkline({
   data,
   color: fixedColor,
   size = "sm",
+  showLabels = true,
 }: {
   data: Point[];
   /** Use a fixed line/badge color instead of green-up/red-down — for series
@@ -42,6 +43,9 @@ export function NetWorthSparkline({
   /** "lg" gives the chart more vertical room — for contexts with more space
    * to spare, e.g. the desktop Total card. */
   size?: "sm" | "lg";
+  /** Set false to hide the max/mid/min column and trend badge, letting the
+   * chart fill the full width — e.g. mobile's compact balance card. */
+  showLabels?: boolean;
 }) {
   if (data.length < 2) return null;
 
@@ -60,16 +64,18 @@ export function NetWorthSparkline({
 
   return (
     <div className="flex items-stretch gap-3">
-      <div
-        className={cn(
-          "flex shrink-0 flex-col justify-between pt-1 pb-5 text-[10px] tabular-nums text-muted-foreground",
-          heightClass
-        )}
-      >
-        <p>{formatUsd(max)}</p>
-        <p>{formatUsd((max + min) / 2)}</p>
-        <p>{formatUsd(min)}</p>
-      </div>
+      {showLabels && (
+        <div
+          className={cn(
+            "flex shrink-0 flex-col justify-between pt-1 pb-5 text-[10px] tabular-nums text-muted-foreground",
+            heightClass
+          )}
+        >
+          <p>{formatUsd(max)}</p>
+          <p>{formatUsd((max + min) / 2)}</p>
+          <p>{formatUsd(min)}</p>
+        </div>
+      )}
       <div
         className={cn(
           "min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]",
@@ -106,16 +112,18 @@ export function NetWorthSparkline({
           </AreaChart>
         </ResponsiveContainer>
       </div>
-      <div
-        className={cn(
-          "flex shrink-0 items-center gap-0.5 self-center text-xs font-medium tabular-nums",
-          fixedColor ? undefined : isUp ? "text-chart-good" : "text-chart-critical"
-        )}
-        style={fixedColor ? { color: fixedColor } : undefined}
-      >
-        {isUp ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
-        {Math.abs(percentChange).toFixed(1)}%
-      </div>
+      {showLabels && (
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-0.5 self-center text-xs font-medium tabular-nums",
+            fixedColor ? undefined : isUp ? "text-chart-good" : "text-chart-critical"
+          )}
+          style={fixedColor ? { color: fixedColor } : undefined}
+        >
+          {isUp ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
+          {Math.abs(percentChange).toFixed(1)}%
+        </div>
+      )}
     </div>
   );
 }

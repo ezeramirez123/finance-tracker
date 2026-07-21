@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDateRange, getPeriodLabel, getPreviousRange, type Period } from "@/lib/period";
 import {
+  getEarliestTransactionDate,
   getNetWorth,
   getNetWorthHistory,
   getPeriodSummary,
@@ -39,9 +40,12 @@ export default async function DashboardPage({
   const period = (params.period as Period) || (persisted?.period as Period) || "week";
   const from = params.from ?? persisted?.from;
   const to = params.to ?? persisted?.to;
+  const earliestTransactionDate =
+    period === "all" ? await getEarliestTransactionDate(userId) : null;
   const range = getDateRange(
     period,
-    period === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined
+    period === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined,
+    earliestTransactionDate ?? undefined
   );
   const previousRange = getPreviousRange(range);
   const weekOffset = Math.min(0, parseInt(params.weekOffset ?? "0", 10) || 0);

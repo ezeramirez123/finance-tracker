@@ -30,6 +30,17 @@ function signedBalanceImpact(t: {
   return t.transferDirection === "in" ? usd : -usd;
 }
 
+/** The date of the user's oldest transaction, for the "all time" period —
+ * null if they have no transactions yet. */
+export async function getEarliestTransactionDate(userId: string): Promise<Date | null> {
+  const earliest = await db.transaction.findFirst({
+    where: { userId },
+    orderBy: { date: "asc" },
+    select: { date: true },
+  });
+  return earliest?.date ?? null;
+}
+
 export async function getNetWorth(userId: string) {
   const accounts = await db.financialAccount.findMany({
     where: { userId, includeInNetWorth: true },

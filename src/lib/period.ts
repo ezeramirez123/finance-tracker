@@ -15,7 +15,7 @@ export type Period = "today" | "week" | "month" | "year" | "all" | "custom";
 
 export type DateRange = { from: Date; to: Date };
 
-export function getDateRange(period: Period, custom?: DateRange): DateRange {
+export function getDateRange(period: Period, custom?: DateRange, allSince?: Date): DateRange {
   const now = new Date();
   switch (period) {
     case "today":
@@ -30,7 +30,9 @@ export function getDateRange(period: Period, custom?: DateRange): DateRange {
     case "year":
       return { from: startOfYear(now), to: endOfYear(now) };
     case "all":
-      return { from: new Date(2000, 0, 1), to: endOfDay(now) };
+      // Falls back to a fixed early date if the caller doesn't know the
+      // user's actual earliest transaction (e.g. getEarliestTransactionDate).
+      return { from: allSince ? startOfDay(allSince) : new Date(2000, 0, 1), to: endOfDay(now) };
     case "custom":
       // "custom" can land in the URL/cookie before the user has actually
       // picked dates in the range popover (selecting it from the dropdown

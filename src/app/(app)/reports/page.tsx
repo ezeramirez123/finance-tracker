@@ -6,7 +6,7 @@ import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakd
 import { IncomeExpenseTrendGraph } from "@/components/dashboard/income-expense-trend-chart";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { formatUsd } from "@/lib/format";
 import { readPersistedPeriod } from "@/lib/period-cookie";
@@ -44,9 +44,6 @@ export default async function ReportsPage({
       </div>
 
       <Card className="gap-3">
-        <CardHeader>
-          <CardTitle>Income vs Expenses</CardTitle>
-        </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="grid grid-cols-3 divide-x border-b pb-4">
             <div className="pr-4">

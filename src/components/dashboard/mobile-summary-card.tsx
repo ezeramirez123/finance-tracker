@@ -119,13 +119,13 @@ export function MobileSummaryCard({
             {hidden ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
           </Button>
         </div>
-        <p className="text-4xl font-semibold tracking-tight">
+        <p className="text-3xl font-semibold tracking-tight">
           {hidden ? "••••••" : formatUsd(netWorth)}
         </p>
       </div>
       {!hidden && netWorthHistory && (
         <div className="px-5">
-          <NetWorthSparkline data={netWorthHistory} size="lg" />
+          <NetWorthSparkline data={netWorthHistory} size="lg" showLabels={false} />
         </div>
       )}
       <div className="flex flex-col divide-y border-t px-5 pt-1">

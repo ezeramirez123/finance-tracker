@@ -106,15 +106,15 @@ export function CategoryPieBreakdown({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-stretch lg:gap-6">
-          <div className="relative h-52 shrink-0 [&_*]:outline-none lg:w-56">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+          <div className="relative h-52 shrink-0 [&_*]:outline-none lg:h-72 lg:w-2/5">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categories}
                   dataKey="total"
                   nameKey="name"
-                  innerRadius="76%"
+                  innerRadius="80%"
                   outerRadius="88%"
                   paddingAngle={2}
                   strokeWidth={0}
@@ -133,9 +133,9 @@ export function CategoryPieBreakdown({
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
-            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-8 text-center">
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-6 text-center">
               <span className="text-[11px] text-muted-foreground">{centerLabel}</span>
-              <span className="text-lg font-semibold tabular-nums">{formatUsd(totalSum)}</span>
+              <span className="text-base font-semibold tabular-nums">{formatUsd(totalSum)}</span>
             </div>
           </div>
 

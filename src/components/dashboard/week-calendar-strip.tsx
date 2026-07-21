@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { format, parseISO, isToday } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoveHorizontal } from "lucide-react";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -126,6 +127,14 @@ export function WeekCalendarStrip({
   const weekExpense = days.reduce((sum, d) => sum + d.expense, 0);
   const weekNet = weekIncome - weekExpense;
 
+  function weekHref(base: string) {
+    const params = new URLSearchParams();
+    params.set("period", "custom");
+    params.set("from", days[0].date.slice(0, 10));
+    params.set("to", days[6].date.slice(0, 10));
+    return `${base}?${params.toString()}`;
+  }
+
   return (
     <Card ref={cardRef}>
       <CardHeader className="border-b pb-4">
@@ -153,20 +162,32 @@ export function WeekCalendarStrip({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 grid grid-cols-3 gap-2 border-b pb-4 text-center">
-          <div>
+        <div className="mb-4 grid grid-cols-3 divide-x border-b pb-4 text-center">
+          <Link
+            href={weekHref("/income")}
+            scroll={false}
+            className="cursor-pointer pr-4 transition-colors hover:text-foreground"
+          >
             <p className="text-xs text-muted-foreground">Income</p>
             <p className="text-sm font-semibold tabular-nums text-chart-good">
               {formatUsd(weekIncome)}
             </p>
-          </div>
-          <div>
+          </Link>
+          <Link
+            href={weekHref("/expenses")}
+            scroll={false}
+            className="cursor-pointer px-4 transition-colors hover:text-foreground"
+          >
             <p className="text-xs text-muted-foreground">Expenses</p>
             <p className="text-sm font-semibold tabular-nums text-chart-critical">
               {formatUsd(weekExpense)}
             </p>
-          </div>
-          <div>
+          </Link>
+          <Link
+            href={weekHref("/reports")}
+            scroll={false}
+            className="cursor-pointer pl-4 transition-colors hover:text-foreground"
+          >
             <p className="text-xs text-muted-foreground">Net</p>
             <p
               className={cn(
@@ -176,7 +197,7 @@ export function WeekCalendarStrip({
             >
               {formatUsd(weekNet)}
             </p>
-          </div>
+          </Link>
         </div>
 
         <div className="mb-4 border-b pb-4">
@@ -201,6 +222,11 @@ export function WeekCalendarStrip({
           {days.map((day) => (
             <DayCell key={day.date} day={day} onClick={goToDay} />
           ))}
+        </div>
+
+        <div className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted-foreground sm:hidden">
+          <MoveHorizontal className="size-3.5" />
+          Swipe to browse weeks
         </div>
       </CardContent>
     </Card>

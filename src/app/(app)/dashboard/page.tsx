@@ -9,9 +9,7 @@ import {
   getTotalBalanceHistory,
   getWeekDailyTotals,
 } from "@/lib/dashboard-data";
-import { PeriodRangeSelect } from "@/components/period-range-select";
 import { readPersistedPeriod } from "@/lib/period-cookie";
-import { StatTile } from "@/components/dashboard/stat-tile";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
@@ -91,11 +89,6 @@ export default async function DashboardPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold tracking-tight">Dashboard</h1>
-        <PeriodRangeSelect period={period} from={from} to={to} persistKey="dashboard" />
-      </div>
-
       <MobileSummaryCard
         netWorth={netWorth}
         totalIncome={summary.totalIncome}
@@ -111,31 +104,19 @@ export default async function DashboardPage({
       />
 
       <div className="hidden md:block">
-        <BalancesOverview totalBalance={totalBalance} totalBalanceHistory={totalBalanceHistory} />
-      </div>
-
-      <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
-        <StatTile
-          label="Income"
-          value={summary.totalIncome}
-          delta={incomeDelta}
-          deltaGoodDirection="up"
-          href={incomeHref}
-        />
-        <StatTile
-          label="Expenses"
-          value={summary.totalExpenses}
-          delta={expenseDelta}
-          deltaGoodDirection="down"
-          href={expensesHref}
-        />
-        <StatTile
-          label="Net"
-          value={summary.net}
-          delta={netDelta}
-          deltaGoodDirection="up"
-          href={netHref}
-          className="md:col-span-2 lg:col-span-1"
+        <BalancesOverview
+          totalBalance={totalBalance}
+          totalBalanceHistory={totalBalanceHistory}
+          totalIncome={summary.totalIncome}
+          totalExpenses={summary.totalExpenses}
+          net={summary.net}
+          incomeHref={incomeHref}
+          expensesHref={expensesHref}
+          netHref={netHref}
+          period={period}
+          from={from}
+          to={to}
+          persistKey="dashboard"
         />
       </div>
 

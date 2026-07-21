@@ -11,7 +11,7 @@ import {
   format,
 } from "date-fns";
 
-export type Period = "today" | "week" | "month" | "year" | "custom";
+export type Period = "today" | "week" | "month" | "year" | "all" | "custom";
 
 export type DateRange = { from: Date; to: Date };
 
@@ -29,6 +29,8 @@ export function getDateRange(period: Period, custom?: DateRange): DateRange {
       return { from: startOfMonth(now), to: endOfMonth(now) };
     case "year":
       return { from: startOfYear(now), to: endOfYear(now) };
+    case "all":
+      return { from: new Date(2000, 0, 1), to: endOfDay(now) };
     case "custom":
       // "custom" can land in the URL/cookie before the user has actually
       // picked dates in the range popover (selecting it from the dropdown
@@ -65,6 +67,8 @@ export function getPeriodLabel(period: string, range: DateRange): string {
       return format(range.from, "MMMM");
     case "year":
       return format(range.from, "yyyy");
+    case "all":
+      return "All time";
     default:
       return `${format(range.from, "MMM d")} – ${format(range.to, "MMM d")}`;
   }

@@ -63,14 +63,14 @@ export function InlinePeriodSelect({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 text-xs">
+    <div className="flex w-full items-center justify-between text-xs lg:justify-center lg:gap-3 lg:text-sm">
       {OPTIONS.map((opt) => (
         <button
           key={opt.value}
           type="button"
           onClick={() => setPeriod(opt.value)}
           className={cn(
-            "cursor-pointer rounded-md px-1.5 py-1 font-medium transition-colors",
+            "cursor-pointer rounded-md px-1.5 py-1 font-medium transition-colors lg:px-3 lg:py-1.5",
             !isCustom && period === opt.value
               ? "bg-accent text-foreground"
               : "text-muted-foreground hover:text-foreground"
@@ -85,7 +85,7 @@ export function InlinePeriodSelect({
           <button
             type="button"
             className={cn(
-              "cursor-pointer rounded-md px-1.5 py-1 font-medium transition-colors",
+              "cursor-pointer rounded-md px-1.5 py-1 font-medium transition-colors lg:px-3 lg:py-1.5",
               isCustom
                 ? "bg-accent text-foreground"
                 : "text-muted-foreground hover:text-foreground"

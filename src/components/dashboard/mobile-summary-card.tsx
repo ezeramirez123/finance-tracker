@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/format";
 import { useHiddenState } from "@/lib/use-hidden-state";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
+import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 
 function DeltaBadge({
   delta,
@@ -81,6 +82,10 @@ export function MobileSummaryCard({
   expensesHref = "/expenses",
   netHref = "/reports",
   netWorthHistory,
+  period,
+  from,
+  to,
+  persistKey,
 }: {
   netWorth: number;
   totalIncome: number;
@@ -93,6 +98,10 @@ export function MobileSummaryCard({
   expensesHref?: string;
   netHref?: string;
   netWorthHistory?: { date: string; netWorth: number }[];
+  period: string;
+  from?: string;
+  to?: string;
+  persistKey: string;
 }) {
   const [hidden, toggle] = useHiddenState("hideNetWorth");
 
@@ -144,6 +153,9 @@ export function MobileSummaryCard({
           valueColorClass={net >= 0 ? "text-chart-good" : "text-chart-critical"}
           href={netHref}
         />
+      </div>
+      <div className="border-t px-5 pt-3">
+        <InlinePeriodSelect period={period} from={from} to={to} persistKey={persistKey} />
       </div>
     </Card>
   );

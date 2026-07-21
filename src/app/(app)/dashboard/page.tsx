@@ -101,6 +101,10 @@ export default async function DashboardPage({
         expensesHref={expensesHref}
         netHref={netHref}
         netWorthHistory={netWorthHistory}
+        period={period}
+        from={from}
+        to={to}
+        persistKey="dashboard"
       />
 
       <div className="hidden md:block">

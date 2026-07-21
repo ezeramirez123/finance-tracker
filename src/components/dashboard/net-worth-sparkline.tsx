@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import {
   Area,
   AreaChart,
@@ -68,6 +69,12 @@ export function NetWorthSparkline({
    * balance card) show the scrubbed value instead of the latest one. */
   onScrub?: (point: Point | null) => void;
 }) {
+  // Recharts throttles touchmove updates via requestAnimationFrame — the
+  // deferred update from the last touchmove can land *after* touchend fires,
+  // re-activating the scrub state right after we cleared it. This flag
+  // suppresses any move update that arrives once we've released.
+  const releasedRef = useRef(false);
+
   if (data.length < 2) return null;
 
   const first = data[0].netWorth;
@@ -83,8 +90,12 @@ export function NetWorthSparkline({
 
   const heightClass = size === "lg" ? "h-40" : "h-16";
 
+  function handleScrubStart() {
+    releasedRef.current = false;
+  }
+
   function handleScrubMove(state: MouseHandlerDataParam) {
-    if (!onScrub || !state.isTooltipActive) return;
+    if (!onScrub || releasedRef.current || !state.isTooltipActive) return;
     const index = Number(state.activeIndex);
     if (!Number.isInteger(index)) return;
     const point = data[index];
@@ -92,6 +103,7 @@ export function NetWorthSparkline({
   }
 
   function handleScrubEnd() {
+    releasedRef.current = true;
     onScrub?.(null);
   }
 
@@ -121,6 +133,8 @@ export function NetWorthSparkline({
             <BarChart
               data={data}
               margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+              onMouseEnter={handleScrubStart}
+              onTouchStart={handleScrubStart}
               onMouseMove={handleScrubMove}
               onTouchMove={handleScrubMove}
               onMouseLeave={handleScrubEnd}
@@ -147,6 +161,8 @@ export function NetWorthSparkline({
             <AreaChart
               data={data}
               margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+              onMouseEnter={handleScrubStart}
+              onTouchStart={handleScrubStart}
               onMouseMove={handleScrubMove}
               onTouchMove={handleScrubMove}
               onMouseLeave={handleScrubEnd}

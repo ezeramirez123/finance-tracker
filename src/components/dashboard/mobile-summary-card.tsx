@@ -125,7 +125,7 @@ export function MobileSummaryCard({
       </div>
       {!hidden && netWorthHistory && (
         <div className="px-5">
-          <NetWorthSparkline data={netWorthHistory} />
+          <NetWorthSparkline data={netWorthHistory} size="lg" />
         </div>
       )}
       <div className="flex flex-col divide-y border-t px-5 pt-1">
@@ -154,7 +154,7 @@ export function MobileSummaryCard({
           href={netHref}
         />
       </div>
-      <div className="border-t px-5 pt-3">
+      <div className="border-t px-5 py-2">
         <InlinePeriodSelect period={period} from={from} to={to} persistKey={persistKey} />
       </div>
     </Card>

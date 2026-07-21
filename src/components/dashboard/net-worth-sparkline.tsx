@@ -1,6 +1,15 @@
 "use client";
 
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  type MouseHandlerDataParam,
+} from "recharts";
 import { format, parseISO } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
@@ -37,6 +46,7 @@ export function NetWorthSparkline({
   showLabels = true,
   showXAxis = true,
   variant = "area",
+  onScrub,
 }: {
   data: Point[];
   /** Use a fixed line/badge color instead of green-up/red-down — for series
@@ -53,6 +63,10 @@ export function NetWorthSparkline({
   showXAxis?: boolean;
   /** "bar" renders one bar per point instead of a filled area/line. */
   variant?: "area" | "bar";
+  /** Called with the point under the cursor/finger while hovering or
+   * touch-dragging, and null once released — lets a parent (e.g. the
+   * balance card) show the scrubbed value instead of the latest one. */
+  onScrub?: (point: Point | null) => void;
 }) {
   if (data.length < 2) return null;
 
@@ -68,6 +82,18 @@ export function NetWorthSparkline({
   const min = Math.min(...values);
 
   const heightClass = size === "lg" ? "h-40" : "h-16";
+
+  function handleScrubMove(state: MouseHandlerDataParam) {
+    if (!onScrub || !state.isTooltipActive) return;
+    const index = Number(state.activeIndex);
+    if (!Number.isInteger(index)) return;
+    const point = data[index];
+    if (point) onScrub(point);
+  }
+
+  function handleScrubEnd() {
+    onScrub?.(null);
+  }
 
   return (
     <div className="flex items-stretch gap-3">
@@ -92,18 +118,23 @@ export function NetWorthSparkline({
       >
         <ResponsiveContainer width="100%" height="100%">
           {variant === "bar" ? (
-            <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-              {showXAxis && (
-                <XAxis
-                  dataKey="date"
-                  height={20}
-                  tickFormatter={(v) => format(parseISO(v), "MMM d")}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                  tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                />
-              )}
+            <BarChart
+              data={data}
+              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+              onMouseMove={handleScrubMove}
+              onTouchMove={handleScrubMove}
+              onMouseLeave={handleScrubEnd}
+              onTouchEnd={handleScrubEnd}
+            >
+              <XAxis
+                dataKey="date"
+                height={showXAxis ? 20 : 0}
+                tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+                tick={showXAxis ? { fontSize: 10, fill: "var(--muted-foreground)" } : false}
+              />
               <Tooltip content={<SparklineTooltip />} cursor={{ fill: "var(--accent)" }} />
               <Bar
                 dataKey="netWorth"
@@ -113,24 +144,29 @@ export function NetWorthSparkline({
               />
             </BarChart>
           ) : (
-            <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <AreaChart
+              data={data}
+              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+              onMouseMove={handleScrubMove}
+              onTouchMove={handleScrubMove}
+              onMouseLeave={handleScrubEnd}
+              onTouchEnd={handleScrubEnd}
+            >
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={color} stopOpacity={0.15} />
                   <stop offset="100%" stopColor={color} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              {showXAxis && (
-                <XAxis
-                  dataKey="date"
-                  height={20}
-                  tickFormatter={(v) => format(parseISO(v), "MMM d")}
-                  tickLine={false}
-                  axisLine={false}
-                  interval="preserveStartEnd"
-                  tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
-                />
-              )}
+              <XAxis
+                dataKey="date"
+                height={showXAxis ? 20 : 0}
+                tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+                tick={showXAxis ? { fontSize: 10, fill: "var(--muted-foreground)" } : false}
+              />
               <Tooltip content={<SparklineTooltip />} cursor={{ stroke: "var(--border)" }} />
               <Area
                 dataKey="netWorth"

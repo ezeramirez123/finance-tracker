@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { format, parseISO } from "date-fns";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -39,11 +41,14 @@ export function BalancesOverview({
   persistKey: string;
 }) {
   const [hidden, toggle] = useHiddenState("hideTotal");
+  const [scrubbed, setScrubbed] = useState<{ date: string; netWorth: number } | null>(null);
 
   return (
     <Card className="gap-3">
       <Link href="/accounts" className="flex items-center justify-between px-5">
-        <p className="text-sm font-medium text-muted-foreground">Balance</p>
+        <p className="text-sm font-medium text-muted-foreground">
+          {scrubbed ? format(parseISO(scrubbed.date), "MMM d") : "Balance"}
+        </p>
         <Button
           variant="outline"
           size="icon"
@@ -59,7 +64,7 @@ export function BalancesOverview({
       </Link>
       <Link href="/accounts" className="block px-5 transition-colors hover:text-foreground/90">
         <p className="text-3xl font-semibold tracking-tight">
-          {hidden ? "••••••" : formatUsd(totalBalance)}
+          {hidden ? "••••••" : formatUsd(scrubbed ? scrubbed.netWorth : totalBalance)}
         </p>
       </Link>
       {!hidden && totalBalanceHistory && (
@@ -67,6 +72,7 @@ export function BalancesOverview({
           <NetWorthSparkline
             data={totalBalanceHistory.map((d) => ({ date: d.date, netWorth: d.total }))}
             size="lg"
+            onScrub={setScrubbed}
           />
         </Link>
       )}

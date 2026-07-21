@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { format, parseISO } from "date-fns";
 import { ArrowDownRight, ArrowUpRight, Eye, EyeOff } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -104,12 +106,15 @@ export function MobileSummaryCard({
   persistKey: string;
 }) {
   const [hidden, toggle] = useHiddenState("hideNetWorth");
+  const [scrubbed, setScrubbed] = useState<{ date: string; netWorth: number } | null>(null);
 
   return (
     <Card className="gap-3 md:hidden">
       <div className="px-5 py-1">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-medium text-muted-foreground">Balance</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            {scrubbed ? format(parseISO(scrubbed.date), "MMM d") : "Balance"}
+          </p>
           <Button
             variant="outline"
             size="icon"
@@ -120,7 +125,7 @@ export function MobileSummaryCard({
           </Button>
         </div>
         <p className="text-3xl font-semibold tracking-tight">
-          {hidden ? "••••••" : formatUsd(netWorth)}
+          {hidden ? "••••••" : formatUsd(scrubbed ? scrubbed.netWorth : netWorth)}
         </p>
       </div>
       {!hidden && netWorthHistory && (
@@ -130,6 +135,7 @@ export function MobileSummaryCard({
             size="lg"
             showLabels={false}
             showXAxis={false}
+            onScrub={setScrubbed}
           />
         </div>
       )}

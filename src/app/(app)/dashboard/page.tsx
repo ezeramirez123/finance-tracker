@@ -108,6 +108,7 @@ export default async function DashboardPage({
       />
 
       <div className="hidden md:block">
+        <h1 className="mb-4 text-xl font-semibold tracking-tight">Dashboard</h1>
         <BalancesOverview
           totalBalance={totalBalance}
           totalBalanceHistory={totalBalanceHistory}

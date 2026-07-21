@@ -95,6 +95,7 @@ export default async function ExpensesPage({
           <NetWorthSparkline
             color="var(--chart-critical)"
             data={summary.dailyTrend.map((d) => ({ date: d.date, netWorth: d.expense }))}
+            size="lg"
           />
         </div>
       </Card>

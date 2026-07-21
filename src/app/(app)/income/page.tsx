@@ -90,6 +90,7 @@ export default async function IncomePage({
           <NetWorthSparkline
             color="var(--chart-good)"
             data={summary.dailyTrend.map((d) => ({ date: d.date, netWorth: d.income }))}
+            size="lg"
           />
         </div>
       </Card>

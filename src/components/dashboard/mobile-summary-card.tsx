@@ -13,7 +13,7 @@ import { useHiddenState } from "@/lib/use-hidden-state";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 
-function DeltaBadge({
+function TrendIcon({
   delta,
   deltaGoodDirection,
 }: {
@@ -23,16 +23,11 @@ function DeltaBadge({
   const hasDelta = delta !== undefined && delta !== null && Number.isFinite(delta) && delta !== 0;
   const isUp = hasDelta && delta! > 0;
   const isGood = deltaGoodDirection === "up" ? isUp : !isUp;
+  const Icon = isUp ? ArrowUpRight : ArrowDownRight;
 
   return (
-    <span
-      className={cn(
-        "flex items-center gap-0.5 text-xs font-medium",
-        hasDelta ? (isGood ? "text-chart-good" : "text-chart-critical") : "invisible"
-      )}
-    >
-      {isUp ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
-      {Math.abs(delta ?? 0).toFixed(0)}%
+    <span className={cn("flex", !hasDelta && "invisible")}>
+      <Icon className={cn("size-3.5", isGood ? "text-chart-good" : "text-chart-critical")} />
     </span>
   );
 }
@@ -59,13 +54,13 @@ function Row({
         href && "-mx-5 cursor-pointer rounded-md px-5 transition-colors hover:bg-accent"
       )}
     >
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        <span className={cn("text-sm font-semibold tabular-nums", valueColorClass)}>
-          {formatUsd(value)}
-        </span>
-        <DeltaBadge delta={delta} deltaGoodDirection={deltaGoodDirection} />
-      </div>
+      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+        <TrendIcon delta={delta} deltaGoodDirection={deltaGoodDirection} />
+        {label}
+      </span>
+      <span className={cn("text-sm font-semibold tabular-nums", valueColorClass)}>
+        {formatUsd(value)}
+      </span>
     </div>
   );
 

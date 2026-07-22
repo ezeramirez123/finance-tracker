@@ -61,17 +61,23 @@ export function TransactionListRow({
         }`}
         onClick={canEdit ? () => setOpen(true) : undefined}
       >
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">
-            {transaction.merchant || transaction.category?.name || "Uncategorized"}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {transaction.date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })}
-            {transaction.category ? ` · ${transaction.category.name}` : ""}
-          </span>
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="size-2 shrink-0 rounded-full"
+            style={{ backgroundColor: transaction.category?.color ?? "var(--muted-foreground)" }}
+          />
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="truncate text-sm font-medium">
+              {transaction.merchant || transaction.category?.name || "Uncategorized"}
+            </span>
+            <span className="truncate text-xs text-muted-foreground">
+              {transaction.date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              })}
+              {transaction.category ? ` · ${transaction.category.name}` : ""}
+            </span>
+          </div>
         </div>
         <span
           className={`text-sm font-medium tabular-nums ${

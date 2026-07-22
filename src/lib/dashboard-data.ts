@@ -11,6 +11,7 @@ import {
   addWeeks,
   subDays,
   eachDayOfInterval,
+  differenceInCalendarDays,
 } from "date-fns";
 
 /**
@@ -91,10 +92,13 @@ export async function getPeriodSummary(userId: string, range: DateRange) {
     { id: string; name: string; color: string; total: number }
   >();
   const dailyTotals = new Map<string, { income: number; expense: number }>();
+  // Long ranges (1Y, All time) bucket by month instead of day — a year of
+  // daily bars is unreadable, and a month's worth is still fine as days.
+  const bucketByMonth = differenceInCalendarDays(range.to, range.from) > 60;
 
   for (const t of transactions) {
     const usd = Number(t.usdEquivalent);
-    const day = format(t.date, "yyyy-MM-dd");
+    const day = format(t.date, bucketByMonth ? "yyyy-MM-01" : "yyyy-MM-dd");
     const dayEntry = dailyTotals.get(day) ?? { income: 0, expense: 0 };
 
     if (t.kind === "income") {

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Plus } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 
 import { createTransaction, updateTransaction, createTransfer } from "@/lib/actions/transactions";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
@@ -20,6 +20,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { CurrencyInput } from "@/components/ui/currency-input";
 import { Label } from "@/components/ui/label";
@@ -92,6 +97,7 @@ export function TransactionDialog({
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChangeProp ?? setInternalOpen;
   const isEdit = !!transaction;
+  const [notesOpen, setNotesOpen] = React.useState(!!transaction?.notes);
 
   const form = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
@@ -384,10 +390,17 @@ export function TransactionDialog({
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea id="notes" rows={2} {...form.register("notes")} />
-          </div>
+          <Collapsible open={notesOpen} onOpenChange={setNotesOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+              <ChevronDown
+                className={cn("size-3.5 transition-transform", notesOpen && "rotate-180")}
+              />
+              Notes
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-1.5">
+              <Textarea id="notes" rows={2} {...form.register("notes")} />
+            </CollapsibleContent>
+          </Collapsible>
 
           <DialogFooter>
             <Button type="submit" disabled={form.formState.isSubmitting}>

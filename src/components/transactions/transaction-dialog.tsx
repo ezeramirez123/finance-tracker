@@ -74,9 +74,12 @@ export function TransactionDialog({
   trigger,
   open: openProp,
   onOpenChange: onOpenChangeProp,
+  defaultKind = "expense",
 }: {
   accounts: Account[];
   categories: Category[];
+  /** Which tab is selected when opening for a brand-new transaction (ignored when editing). */
+  defaultKind?: "income" | "expense" | "transfer";
   transaction?: {
     id: string;
     accountId: string;
@@ -114,7 +117,7 @@ export function TransactionDialog({
           notes: transaction.notes ?? "",
         }
       : {
-          kind: "expense",
+          kind: defaultKind,
           accountId: accounts[0]?.id ?? "",
           toAccountId: accounts[1]?.id ?? "",
           categoryId: null,

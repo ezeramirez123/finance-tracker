@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -74,6 +74,11 @@ export function NetWorthSparkline({
   // re-activating the scrub state right after we cleared it. This flag
   // suppresses any move update that arrives once we've released.
   const releasedRef = useRef(false);
+  // Controls Tooltip's `active` prop directly instead of trusting Recharts'
+  // own internal active-state, which is subject to the same stray-update
+  // bug — without this, the tooltip popup and cursor line can stay stuck
+  // visible after release even though our own scrub state correctly clears.
+  const [scrubActive, setScrubActive] = useState(false);
 
   if (data.length < 2) return null;
 
@@ -95,15 +100,18 @@ export function NetWorthSparkline({
   }
 
   function handleScrubMove(state: MouseHandlerDataParam) {
-    if (!onScrub || releasedRef.current || !state.isTooltipActive) return;
+    if (releasedRef.current || !state.isTooltipActive) return;
     const index = Number(state.activeIndex);
     if (!Number.isInteger(index)) return;
     const point = data[index];
-    if (point) onScrub(point);
+    if (!point) return;
+    setScrubActive(true);
+    onScrub?.(point);
   }
 
   function handleScrubEnd() {
     releasedRef.current = true;
+    setScrubActive(false);
     onScrub?.(null);
   }
 
@@ -149,7 +157,11 @@ export function NetWorthSparkline({
                 interval="preserveStartEnd"
                 tick={showXAxis ? { fontSize: 10, fill: "var(--muted-foreground)" } : false}
               />
-              <Tooltip content={<SparklineTooltip />} cursor={{ fill: "var(--accent)" }} />
+              <Tooltip
+                active={scrubActive}
+                content={<SparklineTooltip />}
+                cursor={{ fill: "var(--accent)" }}
+              />
               <Bar
                 dataKey="netWorth"
                 fill={color}
@@ -183,7 +195,11 @@ export function NetWorthSparkline({
                 interval="preserveStartEnd"
                 tick={showXAxis ? { fontSize: 10, fill: "var(--muted-foreground)" } : false}
               />
-              <Tooltip content={<SparklineTooltip />} cursor={{ stroke: "var(--border)" }} />
+              <Tooltip
+                active={scrubActive}
+                content={<SparklineTooltip />}
+                cursor={{ stroke: "var(--border)" }}
+              />
               <Area
                 dataKey="netWorth"
                 stroke={color}

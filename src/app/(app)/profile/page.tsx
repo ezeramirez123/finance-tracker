@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, Tags, LogOut, ChevronRight } from "lucide-react";
+import { ShieldCheck, Tags, RefreshCw, LogOut, ChevronRight } from "lucide-react";
 
 import { auth } from "@/lib/auth";
 import { signOutAction } from "@/lib/actions/auth";
@@ -28,7 +28,7 @@ export default async function ProfilePage() {
         </div>
       </Card>
 
-      <Link href="/mfa/manage" className="cursor-pointer transition-colors hover:bg-accent">
+      <Link href="/mfa/manage" className="cursor-pointer transition-colors hover:bg-accent active:bg-accent/70">
         <Card className="flex-row items-center justify-between px-5">
           <div className="flex items-center gap-3">
             <ShieldCheck className="size-4 text-muted-foreground" />
@@ -38,11 +38,21 @@ export default async function ProfilePage() {
         </Card>
       </Link>
 
-      <Link href="/categories" className="cursor-pointer transition-colors hover:bg-accent">
+      <Link href="/categories" className="cursor-pointer transition-colors hover:bg-accent active:bg-accent/70">
         <Card className="flex-row items-center justify-between px-5">
           <div className="flex items-center gap-3">
             <Tags className="size-4 text-muted-foreground" />
             <p className="text-sm font-medium">Categories</p>
+          </div>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Card>
+      </Link>
+
+      <Link href="/rates" className="cursor-pointer transition-colors hover:bg-accent active:bg-accent/70">
+        <Card className="flex-row items-center justify-between px-5">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="size-4 text-muted-foreground" />
+            <p className="text-sm font-medium">Exchange rates</p>
           </div>
           <ChevronRight className="size-4 text-muted-foreground" />
         </Card>

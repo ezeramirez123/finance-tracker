@@ -7,7 +7,7 @@ import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { convertToUsd, convertFromUsd, SUPPORTED_CURRENCIES } from "@/lib/currency";
-import { guessCategoryName } from "@/lib/auto-categorize";
+import { guessCategoryName, guessIncomeCategoryName } from "@/lib/auto-categorize";
 
 const transactionSchema = z.object({
   accountId: z.string().min(1),
@@ -54,8 +54,7 @@ async function guessCategoryId(
   kind: "income" | "expense",
   merchant: string
 ): Promise<string | null> {
-  if (kind !== "expense") return null;
-  const name = guessCategoryName(merchant);
+  const name = kind === "expense" ? guessCategoryName(merchant) : guessIncomeCategoryName(merchant);
   if (!name) return null;
 
   const matches = await client.category.findMany({

@@ -112,9 +112,10 @@ export default async function AccountsPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead className="w-24">Type</TableHead>
+                <TableHead className="hidden w-24 sm:table-cell">Type</TableHead>
                 <TableHead className="w-12">Currency</TableHead>
-                <TableHead className="w-28 text-right">Balance</TableHead>
+                <TableHead className="w-24 text-right">Balance</TableHead>
+                <TableHead className="w-24 text-right">USD</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -137,19 +138,17 @@ export default async function AccountsPage({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="overflow-hidden">
+                  <TableCell className="hidden overflow-hidden sm:table-cell">
                     <Badge variant="secondary" className="block max-w-full overflow-hidden">
                       <span className="block truncate">{TYPE_LABELS[account.type]}</span>
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{account.currency}</TableCell>
                   <TableCell className="text-right tabular-nums">
-                    <p>{formatMoney(Number(account.currentBalance), account.currency)}</p>
-                    {account.currency !== "USD" && (
-                      <p className="text-xs text-muted-foreground">
-                        ≈ {formatUsd(usdEquivalents.get(account.id) ?? 0)}
-                      </p>
-                    )}
+                    {formatMoney(Number(account.currentBalance), account.currency)}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
+                    {formatUsd(usdEquivalents.get(account.id) ?? 0)}
                   </TableCell>
                 </AccountRow>
               ))}

@@ -9,6 +9,7 @@ import {
   BarChart3,
   Receipt,
   TrendingUp,
+  RefreshCw,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: "/expenses", label: "Expenses", icon: Receipt },
   { href: "/accounts", label: "Accounts", icon: Wallet },
   { href: "/reports", label: "Reports", icon: BarChart3 },
+  { href: "/rates", label: "Exchange rates", icon: RefreshCw },
 ];
 
 export function Nav({

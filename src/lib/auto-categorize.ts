@@ -1,6 +1,6 @@
-// Merchant keyword -> default expense category name. Matched against a transaction's
+// Merchant keyword -> default category name. Matched against a transaction's
 // merchant/description with case-insensitive regex when importing from a bank connection.
-const CATEGORY_KEYWORDS: Record<string, string[]> = {
+const EXPENSE_CATEGORY_KEYWORDS: Record<string, string[]> = {
   Groceries: [
     "walmart", "whole foods", "trader joe", "kroger", "safeway", "costco",
     "aldi", "publix", "wegmans", "winco", "sprouts", "heb", "h-e-b", "meijer",
@@ -64,20 +64,60 @@ const CATEGORY_KEYWORDS: Record<string, string[]> = {
     "nationwide insurance", "water utility", "electric utility",
     "gas utility", "internet service", "farmers insurance",
   ],
+  Zelle: ["zelle"],
 };
 
-const CATEGORY_PATTERNS: { category: string; pattern: RegExp }[] = Object.entries(
-  CATEGORY_KEYWORDS
-).map(([category, keywords]) => ({
-  category,
-  pattern: new RegExp(keywords.join("|"), "i"),
-}));
+// Same idea, but for income — a payroll processor or a phrase like "direct
+// deposit" is a strong signal the transaction is a paycheck, not just an
+// unclassified deposit.
+const INCOME_CATEGORY_KEYWORDS: Record<string, string[]> = {
+  Salary: [
+    "payroll", "direct dep", "direct deposit", "\\bsalary\\b",
+    "\\badp\\b", "gusto", "paychex", "\\bworkday\\b", "\\bdeel\\b", "rippling",
+    "justworks", "biweekly pay", "\\bwages\\b",
+  ],
+  Freelance: [
+    "upwork", "fiverr", "freelance", "\\b1099\\b", "contractor payment",
+    "stripe payout", "paypal transfer", "square payout",
+  ],
+  Investment: [
+    "dividend", "interest payment", "interest earned", "capital gain",
+    "brokerage", "\\betrade\\b", "robinhood", "vanguard", "fidelity invest",
+    "schwab",
+  ],
+  Refund: [
+    "refund", "reimbursement", "cash back", "cashback", "rebate",
+  ],
+  Zelle: ["zelle"],
+};
 
-/** Best-effort category guess from a merchant/description string. Null if nothing matches. */
-export function guessCategoryName(merchant: string | null | undefined): string | null {
+function buildPatterns(keywords: Record<string, string[]>) {
+  return Object.entries(keywords).map(([category, terms]) => ({
+    category,
+    pattern: new RegExp(terms.join("|"), "i"),
+  }));
+}
+
+const EXPENSE_CATEGORY_PATTERNS = buildPatterns(EXPENSE_CATEGORY_KEYWORDS);
+const INCOME_CATEGORY_PATTERNS = buildPatterns(INCOME_CATEGORY_KEYWORDS);
+
+function guessFrom(
+  merchant: string | null | undefined,
+  patterns: { category: string; pattern: RegExp }[]
+): string | null {
   if (!merchant) return null;
-  for (const { category, pattern } of CATEGORY_PATTERNS) {
+  for (const { category, pattern } of patterns) {
     if (pattern.test(merchant)) return category;
   }
   return null;
+}
+
+/** Best-effort expense category guess from a merchant/description string. Null if nothing matches. */
+export function guessCategoryName(merchant: string | null | undefined): string | null {
+  return guessFrom(merchant, EXPENSE_CATEGORY_PATTERNS);
+}
+
+/** Best-effort income category guess from a merchant/description string. Null if nothing matches. */
+export function guessIncomeCategoryName(merchant: string | null | undefined): string | null {
+  return guessFrom(merchant, INCOME_CATEGORY_PATTERNS);
 }

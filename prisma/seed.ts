@@ -13,6 +13,7 @@ const EXPENSE_CATEGORIES = [
   { name: "Education", color: "#6366f1" },
   { name: "Healthcare", color: "#14b8a6" },
   { name: "Utilities", color: "#f97316" },
+  { name: "Zelle", color: "#a855f7" },
   { name: "Other", color: "#6b7280" },
 ];
 
@@ -23,6 +24,7 @@ const INCOME_CATEGORIES = [
   { name: "Gift", color: "#d946ef" },
   { name: "Refund", color: "#eab308" },
   { name: "Investment", color: "#8b5cf6" },
+  { name: "Zelle", color: "#a855f7" },
   { name: "Other", color: "#6b7280" },
 ];
 

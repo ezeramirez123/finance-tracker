@@ -1,6 +1,7 @@
-import { format, parseISO } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import {
   getPeriodSummary,
@@ -11,7 +12,7 @@ import {
   getEarliestTransactionDate,
 } from "@/lib/dashboard-data";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
-import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
+import { TappableTotalGraph } from "@/components/dashboard/tappable-total-graph";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
@@ -53,10 +54,15 @@ export default async function ExpensesPage({
     ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
     : getDateRange(period, undefined, earliestTransactionDate ?? undefined);
 
-  const [summary, expenseTransactions, largestExpenses] = await Promise.all([
+  const [summary, expenseTransactions, largestExpenses, accounts, categories] = await Promise.all([
     getPeriodSummary(userId, range),
     getExpenseTransactions(userId, range, params.category),
     getLargestExpenses(userId, range, params.category),
+    db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    db.category.findMany({
+      where: { OR: [{ userId }, { userId: null }] },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const filteredCategory = params.category
@@ -67,6 +73,7 @@ export default async function ExpensesPage({
     !isCustom && !isAll && tab === "week" ? await getDailyBreakdown(userId, range, "expense") : null;
   const weeklyBreakdown =
     !isCustom && !isAll && tab === "month" ? await getWeeklyBreakdown(userId, range, "expense") : null;
+  const bucketByMonth = differenceInCalendarDays(range.to, range.from) > 60;
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,11 +95,11 @@ export default async function ExpensesPage({
           </div>
         </div>
         <div className="px-5">
-          <NetWorthSparkline
+          <TappableTotalGraph
             color="var(--chart-critical)"
             data={summary.dailyTrend.map((d) => ({ date: d.date, netWorth: d.expense }))}
-            size="lg"
-            variant="bar"
+            bucketUnit={bucketByMonth ? "month" : "day"}
+            persistKey="expenses"
           />
         </div>
         <div className="border-t px-5 pt-3">
@@ -144,6 +151,8 @@ export default async function ExpensesPage({
           originalAmount: Number(t.originalAmount),
         }))}
         emptyLabel="No expenses in this period"
+        accounts={accounts}
+        categories={categories}
         collapsible
       />
 
@@ -160,6 +169,8 @@ export default async function ExpensesPage({
           originalAmount: Number(t.originalAmount),
         }))}
         emptyLabel="No expenses in this period"
+        accounts={accounts}
+        categories={categories}
       />
     </div>
   );

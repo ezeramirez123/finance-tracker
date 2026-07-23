@@ -28,8 +28,8 @@ const RIGHT_ITEMS = [
 
 const KIND_OPTIONS = [
   { kind: "income", label: "Income", icon: TrendingUp, colorClass: "bg-emerald-500", x: -52, y: -84 },
-  { kind: "expense", label: "Expense", icon: TrendingDown, colorClass: "bg-rose-500", x: 52, y: -84 },
-  { kind: "transfer", label: "Transfer", icon: ArrowLeftRight, colorClass: "bg-blue-500", x: 0, y: -148 },
+  { kind: "transfer", label: "Transfer", icon: ArrowLeftRight, colorClass: "bg-blue-500", x: 52, y: -84 },
+  { kind: "expense", label: "Expense", icon: TrendingDown, colorClass: "bg-rose-500", x: 0, y: -148 },
 ] as const;
 
 type Account = { id: string; name: string; icon: string; currency: string };

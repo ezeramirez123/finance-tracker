@@ -1,6 +1,7 @@
-import { format, parseISO } from "date-fns";
+import { differenceInCalendarDays, format, parseISO } from "date-fns";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import {
   getPeriodSummary,
@@ -9,7 +10,7 @@ import {
   getEarliestTransactionDate,
 } from "@/lib/dashboard-data";
 import { CategoryPieBreakdown } from "@/components/dashboard/category-pie-breakdown";
-import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
+import { TappableTotalGraph } from "@/components/dashboard/tappable-total-graph";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
@@ -51,9 +52,14 @@ export default async function IncomePage({
     ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
     : getDateRange(period, undefined, earliestTransactionDate ?? undefined);
 
-  const [summary, incomeTransactions] = await Promise.all([
+  const [summary, incomeTransactions, accounts, categories] = await Promise.all([
     getPeriodSummary(userId, range),
     getIncomeTransactions(userId, range, params.category),
+    db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    db.category.findMany({
+      where: { OR: [{ userId }, { userId: null }] },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const filteredCategory = params.category
@@ -62,6 +68,7 @@ export default async function IncomePage({
 
   const dailyBreakdown =
     !isCustom && !isAll && tab === "week" ? await getDailyBreakdown(userId, range, "income") : null;
+  const bucketByMonth = differenceInCalendarDays(range.to, range.from) > 60;
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,11 +90,11 @@ export default async function IncomePage({
           </div>
         </div>
         <div className="px-5">
-          <NetWorthSparkline
+          <TappableTotalGraph
             color="var(--chart-good)"
             data={summary.dailyTrend.map((d) => ({ date: d.date, netWorth: d.income }))}
-            size="lg"
-            variant="bar"
+            bucketUnit={bucketByMonth ? "month" : "day"}
+            persistKey="income"
           />
         </div>
         <div className="border-t px-5 pt-3">
@@ -129,6 +136,8 @@ export default async function IncomePage({
           originalAmount: Number(t.originalAmount),
         }))}
         emptyLabel="No income in this period"
+        accounts={accounts}
+        categories={categories}
       />
     </div>
   );

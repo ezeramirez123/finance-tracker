@@ -6,8 +6,51 @@ import { XIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-function Dialog(props: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+function Dialog({
+  open,
+  onOpenChange,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  // Opening a dialog pushes a history entry, and closing it for any reason
+  // OTHER than the back button pops that entry again — so Android's back
+  // gesture/button closes the dialog instead of leaving the page entirely,
+  // matching how a native app's modal sheet behaves. Without this, the
+  // dialog has no presence in history at all and back just navigates away.
+  const poppedRef = React.useRef(false);
+  const onOpenChangeRef = React.useRef(onOpenChange);
+  React.useEffect(() => {
+    onOpenChangeRef.current = onOpenChange;
+  });
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    window.history.pushState({ dialog: true }, "");
+    poppedRef.current = false;
+
+    function handlePopState() {
+      poppedRef.current = true;
+      onOpenChangeRef.current?.(false);
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      if (!poppedRef.current) {
+        poppedRef.current = true;
+        window.history.back();
+      }
+    };
+  }, [open]);
+
+  return (
+    <DialogPrimitive.Root
+      data-slot="dialog"
+      open={open}
+      onOpenChange={onOpenChange}
+      {...props}
+    />
+  );
 }
 
 function DialogTrigger(props: React.ComponentProps<typeof DialogPrimitive.Trigger>) {

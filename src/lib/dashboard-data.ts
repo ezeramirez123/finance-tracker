@@ -190,8 +190,10 @@ export async function getIncomeTransactions(
   });
 }
 
-/** Largest transactions by USD magnitude in the period, any kind, optionally
- * filtered by category. usdEquivalent is always stored as a positive
+/** Largest income/expense transactions by USD magnitude in the period,
+ * optionally filtered by category. Transfers move money between the user's
+ * own accounts rather than in or out, so they're excluded — same as every
+ * other income/expense total. usdEquivalent is always stored as a positive
  * magnitude, so sorting by it directly ranks by size regardless of direction. */
 export async function getLargestTransactions(
   userId: string,
@@ -201,6 +203,7 @@ export async function getLargestTransactions(
   return db.transaction.findMany({
     where: {
       userId,
+      kind: { in: ["income", "expense"] },
       date: { gte: range.from, lte: range.to },
       ...(categoryId ? { categoryId } : {}),
     },

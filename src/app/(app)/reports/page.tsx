@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import { getPeriodSummary, getLargestTransactions } from "@/lib/dashboard-data";
 import { PeriodRangeSelect } from "@/components/period-range-select";
@@ -29,9 +30,14 @@ export default async function ReportsPage({
     period === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined
   );
 
-  const [summary, largestTransactions] = await Promise.all([
+  const [summary, largestTransactions, accounts, categories] = await Promise.all([
     getPeriodSummary(userId, range),
     getLargestTransactions(userId, range, params.category),
+    db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    db.category.findMany({
+      where: { OR: [{ userId }, { userId: null }] },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   const allCategories = [...summary.incomeByCategory, ...summary.spendingByCategory];
@@ -98,6 +104,8 @@ export default async function ReportsPage({
           originalAmount: Number(t.originalAmount),
         }))}
         emptyLabel="No transactions in this period"
+        accounts={accounts}
+        categories={categories}
       />
     </div>
   );

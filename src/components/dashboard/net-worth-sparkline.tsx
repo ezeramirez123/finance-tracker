@@ -27,6 +27,7 @@ export function NetWorthSparkline({
   showXAxis = true,
   variant = "area",
   onScrub,
+  onPointTap,
 }: {
   data: Point[];
   /** Use a fixed line/badge color instead of green-up/red-down — for series
@@ -47,6 +48,9 @@ export function NetWorthSparkline({
    * once released — lets a parent (e.g. the balance card) show the scrubbed
    * value instead of the latest one. */
   onScrub?: (point: Point | null) => void;
+  /** Called with the point under a press-and-release that didn't drag (a
+   * tap, as opposed to a scrub) — lets a parent jump to that point's period. */
+  onPointTap?: (point: Point) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   // Scrubbing is driven entirely by our own pointer events + setPointerCapture
@@ -56,6 +60,7 @@ export function NetWorthSparkline({
   // the pointer, so a fast drag that strays outside the chart loses tracking.
   // Owning the pointer directly avoids both failure modes.
   const [scrub, setScrub] = useState<{ index: number; x: number; width: number } | null>(null);
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
 
   if (data.length < 2) return null;
 
@@ -90,6 +95,7 @@ export function NetWorthSparkline({
 
   function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
     e.currentTarget.setPointerCapture(e.pointerId);
+    pointerStartRef.current = { x: e.clientX, y: e.clientY };
     updateFromEvent(e);
   }
 
@@ -102,6 +108,13 @@ export function NetWorthSparkline({
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
       e.currentTarget.releasePointerCapture(e.pointerId);
     }
+    const start = pointerStartRef.current;
+    const wasTap =
+      !!start && Math.abs(e.clientX - start.x) < 8 && Math.abs(e.clientY - start.y) < 8;
+    if (wasTap && scrub) {
+      onPointTap?.(data[scrub.index]);
+    }
+    pointerStartRef.current = null;
     setScrub(null);
     onScrub?.(null);
   }

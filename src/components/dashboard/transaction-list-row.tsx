@@ -56,7 +56,7 @@ export function TransactionListRow({
   return (
     <>
       <div
-        className={`flex items-center justify-between py-2.5 ${
+        className={`flex items-center justify-between gap-3 py-2.5 ${
           canEdit ? "cursor-pointer rounded-md px-1 transition-colors hover:bg-accent/50" : ""
         }`}
         onClick={canEdit ? () => setOpen(true) : undefined}
@@ -80,7 +80,7 @@ export function TransactionListRow({
           </div>
         </div>
         <span
-          className={`text-sm font-medium tabular-nums ${
+          className={`shrink-0 text-sm font-medium tabular-nums ${
             isCredit(transaction) ? "text-chart-good" : ""
           }`}
         >

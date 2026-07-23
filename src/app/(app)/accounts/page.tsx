@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDateRange, type Period } from "@/lib/period";
 import { getEarliestTransactionDate, getTotalBalance, getTotalBalanceHistory } from "@/lib/dashboard-data";
+import { convertToUsd } from "@/lib/currency";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,7 +18,7 @@ import { AccountRow } from "@/components/accounts/account-row";
 import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
 import { AccountsOverviewCard } from "@/components/accounts/accounts-overview-card";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatUsd } from "@/lib/format";
 import { readPersistedPeriod } from "@/lib/period-cookie";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -71,6 +72,15 @@ export default async function AccountsPage({
     getTotalBalanceHistory(userId, range),
   ]);
 
+  const usdEquivalents = new Map(
+    await Promise.all(
+      accounts.map(async (a) => {
+        const { usdEquivalent } = await convertToUsd(Number(a.currentBalance), a.currency);
+        return [a.id, usdEquivalent] as const;
+      })
+    )
+  );
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
@@ -98,7 +108,7 @@ export default async function AccountsPage({
         </Card>
       ) : (
         <Card className="py-0">
-          <Table className="table-fixed">
+          <Table className="table-fixed" hideScrollHint>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
@@ -134,7 +144,12 @@ export default async function AccountsPage({
                   </TableCell>
                   <TableCell className="text-muted-foreground">{account.currency}</TableCell>
                   <TableCell className="text-right tabular-nums">
-                    {formatMoney(Number(account.currentBalance), account.currency)}
+                    <p>{formatMoney(Number(account.currentBalance), account.currency)}</p>
+                    {account.currency !== "USD" && (
+                      <p className="text-xs text-muted-foreground">
+                        ≈ {formatUsd(usdEquivalents.get(account.id) ?? 0)}
+                      </p>
+                    )}
                   </TableCell>
                 </AccountRow>
               ))}

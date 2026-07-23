@@ -33,7 +33,7 @@ function Row({
     <div
       className={cn(
         "flex items-center justify-between py-3",
-        href && "-mx-5 cursor-pointer rounded-md px-5 transition-colors hover:bg-accent"
+        href && "-mx-5 cursor-pointer rounded-md px-5 transition-colors hover:bg-accent active:bg-accent/70"
       )}
     >
       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">

@@ -1,3 +1,5 @@
+import { differenceInCalendarDays } from "date-fns";
+
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
@@ -41,6 +43,7 @@ export default async function ReportsPage({
   ]);
 
   const allCategories = [...summary.incomeByCategory, ...summary.spendingByCategory];
+  const bucketByMonth = differenceInCalendarDays(range.to, range.from) > 60;
 
   return (
     <div className="flex flex-col gap-6">
@@ -77,7 +80,10 @@ export default async function ReportsPage({
             </div>
           </div>
 
-          <IncomeExpenseTrendGraph data={summary.dailyTrend} />
+          <IncomeExpenseTrendGraph
+            data={summary.dailyTrend}
+            dateFormat={bucketByMonth ? "MMM" : "MMM d"}
+          />
         </CardContent>
       </Card>
 

@@ -148,7 +148,7 @@ export function CategoryPieBreakdown({
                   key={cat.id}
                   href={hrefFor(cat.id)}
                   scroll={false}
-                  className="flex items-center justify-between gap-2 py-3 text-sm transition-colors hover:bg-accent/50"
+                  className="-mx-2 flex items-center justify-between gap-2 rounded-md px-2 py-3 text-sm transition-colors hover:bg-accent/50 active:bg-accent"
                 >
                   <span className="flex items-center gap-2 truncate">
                     <span

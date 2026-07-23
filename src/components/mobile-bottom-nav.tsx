@@ -47,7 +47,7 @@ function NavLink({
     <Link
       href={item.href}
       className={cn(
-        "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
+        "flex flex-1 flex-col items-center gap-1 py-3 text-xs font-medium transition-[color,opacity] active:opacity-50",
         active ? "text-foreground" : "text-muted-foreground"
       )}
     >
@@ -100,7 +100,7 @@ export function MobileBottomNav({
                     setDialogKind(opt.kind);
                   }}
                   className={cn(
-                    "pointer-events-auto absolute top-0 left-0 flex size-12 items-center justify-center rounded-full text-white shadow-lg transition-all duration-200 ease-out",
+                    "pointer-events-auto absolute top-0 left-0 flex size-12 items-center justify-center rounded-full text-white shadow-lg transition-all duration-200 ease-out active:brightness-75",
                     opt.colorClass,
                     menuOpen ? "scale-100 opacity-100" : "pointer-events-none scale-50 opacity-0"
                   )}
@@ -121,7 +121,7 @@ export function MobileBottomNav({
             type="button"
             aria-label={menuOpen ? "Close add transaction menu" : "Add transaction"}
             onClick={() => setMenuOpen((v) => !v)}
-            className="relative z-10 flex size-12 cursor-pointer items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg transition-transform hover:scale-105"
+            className="relative z-10 flex size-12 cursor-pointer items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg transition-transform hover:scale-105 active:scale-90"
           >
             <Plus
               className={cn("size-6 transition-transform duration-200", menuOpen && "rotate-45")}

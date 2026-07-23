@@ -48,6 +48,7 @@ export function TappableTotalGraph({
       data={data}
       size="lg"
       variant="bar"
+      dateFormat={bucketUnit === "month" ? "MMM" : "MMM d"}
       onPointTap={handlePointTap}
     />
   );

@@ -18,7 +18,16 @@ type DailyPoint = { date: string; income: number; expense: number };
  * touch devices (throttles updates via requestAnimationFrame, doesn't
  * capture the pointer, and can leave the tooltip stuck visible after
  * release) — see net-worth-sparkline.tsx for the same fix applied there. */
-export function IncomeExpenseTrendGraph({ data }: { data: DailyPoint[] }) {
+export function IncomeExpenseTrendGraph({
+  data,
+  dateFormat = "MMM d",
+}: {
+  data: DailyPoint[];
+  /** date-fns format string for the axis ticks and tooltip label — pass
+   * "MMM" when the data is bucketed by month, so a bar doesn't read as e.g.
+   * "Jul 1" when it actually represents the whole month. */
+  dateFormat?: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrub, setScrub] = useState<{ index: number; x: number; width: number } | null>(null);
 
@@ -73,7 +82,7 @@ export function IncomeExpenseTrendGraph({ data }: { data: DailyPoint[] }) {
           <XAxis
             dataKey="date"
             height={20}
-            tickFormatter={(v) => format(parseISO(v), "MMM d")}
+            tickFormatter={(v) => format(parseISO(v), dateFormat)}
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
@@ -94,7 +103,7 @@ export function IncomeExpenseTrendGraph({ data }: { data: DailyPoint[] }) {
             className="pointer-events-none absolute top-1 rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md"
             style={{ left: tooltipLeft, width: tooltipWidth }}
           >
-            <p className="mb-1 text-muted-foreground">{format(parseISO(scrubPoint.date), "MMM d")}</p>
+            <p className="mb-1 text-muted-foreground">{format(parseISO(scrubPoint.date), dateFormat)}</p>
             <div className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <span className={cn("size-2 rounded-full", "bg-chart-good")} />

@@ -33,6 +33,16 @@ function isCredit(t: Pick<RowTransaction, "kind" | "transferDirection">): boolea
   return t.transferDirection === "in";
 }
 
+/** Income green, expense red — a transfer's amount must look visually
+ * distinct from both, since it isn't counted as either one in any total,
+ * and reusing the same styling reads as "this counts as income/expense"
+ * even though it never does. */
+function amountColorClass(t: Pick<RowTransaction, "kind" | "transferDirection">): string {
+  if (t.kind === "income") return "text-chart-good";
+  if (t.kind === "expense") return "text-chart-critical";
+  return "text-chart-1";
+}
+
 /** A plain `!==` check on `.kind` narrows that expression, not the whole object —
  * a real type predicate is needed so TS carries the narrowing into the JSX below. */
 function isEditable(
@@ -57,7 +67,9 @@ export function TransactionListRow({
     <>
       <div
         className={`flex items-center justify-between gap-3 py-2.5 ${
-          canEdit ? "cursor-pointer rounded-md px-1 transition-colors hover:bg-accent/50" : ""
+          canEdit
+            ? "cursor-pointer rounded-md px-1 transition-colors hover:bg-accent/50 active:bg-accent"
+            : ""
         }`}
         onClick={canEdit ? () => setOpen(true) : undefined}
       >
@@ -80,9 +92,7 @@ export function TransactionListRow({
           </div>
         </div>
         <span
-          className={`shrink-0 text-sm font-medium tabular-nums ${
-            isCredit(transaction) ? "text-chart-good" : ""
-          }`}
+          className={`shrink-0 text-sm font-medium tabular-nums ${amountColorClass(transaction)}`}
         >
           {isCredit(transaction) ? "+" : "-"}
           {formatMoney(Number(transaction.originalAmount), transaction.originalCurrency)}

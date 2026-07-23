@@ -26,6 +26,7 @@ export function NetWorthSparkline({
   showLabels = true,
   showXAxis = true,
   variant = "area",
+  dateFormat = "MMM d",
   onScrub,
   onPointTap,
 }: {
@@ -44,6 +45,10 @@ export function NetWorthSparkline({
   showXAxis?: boolean;
   /** "bar" renders one bar per point instead of a filled area/line. */
   variant?: "area" | "bar";
+  /** date-fns format string for the axis ticks and tooltip label — pass
+   * "MMM" for a graph bucketed by month, so a bar doesn't read as e.g.
+   * "Jul 1" when it actually represents the whole month. */
+  dateFormat?: string;
   /** Called with the point under the finger/cursor while pressed, and null
    * once released — lets a parent (e.g. the balance card) show the scrubbed
    * value instead of the latest one. */
@@ -158,7 +163,7 @@ export function NetWorthSparkline({
               <XAxis
                 dataKey="date"
                 height={showXAxis ? 20 : 0}
-                tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                tickFormatter={(v) => format(parseISO(v), dateFormat)}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
@@ -182,7 +187,7 @@ export function NetWorthSparkline({
               <XAxis
                 dataKey="date"
                 height={showXAxis ? 20 : 0}
-                tickFormatter={(v) => format(parseISO(v), "MMM d")}
+                tickFormatter={(v) => format(parseISO(v), dateFormat)}
                 tickLine={false}
                 axisLine={false}
                 interval="preserveStartEnd"
@@ -222,7 +227,7 @@ export function NetWorthSparkline({
               className="pointer-events-none absolute top-1 rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md"
               style={{ left: tooltipLeft, width: tooltipWidth }}
             >
-              <p className="text-muted-foreground">{format(parseISO(scrubPoint.date), "MMM d")}</p>
+              <p className="text-muted-foreground">{format(parseISO(scrubPoint.date), dateFormat)}</p>
               <p className="font-medium tabular-nums text-popover-foreground">
                 {formatUsd(scrubPoint.netWorth)}
               </p>

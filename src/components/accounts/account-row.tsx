@@ -27,7 +27,7 @@ export function AccountRow({
 
   return (
     <>
-      <TableRow className="cursor-pointer" onClick={() => setOpen(true)}>
+      <TableRow className="cursor-pointer active:bg-muted" onClick={() => setOpen(true)}>
         {children}
       </TableRow>
       <AccountDialog account={account} trigger={null} open={open} onOpenChange={setOpen} />

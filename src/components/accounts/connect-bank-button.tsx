@@ -29,12 +29,16 @@ export function ConnectBankButton() {
   useEffect(() => {
     if (isOAuthReturn) return;
     fetch("/api/plaid/link-token", { method: "POST" })
-      .then((res) => res.json())
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Couldn't reach Plaid");
+        return data;
+      })
       .then((data) => {
         sessionStorage.setItem(LINK_TOKEN_STORAGE_KEY, data.linkToken);
         setLinkToken(data.linkToken);
       })
-      .catch(() => toast.error("Couldn't reach Plaid"));
+      .catch((err: Error) => toast.error(err.message || "Couldn't reach Plaid"));
   }, [isOAuthReturn]);
 
   const onSuccess = useCallback(

@@ -10,19 +10,35 @@ export async function POST() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const resp = await plaidClient.linkTokenCreate({
-    user: { client_user_id: session.user.id },
-    client_name: "Semanal",
-    products: [Products.Transactions],
-    country_codes: [CountryCode.Us],
-    language: "en",
-    // Required for OAuth institutions (Chase, BofA, Wells Fargo, etc.) —
-    // without it Link fails when a user picks one of these in production.
-    // Must exactly match a URI registered in the Plaid dashboard.
-    ...(process.env.PLAID_REDIRECT_URI
-      ? { redirect_uri: process.env.PLAID_REDIRECT_URI }
-      : {}),
-  });
+  try {
+    const resp = await plaidClient.linkTokenCreate({
+      user: { client_user_id: session.user.id },
+      client_name: "Semanal",
+      products: [Products.Transactions],
+      country_codes: [CountryCode.Us],
+      language: "en",
+      // Required for OAuth institutions (Chase, BofA, Wells Fargo, etc.) —
+      // without it Link fails when a user picks one of these in production.
+      // Must exactly match a URI registered in the Plaid dashboard.
+      ...(process.env.PLAID_REDIRECT_URI
+        ? { redirect_uri: process.env.PLAID_REDIRECT_URI }
+        : {}),
+    });
 
-  return NextResponse.json({ linkToken: resp.data.link_token });
+    return NextResponse.json({ linkToken: resp.data.link_token });
+  } catch (err) {
+    const plaidError =
+      typeof err === "object" && err !== null && "response" in err
+        ? (
+            err as {
+              response?: { data?: { error_code?: string; error_message?: string } };
+            }
+          ).response?.data
+        : undefined;
+    console.error("Plaid linkTokenCreate failed:", plaidError ?? err);
+    return NextResponse.json(
+      { error: plaidError?.error_message ?? "Couldn't create a Plaid link token" },
+      { status: 502 }
+    );
+  }
 }

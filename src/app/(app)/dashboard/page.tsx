@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getDateRange, getPeriodLabel, getPreviousRange, type Period } from "@/lib/period";
+import { getDateRange, getPeriodLabel, type Period } from "@/lib/period";
 import {
   getEarliestTransactionDate,
   getNetWorth,
@@ -16,11 +16,6 @@ import { TransactionListCard } from "@/components/dashboard/transaction-list-car
 import { WeekCalendarStrip } from "@/components/dashboard/week-calendar-strip";
 import { BalancesOverview } from "@/components/dashboard/balances-overview";
 import { MobileSummaryCard } from "@/components/dashboard/mobile-summary-card";
-
-function percentDelta(current: number, previous: number): number | null {
-  if (previous === 0) return current === 0 ? 0 : null;
-  return ((current - previous) / previous) * 100;
-}
 
 export default async function DashboardPage({
   searchParams,
@@ -47,12 +42,10 @@ export default async function DashboardPage({
     period === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined,
     earliestTransactionDate ?? undefined
   );
-  const previousRange = getPreviousRange(range);
   const weekOffset = Math.min(0, parseInt(params.weekOffset ?? "0", 10) || 0);
 
   const [
     summary,
-    previousSummary,
     netWorth,
     netWorthHistory,
     totalBalance,
@@ -62,7 +55,6 @@ export default async function DashboardPage({
     categories,
   ] = await Promise.all([
     getPeriodSummary(userId, range),
-    getPeriodSummary(userId, previousRange),
     getNetWorth(userId),
     getNetWorthHistory(userId, range),
     getTotalBalance(userId),
@@ -74,10 +66,6 @@ export default async function DashboardPage({
       orderBy: { name: "asc" },
     }),
   ]);
-
-  const incomeDelta = percentDelta(summary.totalIncome, previousSummary.totalIncome);
-  const expenseDelta = percentDelta(summary.totalExpenses, previousSummary.totalExpenses);
-  const netDelta = percentDelta(summary.net, previousSummary.net);
 
   // Carry the currently-selected period through to Income/Expenses so those
   // pages open scoped to the same range instead of resetting to their default.
@@ -98,9 +86,6 @@ export default async function DashboardPage({
         totalIncome={summary.totalIncome}
         totalExpenses={summary.totalExpenses}
         net={summary.net}
-        incomeDelta={incomeDelta}
-        expenseDelta={expenseDelta}
-        netDelta={netDelta}
         incomeHref={incomeHref}
         expensesHref={expensesHref}
         netHref={netHref}

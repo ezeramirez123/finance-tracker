@@ -1,16 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  type MouseHandlerDataParam,
-} from "recharts";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
 import { format, parseISO } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
@@ -18,27 +10,6 @@ import { cn } from "@/lib/utils";
 import { formatUsd } from "@/lib/format";
 
 type Point = { date: string; netWorth: number };
-
-function SparklineTooltip({
-  active,
-  payload,
-  label,
-}: {
-  active?: boolean;
-  payload?: { value: number }[];
-  label?: string;
-}) {
-  if (!active || !payload?.length || typeof label !== "string") return null;
-
-  return (
-    <div className="rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
-      <p className="text-muted-foreground">{format(parseISO(label), "MMM d")}</p>
-      <p className="font-medium tabular-nums text-popover-foreground">
-        {formatUsd(payload[0].value)}
-      </p>
-    </div>
-  );
-}
 
 export function NetWorthSparkline({
   data,
@@ -64,21 +35,19 @@ export function NetWorthSparkline({
   showXAxis?: boolean;
   /** "bar" renders one bar per point instead of a filled area/line. */
   variant?: "area" | "bar";
-  /** Called with the point under the cursor/finger while hovering or
-   * touch-dragging, and null once released — lets a parent (e.g. the
-   * balance card) show the scrubbed value instead of the latest one. */
+  /** Called with the point under the finger/cursor while pressed, and null
+   * once released — lets a parent (e.g. the balance card) show the scrubbed
+   * value instead of the latest one. */
   onScrub?: (point: Point | null) => void;
 }) {
-  // Recharts throttles touchmove updates via requestAnimationFrame — the
-  // deferred update from the last touchmove can land *after* touchend fires,
-  // re-activating the scrub state right after we cleared it. This flag
-  // suppresses any move update that arrives once we've released.
-  const releasedRef = useRef(false);
-  // Controls Tooltip's `active` prop directly instead of trusting Recharts'
-  // own internal active-state, which is subject to the same stray-update
-  // bug — without this, the tooltip popup and cursor line can stay stuck
-  // visible after release even though our own scrub state correctly clears.
-  const [scrubActive, setScrubActive] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Scrubbing is driven entirely by our own pointer events + setPointerCapture
+  // instead of Recharts' onMouseMove/onTouchMove — Recharts throttles touch
+  // updates via requestAnimationFrame internally (a deferred update can land
+  // *after* release, re-activating state we just cleared) and doesn't capture
+  // the pointer, so a fast drag that strays outside the chart loses tracking.
+  // Owning the pointer directly avoids both failure modes.
+  const [scrub, setScrub] = useState<{ index: number; x: number; width: number } | null>(null);
 
   if (data.length < 2) return null;
 
@@ -95,25 +64,45 @@ export function NetWorthSparkline({
 
   const heightClass = size === "lg" ? "h-40" : "h-16";
 
-  function handleScrubStart() {
-    releasedRef.current = false;
+  function pointFromClientX(clientX: number) {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0) return null;
+    const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+    const ratio = x / rect.width;
+    const index = Math.round(ratio * (data.length - 1));
+    return { index, x, width: rect.width };
   }
 
-  function handleScrubMove(state: MouseHandlerDataParam) {
-    if (releasedRef.current || !state.isTooltipActive) return;
-    const index = Number(state.activeIndex);
-    if (!Number.isInteger(index)) return;
-    const point = data[index];
-    if (!point) return;
-    setScrubActive(true);
-    onScrub?.(point);
+  function updateFromEvent(e: ReactPointerEvent<HTMLDivElement>) {
+    const found = pointFromClientX(e.clientX);
+    if (!found) return;
+    setScrub(found);
+    onScrub?.(data[found.index] ?? null);
   }
 
-  function handleScrubEnd() {
-    releasedRef.current = true;
-    setScrubActive(false);
+  function handlePointerDown(e: ReactPointerEvent<HTMLDivElement>) {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    updateFromEvent(e);
+  }
+
+  function handlePointerMove(e: ReactPointerEvent<HTMLDivElement>) {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    updateFromEvent(e);
+  }
+
+  function handlePointerEnd(e: ReactPointerEvent<HTMLDivElement>) {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
+    setScrub(null);
     onScrub?.(null);
   }
+
+  const scrubPoint = scrub ? data[scrub.index] : null;
+  const tooltipWidth = 104;
+  const tooltipLeft = scrub
+    ? Math.min(Math.max(scrub.x - tooltipWidth / 2, 4), Math.max(scrub.width - tooltipWidth - 4, 4))
+    : 0;
 
   return (
     <div className="flex items-stretch gap-3">
@@ -131,23 +120,20 @@ export function NetWorthSparkline({
         </div>
       )}
       <div
+        ref={containerRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
+        style={{ touchAction: "pan-y" }}
         className={cn(
-          "min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none [&_*]:[touch-action:pan-y]",
+          "relative min-w-0 flex-1 select-none [-webkit-touch-callout:none] [&_*]:outline-none [&_*]:select-none",
           heightClass
         )}
       >
         <ResponsiveContainer width="100%" height="100%">
           {variant === "bar" ? (
-            <BarChart
-              data={data}
-              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              onMouseEnter={handleScrubStart}
-              onTouchStart={handleScrubStart}
-              onMouseMove={handleScrubMove}
-              onTouchMove={handleScrubMove}
-              onMouseLeave={handleScrubEnd}
-              onTouchEnd={handleScrubEnd}
-            >
+            <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <XAxis
                 dataKey="date"
                 height={showXAxis ? 20 : 0}
@@ -157,11 +143,6 @@ export function NetWorthSparkline({
                 interval="preserveStartEnd"
                 tick={showXAxis ? { fontSize: 10, fill: "var(--muted-foreground)" } : false}
               />
-              <Tooltip
-                active={scrubActive}
-                content={<SparklineTooltip />}
-                cursor={{ fill: "var(--accent)" }}
-              />
               <Bar
                 dataKey="netWorth"
                 fill={color}
@@ -170,16 +151,7 @@ export function NetWorthSparkline({
               />
             </BarChart>
           ) : (
-            <AreaChart
-              data={data}
-              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              onMouseEnter={handleScrubStart}
-              onTouchStart={handleScrubStart}
-              onMouseMove={handleScrubMove}
-              onTouchMove={handleScrubMove}
-              onMouseLeave={handleScrubEnd}
-              onTouchEnd={handleScrubEnd}
-            >
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={color} stopOpacity={0.15} />
@@ -195,11 +167,6 @@ export function NetWorthSparkline({
                 interval="preserveStartEnd"
                 tick={showXAxis ? { fontSize: 10, fill: "var(--muted-foreground)" } : false}
               />
-              <Tooltip
-                active={scrubActive}
-                content={<SparklineTooltip />}
-                cursor={{ stroke: "var(--border)" }}
-              />
               <Area
                 dataKey="netWorth"
                 stroke={color}
@@ -207,11 +174,29 @@ export function NetWorthSparkline({
                 fill={`url(#${gradientId})`}
                 isAnimationActive={false}
                 dot={false}
-                activeDot={{ r: 4, fill: color, stroke: "var(--card)", strokeWidth: 2 }}
+                activeDot={false}
               />
             </AreaChart>
           )}
         </ResponsiveContainer>
+
+        {scrub && scrubPoint && (
+          <>
+            <div
+              className="pointer-events-none absolute top-0 bottom-0 w-px bg-border"
+              style={{ left: scrub.x }}
+            />
+            <div
+              className="pointer-events-none absolute top-1 rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md"
+              style={{ left: tooltipLeft, width: tooltipWidth }}
+            >
+              <p className="text-muted-foreground">{format(parseISO(scrubPoint.date), "MMM d")}</p>
+              <p className="font-medium tabular-nums text-popover-foreground">
+                {formatUsd(scrubPoint.netWorth)}
+              </p>
+            </div>
+          </>
+        )}
       </div>
       {showLabels && (
         <div

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
-import { ArrowDownRight, ArrowUpRight, Eye, EyeOff } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Eye, EyeOff, Scale } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
@@ -13,37 +14,18 @@ import { useHiddenState } from "@/lib/use-hidden-state";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 
-function TrendIcon({
-  delta,
-  deltaGoodDirection,
-}: {
-  delta?: number | null;
-  deltaGoodDirection: "up" | "down";
-}) {
-  const hasDelta = delta !== undefined && delta !== null && Number.isFinite(delta) && delta !== 0;
-  const isUp = hasDelta && delta! > 0;
-  const isGood = deltaGoodDirection === "up" ? isUp : !isUp;
-  const Icon = isUp ? ArrowUpRight : ArrowDownRight;
-
-  return (
-    <span className={cn("flex", !hasDelta && "invisible")}>
-      <Icon className={cn("size-3.5", isGood ? "text-chart-good" : "text-chart-critical")} />
-    </span>
-  );
-}
-
 function Row({
   label,
+  icon: Icon,
+  iconColorClass,
   value,
-  delta,
-  deltaGoodDirection,
   valueColorClass,
   href,
 }: {
   label: string;
+  icon: LucideIcon;
+  iconColorClass: string;
   value: number;
-  delta?: number | null;
-  deltaGoodDirection: "up" | "down";
   valueColorClass?: string;
   href?: string;
 }) {
@@ -55,7 +37,7 @@ function Row({
       )}
     >
       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-        <TrendIcon delta={delta} deltaGoodDirection={deltaGoodDirection} />
+        <Icon className={cn("size-3.5", iconColorClass)} />
         {label}
       </span>
       <span className={cn("text-sm font-semibold tabular-nums", valueColorClass)}>
@@ -72,9 +54,6 @@ export function MobileSummaryCard({
   totalIncome,
   totalExpenses,
   net,
-  incomeDelta,
-  expenseDelta,
-  netDelta,
   incomeHref = "/income",
   expensesHref = "/expenses",
   netHref = "/reports",
@@ -88,9 +67,6 @@ export function MobileSummaryCard({
   totalIncome: number;
   totalExpenses: number;
   net: number;
-  incomeDelta?: number | null;
-  expenseDelta?: number | null;
-  netDelta?: number | null;
   incomeHref?: string;
   expensesHref?: string;
   netHref?: string;
@@ -137,25 +113,25 @@ export function MobileSummaryCard({
       <div className="flex flex-col divide-y border-t px-5 pt-1">
         <Row
           label="Income"
+          icon={ArrowUpRight}
+          iconColorClass="text-chart-good"
           value={totalIncome}
-          delta={incomeDelta}
-          deltaGoodDirection="up"
           valueColorClass="text-chart-good"
           href={incomeHref}
         />
         <Row
           label="Expenses"
+          icon={ArrowDownRight}
+          iconColorClass="text-chart-critical"
           value={totalExpenses}
-          delta={expenseDelta}
-          deltaGoodDirection="down"
           valueColorClass="text-chart-critical"
           href={expensesHref}
         />
         <Row
-          label="Net"
+          label="Balance"
+          icon={Scale}
+          iconColorClass="text-muted-foreground"
           value={net}
-          delta={netDelta}
-          deltaGoodDirection="up"
           valueColorClass={net >= 0 ? "text-chart-good" : "text-chart-critical"}
           href={netHref}
         />

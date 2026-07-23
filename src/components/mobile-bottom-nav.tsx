@@ -121,7 +121,7 @@ export function MobileBottomNav({
             type="button"
             aria-label={menuOpen ? "Close add transaction menu" : "Add transaction"}
             onClick={() => setMenuOpen((v) => !v)}
-            className="relative z-10 flex size-12 cursor-pointer items-center justify-center rounded-full border bg-secondary text-secondary-foreground shadow-lg transition-transform hover:scale-105"
+            className="relative z-10 flex size-12 cursor-pointer items-center justify-center rounded-full bg-secondary text-secondary-foreground shadow-lg transition-transform hover:scale-105"
           >
             <Plus
               className={cn("size-6 transition-transform duration-200", menuOpen && "rotate-45")}

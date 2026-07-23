@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
+import type { PlaidLinkError, PlaidLinkOnExitMetadata } from "react-plaid-link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Landmark } from "lucide-react";
@@ -51,11 +52,12 @@ export function ConnectBankButton() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ publicToken }),
         });
-        if (!res.ok) throw new Error("Exchange failed");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Couldn't finish connecting your bank");
         toast.success("Bank connected");
         router.refresh();
-      } catch {
-        toast.error("Couldn't finish connecting your bank");
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Couldn't finish connecting your bank");
       } finally {
         setConnecting(false);
       }
@@ -63,9 +65,22 @@ export function ConnectBankButton() {
     [router]
   );
 
+  // Without this, Link closing for any reason other than success (a Plaid
+  // API error mid-flow, the token expiring, the user backing out) is
+  // completely silent — the modal just disappears with no feedback at all.
+  const onExit = useCallback((error: PlaidLinkError | null, metadata: PlaidLinkOnExitMetadata) => {
+    if (error) {
+      console.error("Plaid Link exited with error:", error, metadata);
+      toast.error(error.display_message || error.error_message || "Bank connection failed");
+    } else {
+      console.log("Plaid Link exited:", metadata.status, metadata);
+    }
+  }, []);
+
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess,
+    onExit,
     ...(isOAuthReturn ? { receivedRedirectUri: window.location.href } : {}),
   });
 

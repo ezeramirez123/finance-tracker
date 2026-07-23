@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { CountryCode, Products } from "plaid";
 
 import { auth } from "@/lib/auth";
-import { plaidClient } from "@/lib/plaid";
+import { getPlaidErrorDetails, plaidClient } from "@/lib/plaid";
 
 export async function POST() {
   const session = await auth();
@@ -27,14 +27,7 @@ export async function POST() {
 
     return NextResponse.json({ linkToken: resp.data.link_token });
   } catch (err) {
-    const plaidError =
-      typeof err === "object" && err !== null && "response" in err
-        ? (
-            err as {
-              response?: { data?: { error_code?: string; error_message?: string } };
-            }
-          ).response?.data
-        : undefined;
+    const plaidError = getPlaidErrorDetails(err);
     console.error("Plaid linkTokenCreate failed:", plaidError ?? err);
     return NextResponse.json(
       { error: plaidError?.error_message ?? "Couldn't create a Plaid link token" },

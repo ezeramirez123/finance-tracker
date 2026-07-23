@@ -5,9 +5,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
-import { createAccount, updateAccount } from "@/lib/actions/accounts";
+import { createAccount, deleteAccount, updateAccount } from "@/lib/actions/accounts";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 import {
@@ -79,6 +79,8 @@ export function AccountDialog({
   const open = openProp ?? internalOpen;
   const setOpen = onOpenChangeProp ?? setInternalOpen;
   const isEdit = !!account;
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const form = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
@@ -119,8 +121,27 @@ export function AccountDialog({
     }
   }
 
+  async function handleDelete() {
+    if (!account) return;
+    setDeleting(true);
+    try {
+      await deleteAccount(account.id);
+      toast.success("Account deleted");
+      setOpen(false);
+    } catch {
+      toast.error("Couldn't delete account");
+      setDeleting(false);
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setConfirmDelete(false);
+        setOpen(next);
+      }}
+    >
       {trigger !== null && (
         <DialogTrigger asChild>
           {trigger ?? (
@@ -236,7 +257,29 @@ export function AccountDialog({
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className={isEdit ? "sm:justify-between" : undefined}>
+            {isEdit &&
+              (confirmDelete ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleting}
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="size-4" />
+                  Confirm delete
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </Button>
+              ))}
             <Button type="submit" disabled={form.formState.isSubmitting}>
               {isEdit ? "Save changes" : "Create account"}
             </Button>

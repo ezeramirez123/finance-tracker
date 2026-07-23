@@ -2,7 +2,15 @@
 
 import { useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
-import { Area, AreaChart, Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  ReferenceDot,
+  ResponsiveContainer,
+  XAxis,
+} from "recharts";
 import { format, parseISO } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
@@ -176,6 +184,17 @@ export function NetWorthSparkline({
                 dot={false}
                 activeDot={false}
               />
+              {scrub && scrubPoint && (
+                <ReferenceDot
+                  x={scrubPoint.date}
+                  y={scrubPoint.netWorth}
+                  r={4}
+                  fill={color}
+                  stroke="var(--card)"
+                  strokeWidth={2}
+                  ifOverflow="visible"
+                />
+              )}
             </AreaChart>
           )}
         </ResponsiveContainer>

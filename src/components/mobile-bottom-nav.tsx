@@ -27,9 +27,9 @@ const RIGHT_ITEMS = [
 ] as const;
 
 const KIND_OPTIONS = [
-  { kind: "income", label: "Income", icon: TrendingUp, colorClass: "bg-chart-good" },
-  { kind: "expense", label: "Expense", icon: TrendingDown, colorClass: "bg-chart-critical" },
-  { kind: "transfer", label: "Transfer", icon: ArrowLeftRight, colorClass: "bg-chart-1" },
+  { kind: "income", label: "Income", icon: TrendingUp, colorClass: "bg-emerald-500", x: -52, y: -84 },
+  { kind: "expense", label: "Expense", icon: TrendingDown, colorClass: "bg-rose-500", x: 52, y: -84 },
+  { kind: "transfer", label: "Transfer", icon: ArrowLeftRight, colorClass: "bg-blue-500", x: 0, y: -148 },
 ] as const;
 
 type Account = { id: string; name: string; icon: string; currency: string };
@@ -87,7 +87,7 @@ export function MobileBottomNav({
         ))}
 
         <div className="relative flex flex-1 justify-center">
-          <div className="pointer-events-none absolute bottom-full mb-3 flex flex-col items-center gap-3">
+          <div className="pointer-events-none absolute bottom-1/2 left-1/2">
             {KIND_OPTIONS.map((opt, i) => {
               const Icon = opt.icon;
               return (
@@ -100,18 +100,18 @@ export function MobileBottomNav({
                     setDialogKind(opt.kind);
                   }}
                   className={cn(
-                    "pointer-events-auto flex items-center gap-2 rounded-full py-2 pr-4 pl-2 text-sm font-medium text-white shadow-lg transition-all duration-200 ease-out",
+                    "pointer-events-auto absolute top-0 left-0 flex size-12 items-center justify-center rounded-full text-white shadow-lg transition-all duration-200 ease-out",
                     opt.colorClass,
-                    menuOpen
-                      ? "translate-y-0 scale-100 opacity-100"
-                      : "pointer-events-none translate-y-3 scale-75 opacity-0"
+                    menuOpen ? "scale-100 opacity-100" : "pointer-events-none scale-50 opacity-0"
                   )}
-                  style={{ transitionDelay: menuOpen ? `${(2 - i) * 40}ms` : "0ms" }}
+                  style={{
+                    transform: menuOpen
+                      ? `translate(calc(-50% + ${opt.x}px), calc(-50% + ${opt.y}px))`
+                      : "translate(-50%, -50%)",
+                    transitionDelay: menuOpen ? `${(2 - i) * 40}ms` : "0ms",
+                  }}
                 >
-                  <span className="flex size-7 items-center justify-center rounded-full bg-white/20">
-                    <Icon className="size-4" />
-                  </span>
-                  {opt.label}
+                  <Icon className="size-5" />
                 </button>
               );
             })}

@@ -49,7 +49,11 @@ export default async function ProfilePage() {
       </Link>
 
       <form action={signOutAction}>
-        <Button type="submit" variant="outline" className="w-full sm:w-auto">
+        <Button
+          type="submit"
+          variant="outline"
+          className="w-full text-destructive hover:text-destructive sm:w-auto"
+        >
           <LogOut className="size-4" />
           Sign out
         </Button>

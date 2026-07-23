@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getAccountBalanceHistorySeries, getNetWorth } from "@/lib/dashboard-data";
+import { getDateRange, type Period } from "@/lib/period";
+import { getEarliestTransactionDate, getTotalBalance, getTotalBalanceHistory } from "@/lib/dashboard-data";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -13,10 +14,6 @@ import {
 } from "@/components/ui/table";
 import { AccountDialog } from "@/components/accounts/account-dialog";
 import { AccountRow } from "@/components/accounts/account-row";
-import {
-  AccountRowActions,
-  IncludeInNetWorthToggle,
-} from "@/components/accounts/account-actions";
 import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
 import { AccountsOverviewCard } from "@/components/accounts/accounts-overview-card";
@@ -32,37 +29,46 @@ const TYPE_LABELS: Record<string, string> = {
   investment: "Investment",
 };
 
-const HISTORY_PERIOD_DAYS: Record<string, number> = {
-  week: 7,
-  month: 30,
-  year: 365,
-};
+// Values match the shared `Period` type so a period selected on the Dashboard
+// (or any other page) survives a cross-page link unchanged.
+const PRESET_PERIODS = ["today", "week", "month", "year"] as const;
 
 export default async function AccountsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ historyPeriod?: string }>;
+  searchParams: Promise<{ period?: string; from?: string; to?: string }>;
 }) {
   const params = await searchParams;
   const session = await auth();
   const userId = session!.user.id;
 
-  const persisted = params.historyPeriod
-    ? null
-    : await readPersistedPeriod("accounts-history");
-  const effectiveHistoryPeriod = params.historyPeriod ?? persisted?.period;
-  const historyPeriod =
-    effectiveHistoryPeriod && effectiveHistoryPeriod in HISTORY_PERIOD_DAYS
-      ? effectiveHistoryPeriod
-      : "month";
+  const persisted = params.period ? null : await readPersistedPeriod("accounts");
+  const effectivePeriod = params.period ?? persisted?.period;
+  const effectiveFrom = params.from ?? persisted?.from;
+  const effectiveTo = params.to ?? persisted?.to;
 
-  const [accounts, balanceHistory, netWorth] = await Promise.all([
+  const isCustom = effectivePeriod === "custom" && !!effectiveFrom && !!effectiveTo;
+  const isAll = effectivePeriod === "all";
+  const tab =
+    !isCustom &&
+    !isAll &&
+    PRESET_PERIODS.includes(effectivePeriod as (typeof PRESET_PERIODS)[number])
+      ? (effectivePeriod as (typeof PRESET_PERIODS)[number])
+      : "month";
+  const period: Period = isCustom ? "custom" : isAll ? "all" : tab;
+
+  const earliestTransactionDate = isAll ? await getEarliestTransactionDate(userId) : null;
+  const range = isCustom
+    ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
+    : getDateRange(period, undefined, earliestTransactionDate ?? undefined);
+
+  const [accounts, totalBalance, totalBalanceHistory] = await Promise.all([
     db.financialAccount.findMany({
       where: { userId },
       orderBy: { createdAt: "asc" },
     }),
-    getAccountBalanceHistorySeries(userId, HISTORY_PERIOD_DAYS[historyPeriod]),
-    getNetWorth(userId),
+    getTotalBalance(userId),
+    getTotalBalanceHistory(userId, range),
   ]);
 
   return (
@@ -77,10 +83,11 @@ export default async function AccountsPage({
       </div>
 
       <AccountsOverviewCard
-        netWorth={netWorth}
-        accounts={balanceHistory.accounts}
-        series={balanceHistory.series}
-        period={historyPeriod}
+        totalBalance={totalBalance}
+        totalBalanceHistory={totalBalanceHistory}
+        period={period}
+        from={effectiveFrom}
+        to={effectiveTo}
       />
 
       {accounts.length === 0 ? (
@@ -98,8 +105,6 @@ export default async function AccountsPage({
                 <TableHead>Type</TableHead>
                 <TableHead>Currency</TableHead>
                 <TableHead className="text-right">Balance</TableHead>
-                <TableHead className="text-center">Net worth</TableHead>
-                <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -131,22 +136,6 @@ export default async function AccountsPage({
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatMoney(Number(account.currentBalance), account.currency)}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <IncludeInNetWorthToggle
-                      account={{
-                        ...account,
-                        currentBalance: Number(account.currentBalance),
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <AccountRowActions
-                      account={{
-                        ...account,
-                        currentBalance: Number(account.currentBalance),
-                      }}
-                    />
                   </TableCell>
                 </AccountRow>
               ))}

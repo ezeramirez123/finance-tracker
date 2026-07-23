@@ -98,13 +98,13 @@ export default async function AccountsPage({
         </Card>
       ) : (
         <Card className="py-0">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Currency</TableHead>
-                <TableHead className="text-right">Balance</TableHead>
+                <TableHead className="w-24">Type</TableHead>
+                <TableHead className="w-12">Currency</TableHead>
+                <TableHead className="w-28 text-right">Balance</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -113,27 +113,26 @@ export default async function AccountsPage({
                   key={account.id}
                   account={{ ...account, currentBalance: Number(account.currentBalance) }}
                 >
-                  <TableCell className="max-w-[280px] font-medium">
+                  <TableCell className="font-medium">
                     <div className="flex min-w-0 items-center gap-2">
                       <span
                         className="size-2 shrink-0 rounded-full"
                         style={{ backgroundColor: account.color }}
                       />
-                      <span className="shrink-0 text-base">{account.icon}</span>
                       <span className="truncate">{account.name}</span>
                       {account.isConnected && (
-                        <Badge variant="outline" className="shrink-0 text-xs">
+                        <Badge variant="outline" className="hidden shrink-0 text-xs sm:inline-flex">
                           Connected
                         </Badge>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{TYPE_LABELS[account.type]}</Badge>
+                  <TableCell className="overflow-hidden">
+                    <Badge variant="secondary" className="block max-w-full overflow-hidden">
+                      <span className="block truncate">{TYPE_LABELS[account.type]}</span>
+                    </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {account.currency}
-                  </TableCell>
+                  <TableCell className="text-muted-foreground">{account.currency}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatMoney(Number(account.currentBalance), account.currency)}
                   </TableCell>

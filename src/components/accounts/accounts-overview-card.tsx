@@ -50,6 +50,8 @@ export function AccountsOverviewCard({
           <NetWorthSparkline
             data={totalBalanceHistory.map((d) => ({ date: d.date, netWorth: d.total }))}
             size="lg"
+            showLabels={false}
+            showXAxis={false}
             onScrub={setScrubbed}
           />
         </div>

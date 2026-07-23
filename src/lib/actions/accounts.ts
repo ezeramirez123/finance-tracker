@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { plaidClient } from "@/lib/plaid";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 
 const accountSchema = z.object({
@@ -56,9 +57,37 @@ export async function updateAccount(
 export async function deleteAccount(id: string) {
   const userId = await requireUserId();
 
+  const account = await db.financialAccount.findUnique({
+    where: { id, userId },
+    select: { plaidItemId: true },
+  });
+
   await db.financialAccount.delete({
     where: { id, userId },
   });
+
+  // If this was the last account under its Plaid item, revoke access with
+  // Plaid too — otherwise the Item (and its production billing) lives on
+  // indefinitely with no local trace a user ever "disconnected" it.
+  if (account?.plaidItemId) {
+    const remaining = await db.financialAccount.count({
+      where: { plaidItemId: account.plaidItemId },
+    });
+    if (remaining === 0) {
+      const plaidItem = await db.plaidItem.findUnique({
+        where: { id: account.plaidItemId },
+      });
+      if (plaidItem) {
+        try {
+          await plaidClient.itemRemove({ access_token: plaidItem.accessToken });
+        } catch {
+          // Item may already be invalid/revoked on Plaid's side — still
+          // clean up our local record so it doesn't linger either.
+        }
+        await db.plaidItem.delete({ where: { id: plaidItem.id } });
+      }
+    }
+  }
 
   revalidatePath("/accounts");
   revalidatePath("/dashboard");

@@ -8,20 +8,38 @@ import { Landmark } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
+const LINK_TOKEN_STORAGE_KEY = "plaid_link_token";
+
 export function ConnectBankButton() {
   const router = useRouter();
-  const [linkToken, setLinkToken] = useState<string | null>(null);
   const [connecting, setConnecting] = useState(false);
+  // OAuth institutions (Chase, BofA, Wells Fargo, etc.) send the browser away
+  // to the bank's site and back to this same page with `oauth_state_id` in
+  // the URL — Link must be resumed with the exact token issued before that
+  // redirect, not a freshly-fetched one.
+  const [isOAuthReturn] = useState(
+    () => typeof window !== "undefined" && window.location.search.includes("oauth_state_id=")
+  );
+  const [linkToken, setLinkToken] = useState<string | null>(() =>
+    isOAuthReturn && typeof window !== "undefined"
+      ? sessionStorage.getItem(LINK_TOKEN_STORAGE_KEY)
+      : null
+  );
 
   useEffect(() => {
+    if (isOAuthReturn) return;
     fetch("/api/plaid/link-token", { method: "POST" })
       .then((res) => res.json())
-      .then((data) => setLinkToken(data.linkToken))
+      .then((data) => {
+        sessionStorage.setItem(LINK_TOKEN_STORAGE_KEY, data.linkToken);
+        setLinkToken(data.linkToken);
+      })
       .catch(() => toast.error("Couldn't reach Plaid"));
-  }, []);
+  }, [isOAuthReturn]);
 
   const onSuccess = useCallback(
     async (publicToken: string) => {
+      sessionStorage.removeItem(LINK_TOKEN_STORAGE_KEY);
       setConnecting(true);
       try {
         const res = await fetch("/api/plaid/exchange-token", {
@@ -44,7 +62,18 @@ export function ConnectBankButton() {
   const { open, ready } = usePlaidLink({
     token: linkToken,
     onSuccess,
+    ...(isOAuthReturn ? { receivedRedirectUri: window.location.href } : {}),
   });
+
+  // The user already clicked "Connect bank" before being sent to their
+  // bank's OAuth page, so resume automatically once Link is ready instead
+  // of waiting for a second click.
+  useEffect(() => {
+    if (isOAuthReturn && ready) {
+      window.history.replaceState(null, "", window.location.pathname);
+      open();
+    }
+  }, [isOAuthReturn, ready, open]);
 
   return (
     <Button

@@ -16,6 +16,12 @@ export async function POST() {
     products: [Products.Transactions],
     country_codes: [CountryCode.Us],
     language: "en",
+    // Required for OAuth institutions (Chase, BofA, Wells Fargo, etc.) —
+    // without it Link fails when a user picks one of these in production.
+    // Must exactly match a URI registered in the Plaid dashboard.
+    ...(process.env.PLAID_REDIRECT_URI
+      ? { redirect_uri: process.env.PLAID_REDIRECT_URI }
+      : {}),
   });
 
   return NextResponse.json({ linkToken: resp.data.link_token });

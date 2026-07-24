@@ -182,33 +182,6 @@ export function AccountDialog({
             )}
           </div>
 
-          <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
-            <CollapsibleTrigger className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-              <ChevronDown
-                className={cn("size-3.5 transition-transform", appearanceOpen && "rotate-180")}
-              />
-              Icon & color
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-1.5">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label>Icon</Label>
-                  <IconPicker
-                    value={form.watch("icon")}
-                    onChange={(icon) => form.setValue("icon", icon)}
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label>Color</Label>
-                  <ColorPicker
-                    value={form.watch("color")}
-                    onChange={(color) => form.setValue("color", color)}
-                  />
-                </div>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label>Type</Label>
@@ -260,6 +233,33 @@ export function AccountDialog({
               onChange={(v) => form.setValue("currentBalance", v)}
             />
           </div>
+
+          <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+              <ChevronDown
+                className={cn("size-3.5 transition-transform", appearanceOpen && "rotate-180")}
+              />
+              Icon & color
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-1.5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label>Icon</Label>
+                  <IconPicker
+                    value={form.watch("icon")}
+                    onChange={(icon) => form.setValue("icon", icon)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Color</Label>
+                  <ColorPicker
+                    value={form.watch("color")}
+                    onChange={(color) => form.setValue("color", color)}
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
             <div>

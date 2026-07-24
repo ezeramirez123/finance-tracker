@@ -7,21 +7,13 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getDateRange, type Period } from "@/lib/period";
 import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 import { TransactionRow } from "@/components/transactions/transaction-row";
-import { TransactionRowActions } from "@/components/transactions/transaction-row-actions";
 import { CategoryCombobox } from "@/components/transactions/category-combobox";
 import { CsvImportDialog } from "@/components/transactions/csv-import-dialog";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { formatMoney, formatUsd } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const SORT_OPTIONS = ["date-desc", "date-asc", "amount-desc", "amount-asc"] as const;
 type Sort = (typeof SORT_OPTIONS)[number];
@@ -142,111 +134,92 @@ export default async function TransactionsPage({
           </p>
         </Card>
       ) : (
-        <Card className="py-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <Link
-                    href={sortHref("date")}
-                    className="flex items-center gap-1 hover:text-foreground"
-                  >
-                    Date
-                    {sortIcon("date")}
-                  </Link>
-                </TableHead>
-                <TableHead>Merchant</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Account</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-right">
-                  <Link
-                    href={sortHref("amount")}
-                    className="flex items-center justify-end gap-1 hover:text-foreground"
-                  >
-                    USD
-                    {sortIcon("amount")}
-                  </Link>
-                </TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {transactions.map((t) => (
-                <TransactionRow
-                  key={t.id}
-                  transaction={{
-                    id: t.id,
-                    accountId: t.accountId,
-                    categoryId: t.categoryId,
-                    kind: t.kind,
-                    originalAmount: Number(t.originalAmount),
-                    originalCurrency: t.originalCurrency,
-                    merchant: t.merchant,
-                    date: t.date,
-                    notes: t.notes,
-                  }}
-                  accounts={accounts}
-                  categories={categories}
-                >
-                  <TableCell className="text-muted-foreground">
+        <Card className="mx-auto w-full max-w-2xl py-0">
+          <div className="flex items-center gap-3 border-b px-5 py-3 text-xs text-muted-foreground">
+            <Link href={sortHref("date")} className="flex items-center gap-1 hover:text-foreground">
+              Date
+              {sortIcon("date")}
+            </Link>
+            <Link
+              href={sortHref("amount")}
+              className="flex items-center gap-1 hover:text-foreground"
+            >
+              Amount
+              {sortIcon("amount")}
+            </Link>
+          </div>
+          <div className="flex min-w-0 flex-col">
+            {transactions.map((t) => (
+              <TransactionRow
+                key={t.id}
+                transaction={{
+                  id: t.id,
+                  accountId: t.accountId,
+                  categoryId: t.categoryId,
+                  kind: t.kind,
+                  originalAmount: Number(t.originalAmount),
+                  originalCurrency: t.originalCurrency,
+                  merchant: t.merchant,
+                  date: t.date,
+                  notes: t.notes,
+                }}
+                accounts={accounts}
+                categories={categories}
+              >
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <span className="text-xs text-muted-foreground">
                     {t.date.toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                       year: "numeric",
                     })}
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate font-medium">
+                  </span>
+                </div>
+
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <span className="min-w-0 truncate font-medium">
                     {t.merchant || <span className="text-muted-foreground">—</span>}
-                  </TableCell>
-                  <TableCell>
+                  </span>
+                  <span
+                    className={cn(
+                      "shrink-0 text-sm font-medium tabular-nums",
+                      t.kind === "income"
+                        ? "text-chart-good"
+                        : t.kind === "expense"
+                          ? "text-chart-critical"
+                          : "text-chart-1"
+                    )}
+                  >
+                    {t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
+                      ? "+"
+                      : "-"}
+                    {formatMoney(Number(t.originalAmount), t.originalCurrency)}
+                  </span>
+                </div>
+
+                <div className="flex min-w-0 items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
                     <CategoryCombobox
                       transactionId={t.id}
                       categoryId={t.categoryId}
                       categories={categories}
                       kind={t.kind}
                     />
-                  </TableCell>
-                  <TableCell className="max-w-[180px] truncate text-muted-foreground">
-                    <span className="mr-1.5">{t.account.icon}</span>
-                    {t.account.name}
-                  </TableCell>
-                  <TableCell
-                    className={`text-right tabular-nums ${
-                      t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
-                        ? "text-emerald-500"
-                        : ""
-                    }`}
-                  >
-                    {t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
-                      ? "+"
-                      : "-"}
-                    {formatMoney(Number(t.originalAmount), t.originalCurrency)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {formatUsd(Number(t.usdEquivalent))}
-                  </TableCell>
-                  <TableCell>
-                    <TransactionRowActions
-                      transaction={{
-                        id: t.id,
-                        accountId: t.accountId,
-                        categoryId: t.categoryId,
-                        kind: t.kind,
-                        originalAmount: Number(t.originalAmount),
-                        originalCurrency: t.originalCurrency,
-                        merchant: t.merchant,
-                        date: t.date,
-                        notes: t.notes,
-                      }}
-                      accounts={accounts}
-                      categories={categories}
-                    />
-                  </TableCell>
-                </TransactionRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <span className="flex min-w-0 items-center gap-1.5 truncate">
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: t.account.color }}
+                      />
+                      {t.account.name}
+                    </span>
+                  </div>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    ≈ {formatUsd(Number(t.usdEquivalent))}
+                  </span>
+                </div>
+              </TransactionRow>
+            ))}
+          </div>
         </Card>
       )}
     </div>

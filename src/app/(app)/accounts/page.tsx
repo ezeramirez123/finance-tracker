@@ -107,7 +107,7 @@ export default async function AccountsPage({
           </p>
         </Card>
       ) : (
-        <Card className="py-0">
+        <Card className="overflow-hidden py-0">
           <Table className="table-fixed" hideScrollHint>
             <TableHeader>
               <TableRow>

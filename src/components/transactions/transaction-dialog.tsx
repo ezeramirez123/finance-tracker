@@ -6,9 +6,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { ChevronDown, Plus } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 
-import { createTransaction, updateTransaction, createTransfer } from "@/lib/actions/transactions";
+import {
+  createTransaction,
+  updateTransaction,
+  createTransfer,
+  deleteTransaction,
+} from "@/lib/actions/transactions";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -101,6 +106,8 @@ export function TransactionDialog({
   const setOpen = onOpenChangeProp ?? setInternalOpen;
   const isEdit = !!transaction;
   const [notesOpen, setNotesOpen] = React.useState(!!transaction?.notes);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
 
   const form = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
@@ -180,8 +187,27 @@ export function TransactionDialog({
     }
   }
 
+  async function handleDelete() {
+    if (!transaction) return;
+    setDeleting(true);
+    try {
+      await deleteTransaction(transaction.id);
+      toast.success("Transaction deleted");
+      setOpen(false);
+    } catch {
+      toast.error("Couldn't delete transaction");
+      setDeleting(false);
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setConfirmDelete(false);
+        setOpen(next);
+      }}
+    >
       {trigger !== null && (
         <DialogTrigger asChild>
           {trigger ?? (
@@ -412,7 +438,29 @@ export function TransactionDialog({
             </CollapsibleContent>
           </Collapsible>
 
-          <DialogFooter>
+          <DialogFooter className={isEdit ? "sm:justify-between" : undefined}>
+            {isEdit &&
+              (confirmDelete ? (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={deleting}
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="size-4" />
+                  Confirm delete
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="size-4" />
+                  Delete
+                </Button>
+              ))}
             <Button type="submit" disabled={form.formState.isSubmitting}>
               {isEdit ? "Save changes" : isTransfer ? "Add transfer" : "Add transaction"}
             </Button>

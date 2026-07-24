@@ -150,31 +150,31 @@ export function CategoryPieBreakdown({
                   key={cat.id}
                   href={hrefFor(cat.id)}
                   scroll={false}
-                  className="-mx-2 flex items-center justify-between gap-2 rounded-md px-2 py-3 text-sm transition-colors hover:bg-accent/50 active:bg-accent"
+                  className="-mx-2 flex flex-col gap-1.5 rounded-md px-2 py-3 text-sm transition-colors hover:bg-accent/50 active:bg-accent"
                 >
-                  <span className="flex items-center gap-2 truncate">
-                    <span
-                      className="size-2 shrink-0 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                    />
-                    <span className="truncate">{cat.name}</span>
-                  </span>
-                  <span className="flex shrink-0 flex-col items-end gap-1">
-                    <span className="font-medium tabular-nums">{formatHome(cat.total)}</span>
-                    <span className="flex items-center gap-1.5">
-                      <span className="h-1 w-8 overflow-hidden rounded-full bg-muted">
-                        <span
-                          className="block h-full rounded-full"
-                          style={{
-                            width: `${Math.min((cat.total / totalSum) * 100, 100)}%`,
-                            backgroundColor: cat.color,
-                          }}
-                        />
-                      </span>
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="flex min-w-0 items-center gap-2 truncate">
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ backgroundColor: cat.color }}
+                      />
+                      <span className="truncate">{cat.name}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="font-medium tabular-nums">{formatHome(cat.total)}</span>
                       <span className="text-xs tabular-nums text-muted-foreground">
                         {((cat.total / totalSum) * 100).toFixed(0)}%
                       </span>
                     </span>
+                  </span>
+                  <span className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <span
+                      className="block h-full rounded-full"
+                      style={{
+                        width: `${Math.min((cat.total / totalSum) * 100, 100)}%`,
+                        backgroundColor: cat.color,
+                      }}
+                    />
                   </span>
                 </Link>
               ))}

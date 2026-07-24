@@ -33,7 +33,7 @@ export default async function RatesPage() {
         </p>
       </div>
 
-      <Card className="py-0">
+      <Card className="overflow-hidden py-0">
         <Table hideScrollHint>
           <TableHeader>
             <TableRow>

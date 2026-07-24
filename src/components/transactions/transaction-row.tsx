@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 
 type Account = { id: string; name: string; icon: string; currency: string };
@@ -49,12 +49,15 @@ export function TransactionRow({
 
   return (
     <>
-      <TableRow
-        className={canEdit ? "cursor-pointer" : ""}
+      <div
+        className={cn(
+          "flex min-w-0 flex-col gap-1.5 border-b px-5 py-3 last:border-b-0",
+          canEdit && "cursor-pointer transition-colors hover:bg-accent/50 active:bg-accent"
+        )}
         onClick={canEdit ? () => setOpen(true) : undefined}
       >
         {children}
-      </TableRow>
+      </div>
       {canEdit && (
         <TransactionDialog
           accounts={accounts}

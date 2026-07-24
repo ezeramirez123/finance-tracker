@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { AccountDialog } from "@/components/accounts/account-dialog";
 import { AccountRow } from "@/components/accounts/account-row";
+import { AccountReorderButtons } from "@/components/accounts/account-reorder-buttons";
 import { ConnectBankButton } from "@/components/accounts/connect-bank-button";
 import { SyncTransactionsButton } from "@/components/accounts/sync-transactions-button";
 import { AccountsOverviewCard } from "@/components/accounts/accounts-overview-card";
@@ -66,7 +67,7 @@ export default async function AccountsPage({
   const [accounts, totalBalance, totalBalanceHistory] = await Promise.all([
     db.financialAccount.findMany({
       where: { userId },
-      orderBy: { createdAt: "asc" },
+      orderBy: { sortOrder: "asc" },
     }),
     getTotalBalance(userId),
     getTotalBalanceHistory(userId, range),
@@ -118,13 +119,18 @@ export default async function AccountsPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {accounts.map((account) => (
+              {accounts.map((account, index) => (
                 <AccountRow
                   key={account.id}
                   account={{ ...account, currentBalance: Number(account.currentBalance) }}
                 >
                   <TableCell className="font-medium">
                     <div className="flex min-w-0 items-center gap-2">
+                      <AccountReorderButtons
+                        accountId={account.id}
+                        isFirst={index === 0}
+                        isLast={index === accounts.length - 1}
+                      />
                       <span
                         className="size-2 shrink-0 rounded-full"
                         style={{ backgroundColor: account.color }}

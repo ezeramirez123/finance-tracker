@@ -118,6 +118,7 @@ model FinancialAccount {
   currentBalance    Decimal     @default(0) @db.Decimal(18, 4)
   includeInNetWorth Boolean     @default(true)
   isConnected       Boolean     @default(false)
+  sortOrder         Int         @default(0)
   plaidItemId       String?
   plaidAccountId    String?     @unique
   createdAt         DateTime    @default(now())

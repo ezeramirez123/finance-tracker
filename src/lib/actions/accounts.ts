@@ -30,8 +30,14 @@ export async function createAccount(input: z.infer<typeof accountSchema>) {
   const userId = await requireUserId();
   const data = accountSchema.parse(input);
 
+  const last = await db.financialAccount.findFirst({
+    where: { userId },
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
+
   await db.financialAccount.create({
-    data: { ...data, userId },
+    data: { ...data, userId, sortOrder: (last?.sortOrder ?? -1) + 1 },
   });
 
   revalidatePath("/accounts");
@@ -88,6 +94,40 @@ export async function deleteAccount(id: string) {
       }
     }
   }
+
+  revalidatePath("/accounts");
+  revalidatePath("/dashboard");
+}
+
+/** Swaps an account's position with its neighbor in display order. */
+export async function moveAccount(id: string, direction: "up" | "down") {
+  const userId = await requireUserId();
+
+  const accounts = await db.financialAccount.findMany({
+    where: { userId },
+    orderBy: { sortOrder: "asc" },
+    select: { id: true, sortOrder: true },
+  });
+
+  const index = accounts.findIndex((a) => a.id === id);
+  if (index === -1) return;
+
+  const neighborIndex = direction === "up" ? index - 1 : index + 1;
+  if (neighborIndex < 0 || neighborIndex >= accounts.length) return;
+
+  const current = accounts[index];
+  const neighbor = accounts[neighborIndex];
+
+  await db.$transaction([
+    db.financialAccount.update({
+      where: { id: current.id, userId },
+      data: { sortOrder: neighbor.sortOrder },
+    }),
+    db.financialAccount.update({
+      where: { id: neighbor.id, userId },
+      data: { sortOrder: current.sortOrder },
+    }),
+  ]);
 
   revalidatePath("/accounts");
   revalidatePath("/dashboard");

@@ -113,9 +113,8 @@ export default async function AccountsPage({
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead className="hidden w-24 sm:table-cell">Type</TableHead>
-                <TableHead className="w-12">Currency</TableHead>
-                <TableHead className="w-24 text-right">Balance</TableHead>
-                <TableHead className="w-24 text-right">USD</TableHead>
+                <TableHead className="w-28 text-right">Balance</TableHead>
+                <TableHead className="w-28 text-right">USD</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -143,7 +142,6 @@ export default async function AccountsPage({
                       <span className="block truncate">{TYPE_LABELS[account.type]}</span>
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{account.currency}</TableCell>
                   <TableCell className="text-right tabular-nums">
                     {formatMoney(Number(account.currentBalance), account.currency)}
                   </TableCell>

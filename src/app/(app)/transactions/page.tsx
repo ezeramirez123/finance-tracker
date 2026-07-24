@@ -9,7 +9,6 @@ import { getDateRange, type Period } from "@/lib/period";
 import { Card } from "@/components/ui/card";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 import { TransactionRow } from "@/components/transactions/transaction-row";
-import { CategoryCombobox } from "@/components/transactions/category-combobox";
 import { CsvImportDialog } from "@/components/transactions/csv-import-dialog";
 import { TransactionFilters } from "@/components/transactions/transaction-filters";
 import { formatMoney, formatUsd } from "@/lib/format";
@@ -149,76 +148,76 @@ export default async function TransactionsPage({
             </Link>
           </div>
           <div className="flex min-w-0 flex-col">
-            {transactions.map((t) => (
-              <TransactionRow
-                key={t.id}
-                transaction={{
-                  id: t.id,
-                  accountId: t.accountId,
-                  categoryId: t.categoryId,
-                  kind: t.kind,
-                  originalAmount: Number(t.originalAmount),
-                  originalCurrency: t.originalCurrency,
-                  merchant: t.merchant,
-                  date: t.date,
-                  notes: t.notes,
-                }}
-                accounts={accounts}
-                categories={categories}
-              >
-                <div className="flex min-w-0 items-center justify-between gap-2">
-                  <span className="text-xs text-muted-foreground">
-                    {t.date.toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                </div>
-
-                <div className="flex min-w-0 items-center justify-between gap-2">
-                  <span className="min-w-0 truncate font-medium">
-                    {t.merchant || <span className="text-muted-foreground">—</span>}
-                  </span>
-                  <span
-                    className={cn(
-                      "shrink-0 text-sm font-medium tabular-nums",
-                      t.kind === "income"
-                        ? "text-chart-good"
-                        : t.kind === "expense"
-                          ? "text-chart-critical"
-                          : "text-chart-1"
-                    )}
-                  >
-                    {t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
-                      ? "+"
-                      : "-"}
-                    {formatMoney(Number(t.originalAmount), t.originalCurrency)}
-                  </span>
-                </div>
-
-                <div className="flex min-w-0 items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
-                    <CategoryCombobox
-                      transactionId={t.id}
-                      categoryId={t.categoryId}
-                      categories={categories}
-                      kind={t.kind}
-                    />
-                    <span className="flex min-w-0 items-center gap-1.5 truncate">
-                      <span
-                        className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: t.account.color }}
-                      />
-                      {t.account.name}
+            {transactions.map((t) => {
+              const category = categories.find((c) => c.id === t.categoryId);
+              return (
+                <TransactionRow
+                  key={t.id}
+                  transaction={{
+                    id: t.id,
+                    accountId: t.accountId,
+                    categoryId: t.categoryId,
+                    kind: t.kind,
+                    originalAmount: Number(t.originalAmount),
+                    originalCurrency: t.originalCurrency,
+                    merchant: t.merchant,
+                    date: t.date,
+                    notes: t.notes,
+                  }}
+                  accounts={accounts}
+                  categories={categories}
+                >
+                  <div className="flex min-w-0 items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-baseline gap-2">
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {t.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </span>
+                      <span className="min-w-0 truncate font-medium">
+                        {t.merchant || <span className="text-muted-foreground">—</span>}
+                      </span>
+                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 text-sm font-medium tabular-nums",
+                        t.kind === "income"
+                          ? "text-chart-good"
+                          : t.kind === "expense"
+                            ? "text-chart-critical"
+                            : "text-chart-1"
+                      )}
+                    >
+                      {t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
+                        ? "+"
+                        : "-"}
+                      {formatMoney(Number(t.originalAmount), t.originalCurrency)}
                     </span>
                   </div>
-                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                    ≈ {formatUsd(Number(t.usdEquivalent))}
-                  </span>
-                </div>
-              </TransactionRow>
-            ))}
+
+                  <div className="flex min-w-0 items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+                      <span className="flex min-w-0 items-center gap-1.5 truncate">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: category?.color ?? "var(--muted-foreground)" }}
+                        />
+                        {category?.name ?? "Uncategorized"}
+                      </span>
+                      <span className="shrink-0">·</span>
+                      <span className="flex min-w-0 items-center gap-1.5 truncate">
+                        <span
+                          className="size-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: t.account.color }}
+                        />
+                        {t.account.name}
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                      ≈ {formatUsd(Number(t.usdEquivalent))}
+                    </span>
+                  </div>
+                </TransactionRow>
+              );
+            })}
           </div>
         </Card>
       )}

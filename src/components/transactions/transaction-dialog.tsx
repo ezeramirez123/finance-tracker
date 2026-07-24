@@ -192,7 +192,14 @@ export function TransactionDialog({
           )}
         </DialogTrigger>
       )}
-      <DialogContent>
+      <DialogContent
+        className={cn(
+          "border-t-4",
+          kind === "income" && "border-t-emerald-500",
+          kind === "expense" && "border-t-rose-500",
+          kind === "transfer" && "border-t-blue-500"
+        )}
+      >
         <DialogHeader>
           <DialogTitle>{isEdit ? "Edit transaction" : "Add transaction"}</DialogTitle>
         </DialogHeader>

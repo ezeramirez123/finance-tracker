@@ -167,34 +167,17 @@ export default async function TransactionsPage({
                   accounts={accounts}
                   categories={categories}
                 >
-                  <div className="flex min-w-0 items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-baseline gap-2">
-                      <span className="shrink-0 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="flex min-w-0 flex-col">
+                      <span className="text-xs text-muted-foreground">
                         {t.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                       <span className="min-w-0 truncate font-medium">
                         {t.merchant || <span className="text-muted-foreground">—</span>}
                       </span>
                     </div>
-                    <span
-                      className={cn(
-                        "shrink-0 text-sm font-medium tabular-nums",
-                        t.kind === "income"
-                          ? "text-chart-good"
-                          : t.kind === "expense"
-                            ? "text-chart-critical"
-                            : "text-chart-1"
-                      )}
-                    >
-                      {t.kind === "income" || (t.kind === "transfer" && t.transferDirection === "in")
-                        ? "+"
-                        : "-"}
-                      {formatMoney(Number(t.originalAmount), t.originalCurrency)}
-                    </span>
-                  </div>
 
-                  <div className="flex min-w-0 items-center justify-between gap-2">
-                    <div className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex min-w-0 flex-col gap-0.5 text-sm text-muted-foreground">
                       <span className="flex min-w-0 items-center gap-1.5 truncate">
                         <span
                           className="size-2 shrink-0 rounded-full"
@@ -202,7 +185,6 @@ export default async function TransactionsPage({
                         />
                         {category?.name ?? "Uncategorized"}
                       </span>
-                      <span className="shrink-0">·</span>
                       <span className="flex min-w-0 items-center gap-1.5 truncate">
                         <span
                           className="size-2 shrink-0 rounded-full"
@@ -211,9 +193,28 @@ export default async function TransactionsPage({
                         {t.account.name}
                       </span>
                     </div>
-                    <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
-                      ≈ {formatUsd(Number(t.usdEquivalent))}
-                    </span>
+
+                    <div className="flex min-w-0 flex-col items-end">
+                      <span
+                        className={cn(
+                          "text-sm font-medium tabular-nums",
+                          t.kind === "income"
+                            ? "text-chart-good"
+                            : t.kind === "expense"
+                              ? "text-chart-critical"
+                              : "text-chart-1"
+                        )}
+                      >
+                        {t.kind === "income" ||
+                        (t.kind === "transfer" && t.transferDirection === "in")
+                          ? "+"
+                          : "-"}
+                        {formatMoney(Number(t.originalAmount), t.originalCurrency)}
+                      </span>
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        ≈ {formatUsd(Number(t.usdEquivalent))}
+                      </span>
+                    </div>
                   </div>
                 </TransactionRow>
               );

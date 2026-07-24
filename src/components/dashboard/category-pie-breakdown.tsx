@@ -6,7 +6,7 @@ import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatUsd } from "@/lib/format";
+import { useFormatHome } from "@/components/home-currency-provider";
 
 type CategoryTotal = { id: string; name: string; color: string; total: number };
 
@@ -19,6 +19,7 @@ function CustomTooltip({
   active?: boolean;
   payload?: { name: string; value: number; payload: CategoryTotal }[];
 }) {
+  const formatHome = useFormatHome();
   if (!active || !payload?.length) return null;
   const entry = payload[0];
 
@@ -29,7 +30,7 @@ function CustomTooltip({
         <span className="text-popover-foreground">{entry.name}</span>
       </div>
       <p className="mt-1 font-medium tabular-nums text-popover-foreground">
-        {formatUsd(entry.value)}
+        {formatHome(entry.value)}
       </p>
     </div>
   );
@@ -56,6 +57,7 @@ export function CategoryPieBreakdown({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const formatHome = useFormatHome();
   const destination = targetPath ?? pathname;
 
   if (categories.length === 0) return null;
@@ -135,7 +137,7 @@ export function CategoryPieBreakdown({
             </ResponsiveContainer>
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-6 text-center">
               <span className="text-[11px] text-muted-foreground">{centerLabel}</span>
-              <span className="text-base font-semibold tabular-nums">{formatUsd(totalSum)}</span>
+              <span className="text-base font-semibold tabular-nums">{formatHome(totalSum)}</span>
             </div>
           </div>
 
@@ -157,10 +159,21 @@ export function CategoryPieBreakdown({
                     />
                     <span className="truncate">{cat.name}</span>
                   </span>
-                  <span className="flex shrink-0 flex-col items-end">
-                    <span className="font-medium tabular-nums">{formatUsd(cat.total)}</span>
-                    <span className="text-xs tabular-nums text-muted-foreground">
-                      {((cat.total / totalSum) * 100).toFixed(0)}%
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="font-medium tabular-nums">{formatHome(cat.total)}</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="h-1 w-8 overflow-hidden rounded-full bg-muted">
+                        <span
+                          className="block h-full rounded-full"
+                          style={{
+                            width: `${Math.min((cat.total / totalSum) * 100, 100)}%`,
+                            backgroundColor: cat.color,
+                          }}
+                        />
+                      </span>
+                      <span className="text-xs tabular-nums text-muted-foreground">
+                        {((cat.total / totalSum) * 100).toFixed(0)}%
+                      </span>
                     </span>
                   </span>
                 </Link>

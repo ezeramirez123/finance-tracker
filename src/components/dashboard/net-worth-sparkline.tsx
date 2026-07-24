@@ -15,7 +15,7 @@ import { format, parseISO } from "date-fns";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { formatUsd } from "@/lib/format";
+import { useFormatHome } from "@/components/home-currency-provider";
 
 type Point = { date: string; netWorth: number };
 
@@ -66,6 +66,7 @@ export function NetWorthSparkline({
   // Owning the pointer directly avoids both failure modes.
   const [scrub, setScrub] = useState<{ index: number; x: number; width: number } | null>(null);
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const formatHome = useFormatHome();
 
   if (data.length < 2) return null;
 
@@ -140,9 +141,9 @@ export function NetWorthSparkline({
             heightClass
           )}
         >
-          <p>{formatUsd(max)}</p>
-          <p>{formatUsd((max + min) / 2)}</p>
-          <p>{formatUsd(min)}</p>
+          <p>{formatHome(max)}</p>
+          <p>{formatHome((max + min) / 2)}</p>
+          <p>{formatHome(min)}</p>
         </div>
       )}
       <div
@@ -229,7 +230,7 @@ export function NetWorthSparkline({
             >
               <p className="text-muted-foreground">{format(parseISO(scrubPoint.date), dateFormat)}</p>
               <p className="font-medium tabular-nums text-popover-foreground">
-                {formatUsd(scrubPoint.netWorth)}
+                {formatHome(scrubPoint.netWorth)}
               </p>
             </div>
           </>

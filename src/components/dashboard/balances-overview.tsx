@@ -7,8 +7,8 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatUsd } from "@/lib/format";
 import { useHiddenState } from "@/lib/use-hidden-state";
+import { useFormatHome } from "@/components/home-currency-provider";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,7 @@ export function BalancesOverview({
 }) {
   const [hidden, toggle] = useHiddenState("hideTotal");
   const [scrubbed, setScrubbed] = useState<{ date: string; netWorth: number } | null>(null);
+  const formatHome = useFormatHome();
 
   return (
     <Card className="gap-3">
@@ -64,7 +65,7 @@ export function BalancesOverview({
       </Link>
       <Link href="/accounts" className="block px-5 transition-colors hover:text-foreground/90">
         <p className="text-3xl font-semibold tracking-tight">
-          {hidden ? "••••••" : formatUsd(scrubbed ? scrubbed.netWorth : totalBalance)}
+          {hidden ? "••••••" : formatHome(scrubbed ? scrubbed.netWorth : totalBalance)}
         </p>
       </Link>
       {!hidden && totalBalanceHistory && (
@@ -85,7 +86,7 @@ export function BalancesOverview({
         >
           <p className="text-xs text-muted-foreground">Income</p>
           <p className="text-sm font-semibold tabular-nums text-chart-good">
-            {formatUsd(totalIncome)}
+            {formatHome(totalIncome)}
           </p>
         </Link>
         <Link
@@ -95,7 +96,7 @@ export function BalancesOverview({
         >
           <p className="text-xs text-muted-foreground">Expenses</p>
           <p className="text-sm font-semibold tabular-nums text-chart-critical">
-            {formatUsd(totalExpenses)}
+            {formatHome(totalExpenses)}
           </p>
         </Link>
         <Link
@@ -110,7 +111,7 @@ export function BalancesOverview({
               net >= 0 ? "text-chart-good" : "text-chart-critical"
             )}
           >
-            {formatUsd(net)}
+            {formatHome(net)}
           </p>
         </Link>
       </div>

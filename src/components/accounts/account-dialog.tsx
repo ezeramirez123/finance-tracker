@@ -5,10 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { ChevronDown, Plus, Trash2 } from "lucide-react";
 
 import { createAccount, deleteAccount, updateAccount } from "@/lib/actions/accounts";
 import { SUPPORTED_CURRENCIES } from "@/lib/currency";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +19,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -81,6 +87,7 @@ export function AccountDialog({
   const isEdit = !!account;
   const [confirmDelete, setConfirmDelete] = React.useState(false);
   const [deleting, setDeleting] = React.useState(false);
+  const [appearanceOpen, setAppearanceOpen] = React.useState(!isEdit);
 
   const form = useForm<FormInput, unknown, FormValues>({
     resolver: zodResolver(formSchema),
@@ -175,22 +182,32 @@ export function AccountDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1.5">
-              <Label>Icon</Label>
-              <IconPicker
-                value={form.watch("icon")}
-                onChange={(icon) => form.setValue("icon", icon)}
+          <Collapsible open={appearanceOpen} onOpenChange={setAppearanceOpen}>
+            <CollapsibleTrigger className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
+              <ChevronDown
+                className={cn("size-3.5 transition-transform", appearanceOpen && "rotate-180")}
               />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Color</Label>
-              <ColorPicker
-                value={form.watch("color")}
-                onChange={(color) => form.setValue("color", color)}
-              />
-            </div>
-          </div>
+              Icon & color
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-1.5">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <Label>Icon</Label>
+                  <IconPicker
+                    value={form.watch("icon")}
+                    onChange={(icon) => form.setValue("icon", icon)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label>Color</Label>
+                  <ColorPicker
+                    value={form.watch("color")}
+                    onChange={(color) => form.setValue("color", color)}
+                  />
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">

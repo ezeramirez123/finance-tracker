@@ -6,8 +6,8 @@ import { Eye, EyeOff } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatUsd } from "@/lib/format";
 import { useHiddenState } from "@/lib/use-hidden-state";
+import { useFormatHome } from "@/components/home-currency-provider";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 
@@ -26,6 +26,7 @@ export function AccountsOverviewCard({
 }) {
   const [hidden, toggle] = useHiddenState("hideNetWorth");
   const [scrubbed, setScrubbed] = useState<{ date: string; netWorth: number } | null>(null);
+  const formatHome = useFormatHome();
 
   return (
     <Card className="gap-3">
@@ -43,7 +44,7 @@ export function AccountsOverviewCard({
         </Button>
       </div>
       <p className="px-5 text-3xl font-semibold tracking-tight">
-        {hidden ? "••••••" : formatUsd(scrubbed ? scrubbed.netWorth : totalBalance)}
+        {hidden ? "••••••" : formatHome(scrubbed ? scrubbed.netWorth : totalBalance)}
       </p>
       {!hidden && totalBalanceHistory.length > 1 && (
         <div className="px-5">

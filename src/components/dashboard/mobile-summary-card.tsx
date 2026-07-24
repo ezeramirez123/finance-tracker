@@ -9,8 +9,8 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { formatUsd } from "@/lib/format";
 import { useHiddenState } from "@/lib/use-hidden-state";
+import { useFormatHome } from "@/components/home-currency-provider";
 import { NetWorthSparkline } from "@/components/dashboard/net-worth-sparkline";
 import { InlinePeriodSelect } from "@/components/dashboard/inline-period-select";
 
@@ -29,6 +29,7 @@ function Row({
   valueColorClass?: string;
   href?: string;
 }) {
+  const formatHome = useFormatHome();
   const content = (
     <div
       className={cn(
@@ -41,7 +42,7 @@ function Row({
         {label}
       </span>
       <span className={cn("text-sm font-semibold tabular-nums", valueColorClass)}>
-        {formatUsd(value)}
+        {formatHome(value)}
       </span>
     </div>
   );
@@ -78,6 +79,7 @@ export function MobileSummaryCard({
 }) {
   const [hidden, toggle] = useHiddenState("hideNetWorth");
   const [scrubbed, setScrubbed] = useState<{ date: string; netWorth: number } | null>(null);
+  const formatHome = useFormatHome();
 
   return (
     <Card className="gap-3 md:hidden">
@@ -96,7 +98,7 @@ export function MobileSummaryCard({
           </Button>
         </div>
         <p className="text-3xl font-semibold tracking-tight">
-          {hidden ? "••••••" : formatUsd(scrubbed ? scrubbed.netWorth : netWorth)}
+          {hidden ? "••••••" : formatHome(scrubbed ? scrubbed.netWorth : netWorth)}
         </p>
       </div>
       {!hidden && netWorthHistory && (

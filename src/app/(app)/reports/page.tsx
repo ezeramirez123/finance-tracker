@@ -11,7 +11,7 @@ import { TransactionListCard } from "@/components/dashboard/transaction-list-car
 import { CategoryFilterSelect } from "@/components/dashboard/category-filter-select";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { formatUsd } from "@/lib/format";
+import { getHomeCurrencyFormatter } from "@/lib/home-currency";
 import { readPersistedPeriod } from "@/lib/period-cookie";
 
 export default async function ReportsPage({
@@ -32,15 +32,17 @@ export default async function ReportsPage({
     period === "custom" && from && to ? { from: new Date(from), to: new Date(to) } : undefined
   );
 
-  const [summary, largestTransactions, accounts, categories] = await Promise.all([
-    getPeriodSummary(userId, range),
-    getLargestTransactions(userId, range, params.category),
-    db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
-    db.category.findMany({
-      where: { OR: [{ userId }, { userId: null }] },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const [summary, largestTransactions, accounts, categories, { format: formatHome }] =
+    await Promise.all([
+      getPeriodSummary(userId, range),
+      getLargestTransactions(userId, range, params.category),
+      db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+      db.category.findMany({
+        where: { OR: [{ userId }, { userId: null }] },
+        orderBy: { name: "asc" },
+      }),
+      getHomeCurrencyFormatter(userId),
+    ]);
 
   const allCategories = [...summary.incomeByCategory, ...summary.spendingByCategory];
   const bucketByMonth = differenceInCalendarDays(range.to, range.from) > 60;
@@ -58,13 +60,13 @@ export default async function ReportsPage({
             <div className="pr-4">
               <p className="text-xs font-medium text-muted-foreground">Income</p>
               <p className="text-xl font-semibold tracking-tight text-chart-good sm:text-2xl">
-                {formatUsd(summary.totalIncome)}
+                {formatHome(summary.totalIncome)}
               </p>
             </div>
             <div className="px-4">
               <p className="text-xs font-medium text-muted-foreground">Expenses</p>
               <p className="text-xl font-semibold tracking-tight text-chart-critical sm:text-2xl">
-                {formatUsd(summary.totalExpenses)}
+                {formatHome(summary.totalExpenses)}
               </p>
             </div>
             <div className="pl-4">
@@ -75,7 +77,7 @@ export default async function ReportsPage({
                   summary.net >= 0 ? "text-chart-good" : "text-chart-critical"
                 )}
               >
-                {formatUsd(summary.net)}
+                {formatHome(summary.net)}
               </p>
             </div>
           </div>

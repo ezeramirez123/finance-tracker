@@ -10,11 +10,12 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { IncomeExpenseTrendGraph } from "@/components/dashboard/income-expense-trend-chart";
 import { cn } from "@/lib/utils";
-import { formatUsd } from "@/lib/format";
+import { useFormatHome } from "@/components/home-currency-provider";
 
 type DayTotal = { date: string; income: number; expense: number };
 
 function DayCell({ day, onClick }: { day: DayTotal; onClick: (date: string) => void }) {
+  const formatHome = useFormatHome();
   const parsed = parseISO(day.date);
   const today = isToday(parsed);
 
@@ -30,10 +31,10 @@ function DayCell({ day, onClick }: { day: DayTotal; onClick: (date: string) => v
       <span className="text-xs font-bold">{format(parsed, "EEE")}</span>
       <span className="text-sm font-bold">{format(parsed, "d")}</span>
       <span className="text-[11px] tabular-nums text-chart-good">
-        {day.income > 0 ? `+${formatUsd(day.income)}` : formatUsd(0)}
+        {day.income > 0 ? `+${formatHome(day.income)}` : formatHome(0)}
       </span>
       <span className="text-[11px] tabular-nums text-chart-critical">
-        {day.expense > 0 ? `-${formatUsd(day.expense)}` : formatUsd(0)}
+        {day.expense > 0 ? `-${formatHome(day.expense)}` : formatHome(0)}
       </span>
     </button>
   );
@@ -50,6 +51,7 @@ export function WeekCalendarStrip({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const cardRef = useRef<HTMLDivElement>(null);
+  const formatHome = useFormatHome();
 
   function goToDay(date: string) {
     const params = new URLSearchParams();
@@ -170,7 +172,7 @@ export function WeekCalendarStrip({
           >
             <p className="text-xs text-muted-foreground">Income</p>
             <p className="text-sm font-semibold tabular-nums text-chart-good">
-              {formatUsd(weekIncome)}
+              {formatHome(weekIncome)}
             </p>
           </Link>
           <Link
@@ -180,7 +182,7 @@ export function WeekCalendarStrip({
           >
             <p className="text-xs text-muted-foreground">Expenses</p>
             <p className="text-sm font-semibold tabular-nums text-chart-critical">
-              {formatUsd(weekExpense)}
+              {formatHome(weekExpense)}
             </p>
           </Link>
           <Link
@@ -195,7 +197,7 @@ export function WeekCalendarStrip({
                 weekNet >= 0 ? "text-chart-good" : "text-chart-critical"
               )}
             >
-              {formatUsd(weekNet)}
+              {formatHome(weekNet)}
             </p>
           </Link>
         </div>

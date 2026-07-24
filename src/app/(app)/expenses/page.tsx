@@ -18,7 +18,7 @@ import { CategoryFilterSelect } from "@/components/dashboard/category-filter-sel
 import { TransactionListCard } from "@/components/dashboard/transaction-list-card";
 import { PeriodBreakdownCollapsible } from "@/components/period-breakdown-collapsible";
 import { Card } from "@/components/ui/card";
-import { formatUsd } from "@/lib/format";
+import { getHomeCurrencyFormatter } from "@/lib/home-currency";
 import { readPersistedPeriod } from "@/lib/period-cookie";
 
 // Values match the shared `Period` type so a period selected on the Dashboard
@@ -54,16 +54,18 @@ export default async function ExpensesPage({
     ? getDateRange("custom", { from: new Date(effectiveFrom!), to: new Date(effectiveTo!) })
     : getDateRange(period, undefined, earliestTransactionDate ?? undefined);
 
-  const [summary, expenseTransactions, largestExpenses, accounts, categories] = await Promise.all([
-    getPeriodSummary(userId, range),
-    getExpenseTransactions(userId, range, params.category),
-    getLargestExpenses(userId, range, params.category),
-    db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
-    db.category.findMany({
-      where: { OR: [{ userId }, { userId: null }] },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+  const [summary, expenseTransactions, largestExpenses, accounts, categories, { format: formatHome }] =
+    await Promise.all([
+      getPeriodSummary(userId, range),
+      getExpenseTransactions(userId, range, params.category),
+      getLargestExpenses(userId, range, params.category),
+      db.financialAccount.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+      db.category.findMany({
+        where: { OR: [{ userId }, { userId: null }] },
+        orderBy: { name: "asc" },
+      }),
+      getHomeCurrencyFormatter(userId),
+    ]);
 
   const filteredCategory = params.category
     ? summary.spendingByCategory.find((c) => c.id === params.category)
@@ -86,7 +88,7 @@ export default async function ExpensesPage({
           <div>
             <p className="text-sm font-medium text-muted-foreground">Total expenses</p>
             <p className="text-3xl font-semibold tracking-tight">
-              {formatUsd(summary.totalExpenses)}
+              {formatHome(summary.totalExpenses)}
             </p>
           </div>
           <div className="text-right">

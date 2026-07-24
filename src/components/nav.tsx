@@ -45,7 +45,7 @@ export function Nav({
             title={collapsed ? item.label : undefined}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-2.5 rounded-md px-3 py-3 text-sm font-medium transition-colors active:bg-accent/70",
               collapsed && "justify-center px-2",
               active
                 ? "bg-accent text-accent-foreground"

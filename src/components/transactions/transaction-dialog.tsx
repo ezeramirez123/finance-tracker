@@ -247,7 +247,7 @@ export function TransactionDialog({
                 value={Number(form.watch("amount"))}
                 currency={isTransfer ? (fromAccount?.currency ?? "USD") : form.watch("currency")}
                 onChange={(v) => form.setValue("amount", v)}
-                autoFocus
+                autoFocus={!isEdit}
               />
               {form.formState.errors.amount && (
                 <p className="text-xs text-destructive">

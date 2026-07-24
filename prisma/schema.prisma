@@ -30,6 +30,11 @@ model User {
   mfaEnabled Boolean   @default(false)
   passkeys   Passkey[]
 
+  // Every amount is stored/computed in USD internally regardless of this
+  // setting — it only controls which currency totals are converted into
+  // for display, using the current day's exchange rate.
+  homeCurrency String @default("USD")
+
   createdAt DateTime @default(now())
 }
 

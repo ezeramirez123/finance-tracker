@@ -6,7 +6,7 @@ import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
 import { format, parseISO } from "date-fns";
 
 import { cn } from "@/lib/utils";
-import { formatUsd } from "@/lib/format";
+import { useFormatHome } from "@/components/home-currency-provider";
 
 type DailyPoint = { date: string; income: number; expense: number };
 
@@ -30,6 +30,7 @@ export function IncomeExpenseTrendGraph({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrub, setScrub] = useState<{ index: number; x: number; width: number } | null>(null);
+  const formatHome = useFormatHome();
 
   if (data.length < 2) return null;
 
@@ -110,7 +111,7 @@ export function IncomeExpenseTrendGraph({
                 Income
               </span>
               <span className="font-medium tabular-nums text-popover-foreground">
-                {formatUsd(scrubPoint.income)}
+                {formatHome(scrubPoint.income)}
               </span>
             </div>
             <div className="flex items-center justify-between gap-4">
@@ -119,7 +120,7 @@ export function IncomeExpenseTrendGraph({
                 Expenses
               </span>
               <span className="font-medium tabular-nums text-popover-foreground">
-                {formatUsd(scrubPoint.expense)}
+                {formatHome(scrubPoint.expense)}
               </span>
             </div>
           </div>

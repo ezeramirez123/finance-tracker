@@ -10,7 +10,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { formatUsd } from "@/lib/format";
+import { useFormatHome } from "@/components/home-currency-provider";
 
 type Bucket = { label: string; total: number; from: string; to: string };
 
@@ -26,6 +26,7 @@ export function PeriodBreakdownCollapsible({
   const [open, setOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const formatHome = useFormatHome();
   const max = Math.max(...buckets.map((b) => b.total), 0.01);
 
   function goToBucket(bucket: Bucket) {
@@ -58,7 +59,7 @@ export function PeriodBreakdownCollapsible({
               >
                 <div className="flex items-center justify-between text-sm">
                   <span>{b.label}</span>
-                  <span className="font-medium tabular-nums">{formatUsd(b.total)}</span>
+                  <span className="font-medium tabular-nums">{formatHome(b.total)}</span>
                 </div>
                 <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                   <div

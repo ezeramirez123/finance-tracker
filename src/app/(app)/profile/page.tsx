@@ -1,15 +1,21 @@
 import Link from "next/link";
-import { ShieldCheck, Tags, RefreshCw, LogOut, ChevronRight } from "lucide-react";
+import { ShieldCheck, Tags, RefreshCw, Coins, LogOut, ChevronRight } from "lucide-react";
 
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { signOutAction } from "@/lib/actions/auth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { HomeCurrencySelect } from "@/components/profile/home-currency-select";
 
 export default async function ProfilePage() {
   const session = await auth();
   const name = session?.user?.name;
   const email = session?.user?.email;
+  const user = await db.user.findUniqueOrThrow({
+    where: { id: session!.user.id },
+    select: { homeCurrency: true },
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -57,6 +63,17 @@ export default async function ProfilePage() {
           <ChevronRight className="size-4 text-muted-foreground" />
         </Card>
       </Link>
+
+      <Card className="flex-row items-center justify-between px-5">
+        <div className="flex items-center gap-3">
+          <Coins className="size-4 text-muted-foreground" />
+          <div>
+            <p className="text-sm font-medium">Home currency</p>
+            <p className="text-xs text-muted-foreground">Totals across the app show in this currency</p>
+          </div>
+        </div>
+        <HomeCurrencySelect homeCurrency={user.homeCurrency} />
+      </Card>
 
       <form action={signOutAction}>
         <Button
